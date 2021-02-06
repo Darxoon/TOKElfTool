@@ -54,7 +54,10 @@ namespace ElfLib
         {
             Section clone = (Section)MemberwiseClone();
             if (newContent != null)
+            {
                 clone.Content = newContent;
+                clone.Size = newContent.Length;
+            }
             if (newOffset != null)
                 clone.Offset = (long)newOffset;
             return clone;
