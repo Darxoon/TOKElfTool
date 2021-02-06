@@ -21,6 +21,7 @@
         <CommandBinding Command="New" CanExecute="CommandBinding_New_CanExecute" Executed="CommandBinding_New_Executed" />
         <CommandBinding Command="Open" CanExecute="CommandBinding_Open_CanExecute" Executed="CommandBinding_Open_Executed" />
         <CommandBinding Command="Save" CanExecute="CommandBinding_Save_CanExecute" Executed="CommandBinding_Save_Executed" />
+        <CommandBinding Command="SaveAs" CanExecute="CommandBinding_SaveAs_CanExecute" Executed="CommandBinding_SaveAs_Executed" />
     </Window.CommandBindings>
 
     <DockPanel>

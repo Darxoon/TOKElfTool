@@ -323,8 +323,26 @@ namespace TOKElfTool
                 RemoveAllObjects();
                 loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
                 InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC");
+                savePath = null;
             }
         }
+        private string ShowOptionalSaveDialog(string savePath)
+        {
+            if (savePath == null)
+            {
+                SaveFileDialog dialog = new SaveFileDialog
+                {
+                    FileName = "dispos_Npc.elf",
+                    DefaultExt = ".elf",
+                    Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
+                };
+                bool? result = dialog.ShowDialog(window);
+                if (result == true)
+                    savePath = dialog.FileName;
+            }
+            return savePath;
+        }
+
 
         private void CommandBinding_Save_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -351,18 +369,45 @@ namespace TOKElfTool
             loadedBinary.Data = objects;
 
             byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
-            if (savePath == null)
+
+            savePath = ShowOptionalSaveDialog(savePath);
+            if (savePath != null)
             {
-                SaveFileDialog dialog = new SaveFileDialog
+                try
                 {
-                    FileName = "dispos_Npc.elf",
-                    DefaultExt = ".elf",
-                    Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
-                };
-                bool? result = dialog.ShowDialog(window);
-                if (result == true)
-                    savePath = dialog.FileName;
+                    File.WriteAllBytes(savePath, savePath.EndsWith(".zst") || savePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
+                    MessageBox.Show(window, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
+        }
+        private void CommandBinding_SaveAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = loadedBinary != null;
+        }
+
+        private void CommandBinding_SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            List<Element<NPC>> objects = CollectObjects(objectTabPanel);
+
+            #region Logging
+            Trace.WriteLine("NPCs:");
+            Trace.Indent();
+            foreach (var item in objects)
+            {
+                Trace.WriteLine(item);
+            }
+            Trace.Unindent();
+            #endregion
+
+            loadedBinary.Data = objects;
+
+            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
+
+            savePath = ShowOptionalSaveDialog(null);
             if (savePath != null)
             {
                 try
@@ -452,5 +497,6 @@ namespace TOKElfTool
 
             return objects;
         }
+
     }
 }
