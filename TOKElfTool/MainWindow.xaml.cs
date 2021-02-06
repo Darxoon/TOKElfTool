@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -21,6 +21,7 @@ using stStackPanel = AutoGrid.StackPanel;
 using stAutoGrid = AutoGrid.AutoGrid;
 using System.Diagnostics;
 using System.IO;
+using ZstdNet;
 
 namespace TOKElfTool
 {
@@ -41,6 +42,11 @@ namespace TOKElfTool
             Trace.WriteLine("ajklsdflkasdjlksdsdlkjlkfdssdsdfsd");
 
             //InitializeObjectsPanel(new object[] { null, null, null, null }, "NPC");
+        }
+
+        ~MainWindow()
+        {
+            compressor.Dispose();
         }
 
         private static FontFamily consolasFontFamily = new FontFamily("Consolas");
@@ -193,7 +199,7 @@ namespace TOKElfTool
             if (e.Key == Key.Enter)
             {
                 Vector3? parsed = Vector3.FromString(textBox.Text);
-                if(parsed != null)
+                if (parsed != null)
                 {
                     textBox.Text = parsed.ToString();
                 }
@@ -326,6 +332,7 @@ namespace TOKElfTool
         }
 
         private string savePath = null;
+        private Compressor compressor = new Compressor();
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -357,7 +364,17 @@ namespace TOKElfTool
                     savePath = dialog.FileName;
             }
             if (savePath != null)
-                File.WriteAllBytes(savePath, serialized);
+            {
+                try
+                {
+                    File.WriteAllBytes(savePath, savePath.EndsWith(".zst") || savePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
+                    MessageBox.Show(window, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private List<Element<NPC>> CollectObjects(StackPanel objectTabPanel)
@@ -369,7 +386,7 @@ namespace TOKElfTool
             {
                 if (i == 0)
                     continue;
-                
+
                 Expander expander = (Expander)objectTabPanel.Children[i];
                 Grid grid = (Grid)expander.Content;
 
@@ -398,7 +415,7 @@ namespace TOKElfTool
                         // textbox
                         TextBox textBox = (TextBox)child;
                         string text = textBox.Text;
-                        switch(propertyType.Name)
+                        switch (propertyType.Name)
                         {
                             case "String":
                                 propertyValue = text.StartsWith("\"") && text.EndsWith("\"") ? text.Substring(1, text.Length - 2) : null;
