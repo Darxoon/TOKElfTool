@@ -16,7 +16,7 @@ namespace ElfLib
         public string obj_str;
         public string shape_str;
         public Vector3 pos;
-        public float field_0x24;
+        public float rotation;
         public int field_0x28;
         public int field_0x2c;
         public string enemy_encounter_str;
