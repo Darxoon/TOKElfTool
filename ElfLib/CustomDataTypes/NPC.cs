@@ -19,7 +19,7 @@ namespace ElfLib
         public float field_0x24;
         public int field_0x28;
         public int field_0x2c;
-        public string ukn_str;
+        public string enemy_encounter_str;
         public int field_0x38;
         public int field_0x3c;
         public int field_0x40;

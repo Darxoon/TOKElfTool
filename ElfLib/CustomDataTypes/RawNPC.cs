@@ -19,7 +19,7 @@ namespace ElfLib
         public float field_0x24;
         public int field_0x28;
         public int field_0x2c;
-        public ElfStringPointer ukn_str;
+        public ElfStringPointer enemy_encounter_str;
         public int field_0x38;
         public int field_0x3c;
         public int field_0x40;
@@ -92,7 +92,7 @@ namespace ElfLib
             rawNPC.level_str = ElfStringPointer.ResolveRelocation(relas, 0);
             rawNPC.obj_str = ElfStringPointer.ResolveRelocation(relas, 8);
             rawNPC.shape_str = ElfStringPointer.ResolveRelocation(relas, 16);
-            rawNPC.ukn_str = ElfStringPointer.ResolveRelocation(relas, 48);
+            rawNPC.enemy_encounter_str = ElfStringPointer.ResolveRelocation(relas, 48);
             rawNPC.init_function_str = ElfStringPointer.ResolveRelocation(relas, 200);
             rawNPC.talk_function_str = ElfStringPointer.ResolveRelocation(relas, 224);
             rawNPC.action_function_str = ElfStringPointer.ResolveRelocation(relas, 232);

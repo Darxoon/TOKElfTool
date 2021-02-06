@@ -158,7 +158,7 @@ namespace ElfLib
                         allStrings.Add(npc.level_str);
                         allStrings.Add(npc.obj_str);
                         allStrings.Add(npc.shape_str);
-                        allStrings.Add(npc.ukn_str);
+                        allStrings.Add(npc.enemy_encounter_str);
                         allStrings.Add(npc.init_function_str);
                         allStrings.Add(npc.talk_function_str);
                         allStrings.Add(npc.action_function_str);
