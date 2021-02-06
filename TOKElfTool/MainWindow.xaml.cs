@@ -390,7 +390,7 @@ namespace TOKElfTool
                     else if (j % 2 == 0)
                     {
                         // label
-                        propertyName = (string)((Label)child).Content;
+                        propertyName = ((TextBlock)child).Text;
                         propertyType = typeof(NPC).GetField(propertyName).FieldType;
                     }
                     else
