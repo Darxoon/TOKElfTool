@@ -102,15 +102,19 @@ namespace TOKElfTool
                 {
                     string name = fields[j].Name;
 
-                    Label label = new Label
+                    Trace.WriteLine(name);
+                    TextBlock label = new TextBlock
                     {
-                        Content = name,
+                        Text = name,
                         Margin = new Thickness(0, 0, 0, 5),
                         FontFamily = consolasFontFamily,
+                        Padding = new Thickness(2, 4, 0, 2),
                     };
                     Grid.SetColumn(label, 0);
                     Grid.SetRow(label, j + 1);
                     grid.Children.Add(label);
+                    if (j % 2 == 1)
+                        label.Background = new SolidColorBrush(Color.FromRgb(230, 230, 230));
 
                     Type fieldType = fields[j].FieldType;
 
@@ -118,7 +122,8 @@ namespace TOKElfTool
                     {
                         VerticalContentAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(0, 0, 0, 5),
-                        Height = 26,
+                        Padding = new Thickness(0, 3, 0, 3),
+                        //Height = 26,
                         FontFamily = consolasFontFamily,
                     };
                     Grid.SetColumn(textBox, 1);
@@ -287,6 +292,15 @@ namespace TOKElfTool
             e.CanExecute = true;
         }
 
+        private void RemoveAllObjects()
+        {
+            // Reverse loop that ignores first element (Add/remove controls)
+            for (int i = objectTabPanel.Children.Count - 1; i >= 1; i--)
+            {
+                objectTabPanel.Children.RemoveAt(i);
+            }
+        }
+
         private ElfBinary<NPC> loadedBinary;
 
         private void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -300,6 +314,7 @@ namespace TOKElfTool
             bool? result = dialog.ShowDialog(window);
             if (result == true)
             {
+                RemoveAllObjects();
                 loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
                 InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC");
             }
