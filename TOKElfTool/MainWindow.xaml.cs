@@ -49,9 +49,9 @@ namespace TOKElfTool
             compressor.Dispose();
         }
 
-        private static FontFamily consolasFontFamily = new FontFamily("Consolas");
+        private static readonly FontFamily consolasFontFamily = new FontFamily("Consolas");
 
-        private static NumberFormatInfo nfi = new NumberFormatInfo
+        private static readonly NumberFormatInfo nfi = new NumberFormatInfo
         {
             NumberDecimalSeparator = "."
         };
@@ -367,7 +367,7 @@ namespace TOKElfTool
         }
 
         private string savePath = null;
-        private Compressor compressor = new Compressor();
+        private readonly Compressor compressor = new Compressor();
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
