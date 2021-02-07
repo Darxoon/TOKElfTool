@@ -44,3 +44,5 @@ Features that will be coming:
 
 ## Contact
 To report bugs or give suggestions, you can open an Issue here on GitHub. You can also contact me privately on Discord (my tag is Darxoon#2884).
+
+You can also visit the Paper Mario Modding discord (https://discord.gg/Pj4u7wB) and talk about it there (in the #tok-modding channel). 
