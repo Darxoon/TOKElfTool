@@ -10,6 +10,8 @@ namespace ElfLib
 {
     internal static class Util
     {
+        public const string floatFormatString = "0.0#################";
+
         // Field Offset
         public static long GetFieldOffset(this FieldInfo fi) => GetFieldOffset(fi.FieldHandle);
 

@@ -29,7 +29,7 @@ namespace ElfLib
 
         public override string ToString()
         {
-            return $"Vector3({x.ToString("0.0", nfi)}f, {y.ToString("0.0", nfi)}f, {z.ToString("0.0", nfi)}f)";
+            return $"Vector3({x.ToString(Util.floatFormatString, nfi)}f, {y.ToString(Util.floatFormatString, nfi)}f, {z.ToString(Util.floatFormatString, nfi)}f)";
         }
 
         /// <summary>

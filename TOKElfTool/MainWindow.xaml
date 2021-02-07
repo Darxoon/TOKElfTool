@@ -15,6 +15,8 @@
                     Command="Redo"/>
         <KeyBinding Command="ApplicationCommands.NotACommand"
                     Gesture="Ctrl+Y"/>
+        <KeyBinding Gesture="Ctrl+Shift+S"
+                    Command="SaveAs"/>
     </Window.InputBindings>
 
     <Window.CommandBindings>
@@ -41,7 +43,7 @@
 
                 <Separator />
                 <MenuItem Command="Save" />
-                <MenuItem Command="SaveAs" Header="Save As..." />
+                <MenuItem Command="SaveAs" Header="Save As..." InputGestureText="Ctrl+Shift+S" />
 
                 <Separator />
                 <MenuItem Header="_Zstd Tools">

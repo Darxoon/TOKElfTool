@@ -184,7 +184,7 @@ namespace TOKElfTool
                         }
                         else if (fieldType == typeof(float))
                         {
-                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0", nfi) + 'f';
+                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", nfi) + 'f';
                             textBox.Text = text;
                             textBox.PreviewTextInput += Float_PreviewTextInput;
                             textBox.KeyDown += Float_KeyDown;
@@ -193,7 +193,7 @@ namespace TOKElfTool
                         }
                         else if (fieldType == typeof(double))
                         {
-                            string text = ((float)fields[j].GetValue(currentObject)).ToString();
+                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", nfi);
                             if (!text.Contains("."))
                                 text += ".0";
                             textBox.Text = ((double)fields[j].GetValue(currentObject)).ToString();
@@ -265,7 +265,7 @@ namespace TOKElfTool
                     {
                         double.TryParse(textBox.Text, NumberStyles.Float, new CultureInfo("en-US"), out double parsed);
                         MessageBox.Show(parsed.ToString(nfi));
-                        textBox.Text = parsed.ToString("0.0", nfi) + 'f';
+                        textBox.Text = parsed.ToString("0.0#################", nfi) + 'f';
                     }
                     else
                     {
