@@ -22,7 +22,7 @@ namespace ElfLib
         public string enemy_encounter_str;
         public int field_0x38;
         public int field_0x3c;
-        public int field_0x40;
+        public bool do_wall_collision;
         public int field_0x44;
         public float field_0x48;
         public float field_0x4c;
@@ -101,6 +101,10 @@ namespace ElfLib
                     Trace.WriteLine(str, npcField.Name);
                     npcField.SetValue(npc, str);
                     Trace.WriteLine(npcField.GetValue(npc));
+                }
+                else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
+                {
+                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc) > 0);
                 }
                 else if (npcField.FieldType == rawNpcField.FieldType)
                 {

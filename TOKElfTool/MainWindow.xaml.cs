@@ -124,68 +124,85 @@ namespace TOKElfTool
 
                     Type fieldType = fields[j].FieldType;
 
-                    TextBox textBox = new TextBox
+                    if (fieldType == typeof(bool))
                     {
-                        VerticalContentAlignment = VerticalAlignment.Center,
-                        Margin = new Thickness(0, 0, 0, 5),
-                        Padding = new Thickness(0, 3, 0, 3),
-                        //Height = 26,
-                        FontFamily = consolasFontFamily,
-                    };
-                    Grid.SetColumn(textBox, 1);
-                    Grid.SetRow(textBox, j + 1);
-                    grid.Children.Add(textBox);
-                    if (fieldType == typeof(string))
-                    {
-                        string value = (string)fields[j].GetValue(currentObject);
-                        textBox.Text = value != null ? $"\"{value}\"" : "null";
-                        label.ToolTip = "String";
-                        textBox.ToolTip = "String";
+                        CheckBox checkBox = new CheckBox
+                        {
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Margin = new Thickness(0, 03, 0, 8),
+                            ToolTip = "boolean",
+                            //Padding = new Thickness(0, 3, 0, 3),
+                            //Content = "Value",
+                        };
+                        Grid.SetColumn(checkBox, 1);
+                        Grid.SetRow(checkBox, j + 1);
+                        grid.Children.Add(checkBox);
+                        label.ToolTip = "boolean";
                     }
-                    else if (fieldType == typeof(Vector3))
+                    else
                     {
-                        textBox.Text = ((Vector3)fields[j].GetValue(currentObject)).ToString();
-                        textBox.KeyDown += Vector3_KeyDown;
-                        label.ToolTip = "Vector3";
-                        textBox.ToolTip = "Vector3";
+                        TextBox textBox = new TextBox
+                        {
+                            VerticalContentAlignment = VerticalAlignment.Center,
+                            Margin = new Thickness(0, 0, 0, 5),
+                            Padding = new Thickness(0, 3, 0, 3),
+                            //Height = 26,
+                            FontFamily = consolasFontFamily,
+                        };
+                        Grid.SetColumn(textBox, 1);
+                        Grid.SetRow(textBox, j + 1);
+                        grid.Children.Add(textBox);
+                        if (fieldType == typeof(string))
+                        {
+                            string value = (string)fields[j].GetValue(currentObject);
+                            textBox.Text = value != null ? $"\"{value}\"" : "null";
+                            label.ToolTip = "String";
+                            textBox.ToolTip = "String";
+                        }
+                        else if (fieldType == typeof(Vector3))
+                        {
+                            textBox.Text = ((Vector3)fields[j].GetValue(currentObject)).ToString();
+                            textBox.KeyDown += Vector3_KeyDown;
+                            label.ToolTip = "Vector3";
+                            textBox.ToolTip = "Vector3";
+                        }
+                        else if (fieldType == typeof(int))
+                        {
+                            textBox.Text = ((int)fields[j].GetValue(currentObject)).ToString();
+                            textBox.PreviewTextInput += Int_PreviewTextInput;
+                            textBox.KeyDown += Int_KeyDown;
+                            label.ToolTip = "32-bit integer";
+                            textBox.ToolTip = "32-bit integer";
+                        }
+                        else if (fieldType == typeof(long))
+                        {
+                            textBox.Text = ((long)fields[j].GetValue(currentObject)).ToString();
+                            textBox.PreviewTextInput += Int_PreviewTextInput;
+                            textBox.KeyDown += Int_KeyDown;
+                            label.ToolTip = "64-bit integer";
+                            textBox.ToolTip = "64-bit integer";
+                        }
+                        else if (fieldType == typeof(float))
+                        {
+                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0", nfi) + 'f';
+                            textBox.Text = text;
+                            textBox.PreviewTextInput += Float_PreviewTextInput;
+                            textBox.KeyDown += Float_KeyDown;
+                            label.ToolTip = "float (32-bit decimal)";
+                            textBox.ToolTip = "float (32-bit decimal)";
+                        }
+                        else if (fieldType == typeof(double))
+                        {
+                            string text = ((float)fields[j].GetValue(currentObject)).ToString();
+                            if (!text.Contains("."))
+                                text += ".0";
+                            textBox.Text = ((double)fields[j].GetValue(currentObject)).ToString();
+                            textBox.PreviewTextInput += Double_PreviewTextInput;
+                            textBox.KeyDown += Float_KeyDown;
+                            label.ToolTip = "double (64-bit decimal)";
+                            textBox.ToolTip = "double (64-bit decimal)";
+                        }
                     }
-                    else if (fieldType == typeof(int))
-                    {
-                        textBox.Text = ((int)fields[j].GetValue(currentObject)).ToString();
-                        textBox.PreviewTextInput += Int_PreviewTextInput;
-                        textBox.KeyDown += Int_KeyDown;
-                        label.ToolTip = "32-bit integer";
-                        textBox.ToolTip = "32-bit integer";
-                    }
-                    else if (fieldType == typeof(long))
-                    {
-                        textBox.Text = ((long)fields[j].GetValue(currentObject)).ToString();
-                        textBox.PreviewTextInput += Int_PreviewTextInput;
-                        textBox.KeyDown += Int_KeyDown;
-                        label.ToolTip = "64-bit integer";
-                        textBox.ToolTip = "64-bit integer";
-                    }
-                    else if (fieldType == typeof(float))
-                    {
-                        string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0", nfi) + 'f';
-                        textBox.Text = text;
-                        textBox.PreviewTextInput += Float_PreviewTextInput;
-                        textBox.KeyDown += Float_KeyDown;
-                        label.ToolTip = "float (32-bit decimal)";
-                        textBox.ToolTip = "float (32-bit decimal)";
-                    }
-                    else if (fieldType == typeof(double))
-                    {
-                        string text = ((float)fields[j].GetValue(currentObject)).ToString();
-                        if (!text.Contains("."))
-                            text += ".0";
-                        textBox.Text = ((double)fields[j].GetValue(currentObject)).ToString();
-                        textBox.PreviewTextInput += Double_PreviewTextInput;
-                        textBox.KeyDown += Float_KeyDown;
-                        label.ToolTip = "double (64-bit decimal)";
-                        textBox.ToolTip = "double (64-bit decimal)";
-                    }
-
                 }
 
                 expander.Content = grid;
@@ -457,36 +474,45 @@ namespace TOKElfTool
                     }
                     else
                     {
-                        // textbox
-                        TextBox textBox = (TextBox)child;
-                        string text = textBox.Text;
-                        switch (propertyType.Name)
+                        if (propertyType == typeof(bool))
                         {
-                            case "String":
-                                propertyValue = text.StartsWith("\"") && text.EndsWith("\"") ? text.Substring(1, text.Length - 2) : null;
-                                break;
-                            case "Vector3":
-                                propertyValue = Vector3.FromString(text);
-                                break;
-                            case "Int32":
-                                _ = int.TryParse(text, out int propertyValueInt);
-                                propertyValue = propertyValueInt;
-                                break;
-                            case "Int64":
-                                long.TryParse(text, out long propertyValueLong);
-                                propertyValue = propertyValueLong;
-                                break;
-                            case "Single":
-                                string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
-                                float.TryParse(floatString, out float propertyValueFloat);
-                                propertyValue = propertyValueFloat;
-                                break;
-                            case "Double":
-                                double.TryParse(text, out double propertyValueDouble);
-                                propertyValue = propertyValueDouble;
-                                break;
+                            CheckBox checkBox = (CheckBox)child;
+                            propertyValue = checkBox.IsChecked;
+                            Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
                         }
-                        Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (original {text})");
+                        else
+                        {
+                            // textbox
+                            TextBox textBox = (TextBox)child;
+                            string text = textBox.Text;
+                            switch (propertyType.Name)
+                            {
+                                case "String":
+                                    propertyValue = text.StartsWith("\"") && text.EndsWith("\"") ? text.Substring(1, text.Length - 2) : null;
+                                    break;
+                                case "Vector3":
+                                    propertyValue = Vector3.FromString(text);
+                                    break;
+                                case "Int32":
+                                    _ = int.TryParse(text, out int propertyValueInt);
+                                    propertyValue = propertyValueInt;
+                                    break;
+                                case "Int64":
+                                    long.TryParse(text, out long propertyValueLong);
+                                    propertyValue = propertyValueLong;
+                                    break;
+                                case "Single":
+                                    string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
+                                    float.TryParse(floatString, out float propertyValueFloat);
+                                    propertyValue = propertyValueFloat;
+                                    break;
+                                case "Double":
+                                    double.TryParse(text, out double propertyValueDouble);
+                                    propertyValue = propertyValueDouble;
+                                    break;
+                            }
+                            Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (original {text})");
+                        }
                         typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
                     }
 

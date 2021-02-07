@@ -22,7 +22,7 @@ namespace ElfLib
         public ElfStringPointer enemy_encounter_str;
         public int field_0x38;
         public int field_0x3c;
-        public int field_0x40;
+        public int do_wall_collision;
         public int field_0x44;
         public float field_0x48;
         public float field_0x4c;
@@ -129,6 +129,10 @@ namespace ElfLib
                         stringRelocTable.Add(rawNpcField.GetFieldOffset(), stringPointer);
                     else
                         rawNpcField.SetValue(rawNPC, stringPointer);
+                }
+                else if (npcField.FieldType == typeof(bool))
+                {
+                    rawNpcField.SetValue(rawNPC, (bool)npcField.GetValue(npc) ? 1 : 0);
                 }
                 else if (npcField.FieldType == rawNpcField.FieldType)
                 {

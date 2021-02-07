@@ -89,7 +89,7 @@
                             <Button Margin="0 0 5 0">Add Object</Button>
                             <Button Margin="0 0 5 0">Remove All Objects</Button>
                         </StackPanel>
-                        
+
 
                         <!-- <Expander Header="Object 1">
                             <Grid>
@@ -152,7 +152,7 @@
                                 <Label Grid.Row="2" Grid.Column="0" Margin="0 0 0 5">Hello</Label>
                                 <TextBox VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="0 0 0 5">Hello2</TextBox>
                                 <Label Grid.Row="3" Grid.Column="0" Margin="0 0 0 5">Hello</Label>
-                                <TextBox VerticalContentAlignment="Center" Grid.Row="3" Grid.Column="1" Margin="0 0 0 5">Hello2</TextBox>
+                                <CheckBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">Value</CheckBox>
                             </Grid>
                         </Expander> -->
                     </StackPanel>
