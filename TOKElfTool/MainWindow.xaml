@@ -46,8 +46,8 @@
 
                 <Separator />
                 <MenuItem Header="_Zstd Tools">
-                    <MenuItem Header="_Decrypt"/>
-                    <MenuItem Header="_Encrypt"/>
+                    <MenuItem Header="_Decrypt" Click="MenuItem_Decrypt_OnClick" />
+                    <MenuItem Header="_Encrypt" Click="MenuItem_Encrypt_OnClick" />
                 </MenuItem>
 
                 <Separator />

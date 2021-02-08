@@ -49,6 +49,7 @@ namespace TOKElfTool
         ~MainWindow()
         {
             compressor.Dispose();
+            decompressor.Dispose();
         }
 
         private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
@@ -410,6 +411,7 @@ namespace TOKElfTool
 
         private string fileSavePath;
         private readonly Compressor compressor = new Compressor();
+        private readonly Decompressor decompressor = new Decompressor();
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -582,6 +584,109 @@ namespace TOKElfTool
         {
             Process.Start(containingFolderPath);
             e.Handled = true;
+        }
+
+        private void MenuItem_Decrypt_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                FileName = "dispos_Npc.elf.zst",
+                DefaultExt = ".zst",
+                Filter = "ZSTD Compressed File (*.zst; *.zstd)|*.zst;*.zstd|All Files (*.*)|*",
+            };
+            bool? result = openFileDialog.ShowDialog(window);
+            if (result == true)
+            {
+
+                byte[] input;
+                try
+                {
+                    input = File.ReadAllBytes(openFileDialog.FileName);
+                }
+                catch
+                {
+                    MessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
+                        "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    return;
+                }
+
+                byte[] decompressed = decompressor.Unwrap(input);
+
+                string filename = Path.GetFileName(openFileDialog.FileName);
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    FileName = filename.EndsWith(".zst")
+                        ? filename.Substring(0, filename.Length - ".zst".Length)
+                        : filename.EndsWith(".zstd") 
+                            ? filename.Substring(0, filename.Length - ".zstd".Length) 
+                            : filename + ".dec",
+                    DefaultExt = "",
+                    Filter = "All Files (*.*)|*",
+                    OverwritePrompt = true,
+                };
+                bool? saveResult = saveFileDialog.ShowDialog(window);
+                if (saveResult == true)
+                {
+                    try
+                    {
+                        File.WriteAllBytes(saveFileDialog.FileName, decompressed);
+                    }
+                    catch
+                    {
+                        MessageBox.Show(this, "Couldn't save the file. Maybe it's opened by another program",
+                            "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    }
+                }
+            }
+        }
+
+        private void MenuItem_Encrypt_OnClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                FileName = "",
+                DefaultExt = "",
+                Filter = "All Files (*.*)|*",
+            };
+            bool? openResult = openFileDialog.ShowDialog(window);
+            if (openResult == true)
+            {
+                Trace.WriteLine(openFileDialog.FileName);
+                byte[] input;
+                try
+                {
+                    input = File.ReadAllBytes(openFileDialog.FileName);
+                }
+                catch
+                {
+                    MessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
+                        "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    return;
+                }
+
+                byte[] compressed = compressor.Wrap(input);
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    FileName = Path.GetFileName(openFileDialog.FileName) + ".zst",
+                    DefaultExt = ".zst",
+                    Filter = "ZSTD Compressed File (*.zst; *.zstd)|*.zst;*.zstd|All Files (*.*)|*",
+                    OverwritePrompt = true,
+                };
+                bool? saveResult = saveFileDialog.ShowDialog(window);
+                if (saveResult == true)
+                {
+                    try
+                    {
+                        File.WriteAllBytes(saveFileDialog.FileName, compressed);
+                    }
+                    catch
+                    {
+                        MessageBox.Show(this, "Couldn't save the file. Maybe it's opened by another program",
+                            "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    }
+                }
+            }
         }
     }
 }
