@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using ElfLib;
 using System.Text.RegularExpressions;
@@ -21,6 +13,7 @@ using stStackPanel = AutoGrid.StackPanel;
 using stAutoGrid = AutoGrid.AutoGrid;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using ZstdNet;
 
 namespace TOKElfTool
@@ -42,6 +35,20 @@ namespace TOKElfTool
             Trace.WriteLine("ajklsdflkasdjlksdsdlkjlkfdssdsdfsd");
 
             //InitializeObjectsPanel(new object[] { null, null, null, null }, "NPC");
+
+            // create AppData path
+            if (!Directory.Exists(Path.Combine(dataFolderPath, "TOKElfTool")))
+            {
+                Directory.CreateDirectory(Path.Combine(dataFolderPath, "TOKElfTool"));
+            }
+
+            // Read recently opened files
+            if (File.Exists(historyPath))
+            {
+                recentlyOpenedFiles = File.ReadAllLines(historyPath).ToList();
+                RegenerateRecentlyOpened();
+            }
+
         }
 
         ~MainWindow()
@@ -50,6 +57,11 @@ namespace TOKElfTool
         }
 
         private static readonly FontFamily consolasFontFamily = new FontFamily("Consolas");
+
+        private static readonly string dataFolderPath = Environment.GetFolderPath(
+            Environment.SpecialFolder.ApplicationData,
+            Environment.SpecialFolderOption.Create);
+        private static readonly string historyPath = Path.Combine(dataFolderPath, "TOKElfTool/file_history.txt");
 
         private static readonly NumberFormatInfo nfi = new NumberFormatInfo
         {
@@ -300,6 +312,35 @@ namespace TOKElfTool
             e.Handled = !floatRegex.IsMatch(e.Text);
         }
 
+        private List<string> recentlyOpenedFiles = new List<string>();
+
+        private void AddRecentlyOpened(string filepath)
+        {
+            recentlyOpenedFiles.Remove(filepath);
+            recentlyOpenedFiles.Add(filepath);
+
+            // Save to file
+            File.WriteAllText(historyPath, string.Join("\n", recentlyOpenedFiles));
+
+            RegenerateRecentlyOpened();
+        }
+
+        private void RegenerateRecentlyOpened()
+        {
+            // Regenerate menu item
+            openRecentItem.Items.Clear();
+            for (int i = recentlyOpenedFiles.Count - 1; i >= 0; i--)
+            {
+                string name = recentlyOpenedFiles[i];
+
+                MenuItem menuItem = new MenuItem
+                {
+                    Header = name,
+                };
+                openRecentItem.Items.Add(menuItem);
+            }
+        }
+
         private void CommandBinding_New_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = false;
@@ -326,6 +367,8 @@ namespace TOKElfTool
 
         private ElfBinary<NPC> loadedBinary;
 
+        private string containingFolderPath = "";
+
         private void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
@@ -341,6 +384,8 @@ namespace TOKElfTool
                 loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
                 InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC");
                 savePath = null;
+                containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
+                AddRecentlyOpened(dialog.FileName);
             }
         }
         private string ShowOptionalSaveDialog(string savePath)
@@ -524,5 +569,22 @@ namespace TOKElfTool
             return objects;
         }
 
+        private void MenuItem_About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(this, "TOK ELF Tool\nMade by Darxoon", "TOK ELF Tool", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
+            e.Handled = true;
+        }
+
+        private void MenuItem_OpenRepo_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo("https://github.com/Darxoon/TOKElfTool/"));
+            e.Handled = true;
+        }
+
+        private void MenuItem_OpenContainingFolder_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(containingFolderPath);
+            e.Handled = true;
+        }
     }
 }

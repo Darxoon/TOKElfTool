@@ -33,13 +33,12 @@
 
                 <Separator />
                 <MenuItem Command="Open" Header="Open..." />
-                <MenuItem Header="Open _Recent">
-                    <MenuItem Header="a.elf" />
-                    <MenuItem Header="b.elf" />
+                <MenuItem x:Name="openRecentItem" Header="Open _Recent">
+                    <MenuItem Header="None" IsEnabled="False" />
                 </MenuItem>
 
                 <Separator />
-                <MenuItem Header="Open _Containing Folder" />
+                <MenuItem Header="Open _Containing Folder" Click="MenuItem_OpenContainingFolder_Click" />
 
                 <Separator />
                 <MenuItem Command="Save" />
@@ -74,10 +73,10 @@
             </MenuItem>
 
             <MenuItem Header="_Help">
-                <MenuItem Header="Open _Online Repository" />
+                <MenuItem Header="Open _Online Repository" Click="MenuItem_OpenRepo_Click" />
 
                 <Separator />
-                <MenuItem Header="About" />
+                <MenuItem Header="About" Click="MenuItem_About_Click" />
             </MenuItem>
         </Menu>
 
