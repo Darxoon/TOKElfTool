@@ -12,6 +12,7 @@ using System.Globalization;
 using stStackPanel = AutoGrid.StackPanel;
 using stAutoGrid = AutoGrid.AutoGrid;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using ZstdNet;
@@ -21,34 +22,28 @@ namespace TOKElfTool
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
-            //Trace.Listeners.Add()
-
             InitializeComponent();
 
-            emptyLabel.Visibility = Visibility.Visible;
-            scrollViewer.Visibility = Visibility.Collapsed;
-
-            Trace.WriteLine("ajklsdflkasdjlksdsdlkjlkfdssdsdfsd");
-
-            //InitializeObjectsPanel(new object[] { null, null, null, null }, "NPC");
+            EmptyLabel.Visibility = Visibility.Visible;
+            ScrollViewer.Visibility = Visibility.Collapsed;
 
             // create AppData path
-            if (!Directory.Exists(Path.Combine(dataFolderPath, "TOKElfTool")))
+            if (!Directory.Exists(Path.Combine(DataFolderPath, "TOKElfTool")))
             {
-                Directory.CreateDirectory(Path.Combine(dataFolderPath, "TOKElfTool"));
+                Directory.CreateDirectory(Path.Combine(DataFolderPath, "TOKElfTool"));
             }
 
             // Read recently opened files
-            if (File.Exists(historyPath))
+            if (File.Exists(HistoryPath))
             {
-                recentlyOpenedFiles = File.ReadAllLines(historyPath).ToList();
+                recentlyOpenedFiles = File.ReadAllLines(HistoryPath).ToList();
                 RegenerateRecentlyOpened();
             }
-
         }
 
         ~MainWindow()
@@ -56,24 +51,24 @@ namespace TOKElfTool
             compressor.Dispose();
         }
 
-        private static readonly FontFamily consolasFontFamily = new FontFamily("Consolas");
+        private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
 
-        private static readonly string dataFolderPath = Environment.GetFolderPath(
+        private static readonly string DataFolderPath = Environment.GetFolderPath(
             Environment.SpecialFolder.ApplicationData,
             Environment.SpecialFolderOption.Create);
-        private static readonly string historyPath = Path.Combine(dataFolderPath, "TOKElfTool/file_history.txt");
+        private static readonly string HistoryPath = Path.Combine(DataFolderPath, "TOKElfTool/file_history.txt");
 
-        private static readonly NumberFormatInfo nfi = new NumberFormatInfo
+        private static readonly NumberFormatInfo Nfi = new NumberFormatInfo
         {
             NumberDecimalSeparator = "."
         };
 
-        private const GameDataType loadedDataType = GameDataType.NPC;
+        private GameDataType loadedDataType = GameDataType.NPC;
 
         private void InitializeObjectsPanel<T>(Element<T>[] objects, string objectName)
         {
-            emptyLabel.Visibility = Visibility.Collapsed;
-            scrollViewer.Visibility = Visibility.Visible;
+            EmptyLabel.Visibility = Visibility.Collapsed;
+            ScrollViewer.Visibility = Visibility.Visible;
 
             for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
             {
@@ -125,7 +120,7 @@ namespace TOKElfTool
                     {
                         Text = name,
                         Margin = new Thickness(0, 0, 0, 5),
-                        FontFamily = consolasFontFamily,
+                        FontFamily = ConsolasFontFamily,
                         Padding = new Thickness(2, 4, 0, 2),
                     };
                     Grid.SetColumn(label, 0);
@@ -159,7 +154,7 @@ namespace TOKElfTool
                             Margin = new Thickness(0, 0, 0, 5),
                             Padding = new Thickness(0, 3, 0, 3),
                             //Height = 26,
-                            FontFamily = consolasFontFamily,
+                            FontFamily = ConsolasFontFamily,
                         };
                         Grid.SetColumn(textBox, 1);
                         Grid.SetRow(textBox, j + 1);
@@ -196,7 +191,7 @@ namespace TOKElfTool
                         }
                         else if (fieldType == typeof(float))
                         {
-                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", nfi) + 'f';
+                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", Nfi) + 'f';
                             textBox.Text = text;
                             textBox.PreviewTextInput += Float_PreviewTextInput;
                             textBox.KeyDown += Float_KeyDown;
@@ -205,10 +200,10 @@ namespace TOKElfTool
                         }
                         else if (fieldType == typeof(double))
                         {
-                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", nfi);
+                            string text = ((double)fields[j].GetValue(currentObject)).ToString("0.0#################", Nfi);
                             if (!text.Contains("."))
                                 text += ".0";
-                            textBox.Text = ((double)fields[j].GetValue(currentObject)).ToString();
+                            textBox.Text = text;
                             textBox.PreviewTextInput += Double_PreviewTextInput;
                             textBox.KeyDown += Float_KeyDown;
                             label.ToolTip = "double (64-bit decimal)";
@@ -218,7 +213,7 @@ namespace TOKElfTool
                 }
 
                 expander.Content = grid;
-                objectTabPanel.Children.Add(expander);
+                ObjectTabPanel.Children.Add(expander);
             }
         }
 
@@ -237,7 +232,7 @@ namespace TOKElfTool
             }
         }
 
-        private bool enterHandled = false;
+        private bool enterHandled;
         private void Int_KeyDown(object sender, KeyEventArgs e)
         {
             TextBox textBox = (TextBox)e.OriginalSource;
@@ -246,7 +241,7 @@ namespace TOKElfTool
                 if (enterHandled == false)
                 {
                     e.Handled = true;
-                    if (intRegex.IsMatch(((TextBox)e.Source).Text))
+                    if (IntRegex.IsMatch(((TextBox)e.Source).Text))
                     {
                         long.TryParse(textBox.Text, NumberStyles.Integer | NumberStyles.AllowExponent, new CultureInfo("en-US"), out long parsed);
                         textBox.Text = parsed.ToString();
@@ -273,11 +268,11 @@ namespace TOKElfTool
                 if (enterHandled == false)
                 {
                     e.Handled = true;
-                    if (strictFloatRegex.IsMatch(((TextBox)e.Source).Text))
+                    if (StrictFloatRegex.IsMatch(((TextBox)e.Source).Text))
                     {
                         double.TryParse(textBox.Text, NumberStyles.Float, new CultureInfo("en-US"), out double parsed);
-                        MessageBox.Show(parsed.ToString(nfi));
-                        textBox.Text = parsed.ToString("0.0#################", nfi) + 'f';
+                        MessageBox.Show(parsed.ToString(Nfi));
+                        textBox.Text = parsed.ToString("0.0#################", Nfi) + 'f';
                     }
                     else
                     {
@@ -290,18 +285,18 @@ namespace TOKElfTool
             }
         }
 
-        private static readonly Regex intRegex = new Regex("^[0-9]+$");
+        private static readonly Regex IntRegex = new Regex("^[0-9]+$");
         private static void Int_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !intRegex.IsMatch(e.Text);
+            e.Handled = !IntRegex.IsMatch(e.Text);
         }
-        private static readonly Regex floatRegex = new Regex(@"^[0-9]*\.*[0-9]*$");
-        private static readonly Regex strictFloatRegex = new Regex(@"^[0-9]*\.*[0-9]*f?$");
+        private static readonly Regex FloatRegex = new Regex(@"^[0-9]*\.*[0-9]*$");
+        private static readonly Regex StrictFloatRegex = new Regex(@"^[0-9]*\.*[0-9]*f?$");
         private static void Float_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             TextBox textBox = (TextBox)e.OriginalSource;
             string text = textBox.Text;
-            e.Handled = !floatRegex.IsMatch(e.Text);
+            e.Handled = !FloatRegex.IsMatch(e.Text);
             if ((!text.EndsWith("f")) && text[text.Length - 2] != 'f')
             {
                 ((TextBox)e.OriginalSource).AppendText("f");
@@ -309,10 +304,10 @@ namespace TOKElfTool
         }
         private static void Double_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !floatRegex.IsMatch(e.Text);
+            e.Handled = !FloatRegex.IsMatch(e.Text);
         }
 
-        private List<string> recentlyOpenedFiles = new List<string>();
+        private readonly List<string> recentlyOpenedFiles = new List<string>();
 
         private void AddRecentlyOpened(string filepath)
         {
@@ -320,7 +315,7 @@ namespace TOKElfTool
             recentlyOpenedFiles.Add(filepath);
 
             // Save to file
-            File.WriteAllText(historyPath, string.Join("\n", recentlyOpenedFiles));
+            File.WriteAllText(HistoryPath, string.Join("\n", recentlyOpenedFiles));
 
             RegenerateRecentlyOpened();
         }
@@ -328,7 +323,7 @@ namespace TOKElfTool
         private void RegenerateRecentlyOpened()
         {
             // Regenerate menu item
-            openRecentItem.Items.Clear();
+            OpenRecentItem.Items.Clear();
             for (int i = recentlyOpenedFiles.Count - 1; i >= 0; i--)
             {
                 string name = recentlyOpenedFiles[i];
@@ -337,7 +332,7 @@ namespace TOKElfTool
                 {
                     Header = name,
                 };
-                openRecentItem.Items.Add(menuItem);
+                OpenRecentItem.Items.Add(menuItem);
             }
         }
 
@@ -359,9 +354,9 @@ namespace TOKElfTool
         private void RemoveAllObjects()
         {
             // Reverse loop that ignores first element (Add/remove controls)
-            for (int i = objectTabPanel.Children.Count - 1; i >= 1; i--)
+            for (int i = ObjectTabPanel.Children.Count - 1; i >= 1; i--)
             {
-                objectTabPanel.Children.RemoveAt(i);
+                ObjectTabPanel.Children.RemoveAt(i);
             }
         }
 
@@ -371,6 +366,8 @@ namespace TOKElfTool
 
         private void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            loadedDataType = GameDataType.NPC;
+
             OpenFileDialog dialog = new OpenFileDialog
             {
                 FileName = "dispos_Npc.elf",
@@ -383,7 +380,7 @@ namespace TOKElfTool
                 RemoveAllObjects();
                 loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
                 InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC");
-                savePath = null;
+                fileSavePath = null;
                 containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
                 AddRecentlyOpened(dialog.FileName);
             }
@@ -411,12 +408,12 @@ namespace TOKElfTool
             e.CanExecute = loadedBinary != null;
         }
 
-        private string savePath = null;
+        private string fileSavePath;
         private readonly Compressor compressor = new Compressor();
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List<Element<NPC>> objects = CollectObjects(objectTabPanel);
+            List<Element<NPC>> objects = CollectObjects(ObjectTabPanel);
 
             #region Logging
             Trace.WriteLine("NPCs:");
@@ -432,12 +429,12 @@ namespace TOKElfTool
 
             byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
 
-            savePath = ShowOptionalSaveDialog(savePath);
-            if (savePath != null)
+            fileSavePath = ShowOptionalSaveDialog(fileSavePath);
+            if (fileSavePath != null)
             {
                 try
                 {
-                    File.WriteAllBytes(savePath, savePath.EndsWith(".zst") || savePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                    File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                 }
                 catch (Exception exception)
                 {
@@ -453,7 +450,7 @@ namespace TOKElfTool
 
         private void CommandBinding_SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List<Element<NPC>> objects = CollectObjects(objectTabPanel);
+            List<Element<NPC>> objects = CollectObjects(ObjectTabPanel);
 
             #region Logging
             Trace.WriteLine("NPCs:");
@@ -469,12 +466,12 @@ namespace TOKElfTool
 
             byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
 
-            savePath = ShowOptionalSaveDialog(null);
-            if (savePath != null)
+            fileSavePath = ShowOptionalSaveDialog(null);
+            if (fileSavePath != null)
             {
                 try
                 {
-                    File.WriteAllBytes(savePath, savePath.EndsWith(".zst") || savePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                    File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                 }
                 catch (Exception exception)
                 {
@@ -484,17 +481,17 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<NPC>> CollectObjects(StackPanel objectTabPanel)
+        private List<Element<NPC>> CollectObjects(Panel objectPanel)
         {
             List<Element<NPC>> objects = new List<Element<NPC>>();
 
-            // go through all npc's
-            for (int i = 0; i < objectTabPanel.Children.Count; i++)
+            // go through all NPC's
+            for (int i = 0; i < objectPanel.Children.Count; i++)
             {
                 if (i == 0)
                     continue;
 
-                Expander expander = (Expander)objectTabPanel.Children[i];
+                Expander expander = (Expander)objectPanel.Children[i];
                 Grid grid = (Grid)expander.Content;
 
                 Trace.WriteLine(expander);
@@ -507,7 +504,7 @@ namespace TOKElfTool
 
                 for (int j = 0; j < grid.Children.Count; j++)
                 {
-                    var child = grid.Children[j];
+                    UIElement child = grid.Children[j];
 
                     if (j < 2)
                         continue;
@@ -527,10 +524,10 @@ namespace TOKElfTool
                         }
                         else
                         {
-                            // textbox
+                            // TextBox
                             TextBox textBox = (TextBox)child;
                             string text = textBox.Text;
-                            switch (propertyType.Name)
+                            switch (propertyType?.Name)
                             {
                                 case "String":
                                     propertyValue = text.StartsWith("\"") && text.EndsWith("\"") ? text.Substring(1, text.Length - 2) : null;
@@ -556,7 +553,7 @@ namespace TOKElfTool
                                     propertyValue = propertyValueDouble;
                                     break;
                             }
-                            Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (original {text})");
+                            Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue} (original {text})");
                         }
                         typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
                     }

@@ -1,4 +1,4 @@
-<Window x:Class="TOKElfTool.MainWindow"
+﻿<Window x:Class="TOKElfTool.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -33,7 +33,7 @@
 
                 <Separator />
                 <MenuItem Command="Open" Header="Open..." />
-                <MenuItem x:Name="openRecentItem" Header="Open _Recent">
+                <MenuItem x:Name="OpenRecentItem" Header="Open _Recent">
                     <MenuItem Header="None" IsEnabled="False" />
                 </MenuItem>
 
@@ -80,12 +80,12 @@
             </MenuItem>
         </Menu>
 
-        <Label x:Name="emptyLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Open a file to edit it</Label>
+        <Label x:Name="EmptyLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Open a file to edit it</Label>
         
-        <ScrollViewer x:Name="scrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="ScrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
             <TabControl Margin="10">
-                <TabItem x:Name="objectTab" Header="Object Data">
-                    <StackPanel x:Name="objectTabPanel">
+                <TabItem Header="Object Data">
+                    <StackPanel x:Name="ObjectTabPanel">
                         <StackPanel Margin="5" Orientation="Horizontal">
                             <Button Margin="0 0 5 0">Add Object</Button>
                             <Button Margin="0 0 5 0">Remove All Objects</Button>
@@ -159,7 +159,7 @@
                     </StackPanel>
                 </TabItem>
 
-                <TabItem x:Name="binTab" Header="Binary Elf Data">
+                <TabItem x:Name="BinTab" Header="Binary Elf Data">
                     <Label HorizontalAlignment="Center">WIP</Label>
                 </TabItem>
             </TabControl>
