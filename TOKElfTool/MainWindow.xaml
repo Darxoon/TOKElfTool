@@ -92,7 +92,7 @@
                         </StackPanel>
 
 
-                        <!-- <Expander Header="Object 1">
+                         <!-- <Expander Header="Object 1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"></ColumnDefinition>
@@ -148,14 +148,14 @@
                                 <Button Grid.Column="0" Grid.Row="0" Margin="5">Remove</Button>
                                 <Button Grid.Column="1" Grid.Row="0" Margin="5">Duplicate</Button>
 
-                                <Label Grid.Row="1" Grid.Column="0">Hello</Label>
-                                <TextBox VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Height="26">Hello2</TextBox>
-                                <Label Grid.Row="2" Grid.Column="0" Margin="0 0 0 5">Hello</Label>
-                                <TextBox VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="0 0 0 5">Hello2</TextBox>
-                                <Label Grid.Row="3" Grid.Column="0" Margin="0 0 0 5">Hello</Label>
-                                <CheckBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">Value</CheckBox>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Padding="2 4 0 2">Hello</TextBlock>
+                                <TextBox VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Padding="2 4 0 2">Hello2</TextBox>
+                                <TextBlock Background="#E6E6E6" Grid.Row="2" Grid.Column="0" Margin="0 0 0 5" Padding="2 4 0 2">Hello</TextBlock>
+                                <TextBox VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="0 0 0 5" Padding="2 4 0 2">Hello2</TextBox>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Margin="0 0 0 5" Padding="2 4 0 2">Hello</TextBlock>
+                                <CheckBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Margin="0 3 0 8">Value</CheckBox>
                             </Grid>
-                        </Expander> -->
+                        </Expander> --> 
                     </StackPanel>
                 </TabItem>
 
