@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
@@ -738,6 +738,8 @@ namespace TOKElfTool
         private void Button_RemoveAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
+            if (ObjectTabPanel.Children.Count == 0)
+                return;
             bool? result = MyMessageBox.Show(this, "Are you sure you want to remove all objects?", "TOK ELF Editor",
                 MessageBoxResult.Yes);
             if (result == true)
