@@ -35,12 +35,12 @@ This program can:
  * Supports these data types: NPC (more will come later)
  * Modify them and save them again
  * Compress using ZSTD
+ * Standalone ZSTD tools
+ * Other GUI stuff, such as Open Recent
 
 Features that will be coming:
  * Decompressing ZSTD files
  * Hex Editor
- * Other GUI stuff, such as Open Recent
- * Standalone ZSTD tools
 
 ## Contact
 To report bugs or give suggestions, you can open an Issue here on GitHub. You can also contact me privately on Discord (my tag is Darxoon#2884).
