@@ -98,9 +98,7 @@ namespace ElfLib
                 if (npcField.FieldType == typeof(string))
                 {
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(rawNpc));
-                    Trace.WriteLine(str, npcField.Name);
                     npcField.SetValue(npc, str);
-                    Trace.WriteLine(npcField.GetValue(npc));
                 }
                 else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
                 {

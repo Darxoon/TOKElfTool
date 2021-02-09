@@ -119,7 +119,6 @@ namespace TOKElfTool
                 {
                     string name = fields[j].Name;
 
-                    Trace.WriteLine(name);
                     TextBlock label = new TextBlock
                     {
                         Text = name,
@@ -429,7 +428,6 @@ namespace TOKElfTool
                 {
                     byte[] input = File.ReadAllBytes(dialog.FileName);
                     byte[] decompessed = decompressor.Unwrap(input);
-                    File.WriteAllBytes(dialog.FileName + ".dec", decompessed);
                     MemoryStream memoryStream = new MemoryStream(decompessed)
                     {
                         Position = 0,
