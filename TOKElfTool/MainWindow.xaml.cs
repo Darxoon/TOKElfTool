@@ -9,8 +9,6 @@ using Microsoft.Win32;
 using ElfLib;
 using System.Text.RegularExpressions;
 using System.Globalization;
-using stStackPanel = AutoGrid.StackPanel;
-using stAutoGrid = AutoGrid.AutoGrid;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
