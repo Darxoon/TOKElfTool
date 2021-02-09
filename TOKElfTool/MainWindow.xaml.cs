@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
@@ -425,7 +425,21 @@ namespace TOKElfTool
             if (result == true)
             {
                 RemoveAllObjects();
-                loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
+                if (dialog.FilterIndex == 2)
+                {
+                    byte[] input = File.ReadAllBytes(dialog.FileName);
+                    byte[] decompessed = decompressor.Unwrap(input);
+                    File.WriteAllBytes(dialog.FileName + ".dec", decompessed);
+                    MemoryStream memoryStream = new MemoryStream(decompessed)
+                    {
+                        Position = 0,
+                    };
+                    BinaryReader reader = new BinaryReader(memoryStream);
+
+                    loadedBinary = ElfParser.ParseFile<NPC>(reader, GameDataType.NPC);
+                }
+                else
+                    loadedBinary = ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC);
                 InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC");
                 fileSavePath = null;
                 containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
@@ -753,8 +767,8 @@ namespace TOKElfTool
         {
             Expander clone = null;
             e.Handled = true;
-            await Dispatcher.InvokeAsync(() => clone = (Expander)(ObjectTabPanel.Children.Count > 1 
-                ? ObjectTabPanel.Children.Last() 
+            await Dispatcher.InvokeAsync(() => clone = (Expander)(ObjectTabPanel.Children.Count > 1
+                ? ObjectTabPanel.Children.Last()
                 : duplicateExpander).XamlClone());
             clone.IsExpanded = true;
             ObjectTabPanel.Children.Add(clone);

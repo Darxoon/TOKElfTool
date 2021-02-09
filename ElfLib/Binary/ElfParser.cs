@@ -26,6 +26,14 @@ namespace ElfLib
             FileStream input = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.Read, (int)new FileInfo(filepath).Length);
             BinaryReader reader = new BinaryReader(input);
 
+            return ParseFile<T>(reader, dataType, verbose);
+
+        }
+
+        public static ElfBinary<T> ParseFile<T>(BinaryReader reader, GameDataType dataType, bool verbose = true)
+        {
+            Stream input = reader.BaseStream;
+
             // get constants from header
             input.Position = 0x28;
             int sectionHeaderTableOffset = (int)reader.ReadInt64();
@@ -93,6 +101,7 @@ namespace ElfLib
 
             return new ElfBinary<T>(sections, data.Select(value => new Element<T>(value)).ToList());
         }
+
 
         private static List<Section> ParseSectionHeaderTable(BinaryReader reader, int sectionAmount)
         {
