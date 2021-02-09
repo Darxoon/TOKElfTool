@@ -97,6 +97,8 @@ namespace TOKElfTool
                 Grid.SetColumn(removeButton, 0);
                 Grid.SetRow(removeButton, 0);
 
+                removeButton.Click += RemoveButton_OnClick;
+
                 grid.Children.Add(removeButton);
 
                 Button duplicateButton = new Button
@@ -107,6 +109,8 @@ namespace TOKElfTool
                 };
                 Grid.SetColumn(duplicateButton, 1);
                 Grid.SetRow(duplicateButton, 0);
+
+                duplicateButton.Click += DuplicateButton_OnClick;
 
                 grid.Children.Add(duplicateButton);
 
@@ -215,6 +219,43 @@ namespace TOKElfTool
 
                 expander.Content = grid;
                 ObjectTabPanel.Children.Add(expander);
+            }
+        }
+
+        private void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Button duplicateButton = (Button)sender;
+            Grid grid = (Grid)duplicateButton.Parent;
+            Expander originalExpander = (Expander)grid.Parent;
+
+            Expander clone = originalExpander.XamlClone();
+            clone.IsExpanded = false;
+            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(originalExpander), clone);
+
+            // Fix expander names
+            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            {
+                Expander expander = (Expander)ObjectTabPanel.Children[i];
+                expander.Header = $"{loadedDataType} {i - 1}";
+            }
+        }
+
+        /// <summary>
+        /// This field is for when it wants to add an expander, i.e. duplicate one, but there is no expander left
+        /// </summary>
+        private Expander duplicateExpander;
+
+        private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Button duplicateButton = (Button)sender;
+            Grid grid = (Grid)duplicateButton.Parent;
+            Expander expander = (Expander)grid.Parent;
+
+            bool? result = MyMessageBox.Show(this, $"Are you sure you want to delete this {loadedDataType}?", "TOK ELF Editor", MessageBoxResult.Yes);
+            if (result == true)
+            {
+                ObjectTabPanel.Children.Remove(expander);
+                duplicateExpander = expander;
             }
         }
 
