@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ZstdNet;
 
 namespace TOKElfTool
@@ -222,17 +223,23 @@ namespace TOKElfTool
             }
         }
 
-        private void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
+        private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
         {
             Button duplicateButton = (Button)sender;
             Grid grid = (Grid)duplicateButton.Parent;
             Expander originalExpander = (Expander)grid.Parent;
 
-            Expander clone = originalExpander.XamlClone();
+            Expander clone = null;
+            await Dispatcher.InvokeAsync(() => clone = originalExpander.XamlClone());
+
             clone.IsExpanded = false;
             ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(originalExpander), clone);
 
-            // Fix expander names
+            FixExpanderNames();
+        }
+
+        private void FixExpanderNames()
+        {
             for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
             {
                 Expander expander = (Expander)ObjectTabPanel.Children[i];
@@ -736,7 +743,22 @@ namespace TOKElfTool
             bool? result = MyMessageBox.Show(this, "Are you sure you want to remove all objects?", "TOK ELF Editor",
                 MessageBoxResult.Yes);
             if (result == true)
+            {
+                duplicateExpander = (Expander)ObjectTabPanel.Children.Last();
                 RemoveAllObjects();
+            }
+        }
+
+        private async void Button_AddObject_OnClick(object sender, RoutedEventArgs e)
+        {
+            Expander clone = null;
+            e.Handled = true;
+            await Dispatcher.InvokeAsync(() => clone = (Expander)(ObjectTabPanel.Children.Count > 1 
+                ? ObjectTabPanel.Children.Last() 
+                : duplicateExpander).XamlClone());
+            clone.IsExpanded = true;
+            ObjectTabPanel.Children.Add(clone);
+            FixExpanderNames();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,9 @@ namespace TOKElfTool
                 return (T)clone;
             else
                 return null;
-        }   
+        }
+
+        public static T Last<T>(this IList<T> source) => source[source.Count - 1];
+        public static object Last(this IList source) => source[source.Count - 1];
     }
 }
