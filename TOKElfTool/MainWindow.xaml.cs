@@ -617,8 +617,8 @@ namespace TOKElfTool
                 {
                     FileName = filename.EndsWith(".zst")
                         ? filename.Substring(0, filename.Length - ".zst".Length)
-                        : filename.EndsWith(".zstd") 
-                            ? filename.Substring(0, filename.Length - ".zstd".Length) 
+                        : filename.EndsWith(".zstd")
+                            ? filename.Substring(0, filename.Length - ".zstd".Length)
                             : filename + ".dec",
                     DefaultExt = "",
                     Filter = "All Files (*.*)|*",
@@ -687,6 +687,15 @@ namespace TOKElfTool
                     }
                 }
             }
+        }
+
+        private void Button_RemoveAllObjects_OnClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            bool? result = MyMessageBox.Show(this, "Are you sure you want to remove all objects?", "TOK ELF Editor",
+                MessageBoxResult.Yes);
+            if (result == true)
+                RemoveAllObjects();
         }
     }
 }
