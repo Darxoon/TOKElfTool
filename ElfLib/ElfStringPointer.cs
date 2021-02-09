@@ -21,9 +21,9 @@ namespace ElfLib
             return $"str->0x{pointer:X2}";
         }
 
-        internal static ElfStringPointer ResolveRelocation(List<SectionRela> relas, long offset)
+        internal static ElfStringPointer ResolveRelocation(List<SectionRela> relas, long offset, long baseOffset = 0)
         {
-            SectionRela currentRela = relas.Find(x => x.Offset == offset);
+            SectionRela currentRela = relas.Find(x => x.Offset == offset + baseOffset);
             return currentRela != null ? new ElfStringPointer(currentRela.Addend) : NULL;
         }
 

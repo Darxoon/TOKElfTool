@@ -161,7 +161,7 @@ namespace ElfLib
                 case GameDataType.RawNPC:
                     while (stream.Position != stream.Length)
                     {
-                        objects.Add(RawNPC.ReadBinaryData(reader, relas));
+                        objects.Add(RawNPC.ReadBinaryData(reader, relas, reader.BaseStream.Position));
                     }
                     break;
                 default:

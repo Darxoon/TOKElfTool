@@ -86,16 +86,16 @@ namespace ElfLib
             return $"RawNPC{{{string.Join(", ", values.Select((key) => $"{key.Key}: {key.Value}").Take(5))} + {Math.Max(values.Count - 5, 0)} more";
         }
 
-        internal static RawNPC ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas)
+        internal static RawNPC ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
         {
             RawNPC rawNPC = Util.FromBinaryReader<RawNPC>(binaryReader);
-            rawNPC.level_str = ElfStringPointer.ResolveRelocation(relas, 0);
-            rawNPC.obj_str = ElfStringPointer.ResolveRelocation(relas, 8);
-            rawNPC.shape_str = ElfStringPointer.ResolveRelocation(relas, 16);
-            rawNPC.enemy_encounter_str = ElfStringPointer.ResolveRelocation(relas, 48);
-            rawNPC.init_function_str = ElfStringPointer.ResolveRelocation(relas, 200);
-            rawNPC.talk_function_str = ElfStringPointer.ResolveRelocation(relas, 224);
-            rawNPC.action_function_str = ElfStringPointer.ResolveRelocation(relas, 232);
+            rawNPC.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
+            rawNPC.obj_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
+            rawNPC.shape_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
+            rawNPC.enemy_encounter_str = ElfStringPointer.ResolveRelocation(relas, 48, baseOffset);
+            rawNPC.init_function_str = ElfStringPointer.ResolveRelocation(relas, 200, baseOffset);
+            rawNPC.talk_function_str = ElfStringPointer.ResolveRelocation(relas, 224, baseOffset);
+            rawNPC.action_function_str = ElfStringPointer.ResolveRelocation(relas, 232, baseOffset);
             return rawNPC;
         }
 
