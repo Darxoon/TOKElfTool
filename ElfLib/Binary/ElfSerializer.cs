@@ -50,7 +50,7 @@ namespace ElfLib
                 bool needsPadding = section.AddrAlign > 1;
                 if (needsPadding)
                 {
-                    long padding = (section.AddrAlign - (outputStream.Position % section.AddrAlign)) % section.AddrAlign;
+                    long padding = Util.CalculatePadding(outputStream.Position, section.AddrAlign);
                     writer.Write(new byte[padding]);
                     Trace.WriteLine($"Padding section {section.Name,16} by {padding} amount of bytes, to pos 0x{outputStream.Position:X4} length 0x{section.Content.Length:X2}");
                 }
@@ -62,7 +62,7 @@ namespace ElfLib
 
             // Update section header pointer
             {
-                long padding = (8 - (outputStream.Position % 8)) % 8;
+                long padding = Util.CalculatePadding(outputStream.Position, 8);
                 writer.Write(new byte[padding]);
 
                 long tempPosition = outputStream.Position;
@@ -74,7 +74,7 @@ namespace ElfLib
             // Write section header table
             foreach (Section section in updatedSections)
             {
-                long padding = (8 - (outputStream.Position % 8)) % 8;
+                long padding = Util.CalculatePadding(outputStream.Position, 8);
                 writer.Write(new byte[padding]);
 
                 section.ToBinaryWriter(writer);

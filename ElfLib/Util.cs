@@ -53,5 +53,10 @@ namespace ElfLib
 
             writer.Write(arr);
         }
+
+        public static long CalculatePadding(long position, long alignment) =>
+            (alignment - position % alignment) % alignment;
+        public static long CalculatePadding(long position, int alignment) =>
+            (alignment - position % alignment) % alignment;
     }
 }
