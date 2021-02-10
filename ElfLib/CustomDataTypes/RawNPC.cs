@@ -111,7 +111,7 @@ namespace ElfLib
         /// <param name="stringSectionTable">The table where the string pointers are stored</param>
         /// <param name="stringRelocTable">The table it adds the string pointer references to, for relocation. Can be left as null</param>
         /// <returns>The output RawNPC</returns>
-        public static RawNPC FromNPC(NPC npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null)
+        public static RawNPC FromNPC(NPC npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
         {
             object rawNPC = new RawNPC();
 
@@ -126,7 +126,7 @@ namespace ElfLib
                     string str = (string)npcField.GetValue(npc);
                     ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
                     if (stringRelocTable != null)
-                        stringRelocTable.Add(rawNpcField.GetFieldOffset(), stringPointer);
+                        stringRelocTable.Add(rawNpcField.GetFieldOffset() + baseOffset, stringPointer);
                     else
                         rawNpcField.SetValue(rawNPC, stringPointer);
                 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ElfLib
@@ -190,12 +191,14 @@ namespace ElfLib
             stringRelocTable = new SortedDictionary<long, ElfStringPointer>();
 
             // Convert objects to raw objects and serialize them
+            long dataSectionPosition = 0;
             switch (dataType)
             {
                 case GameDataType.NPC:
                     foreach (Element<T> element in data)
                     {
-                        rawObjects.Add(RawNPC.FromNPC((NPC)(object)element.value, stringDeclarationMap, stringRelocTable));
+                        rawObjects.Add(RawNPC.FromNPC((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
                     }
                     break;
                 default:
