@@ -423,6 +423,7 @@ namespace TOKElfTool
             bool? result = dialog.ShowDialog(window);
             if (result == true)
             {
+                Title = $"{dialog.FileName} - TOK ELF Editor";
                 RemoveAllObjects();
                 if (dialog.FilterIndex == 2)
                 {
