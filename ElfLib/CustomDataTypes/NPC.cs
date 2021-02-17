@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using ElfLib.CustomDataTypes.NPC;
 
 namespace ElfLib
 {
@@ -17,7 +18,7 @@ namespace ElfLib
         public string shape_str;
         public Vector3 pos;
         public float rotation;
-        public int is_enemy_flags;
+        public IsEnemyFlags is_enemy_flags;
         public int field_0x2c;
         public string enemy_encounter_str;
         public int field_0x38;
@@ -100,6 +101,10 @@ namespace ElfLib
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(rawNpc));
                     npcField.SetValue(npc, str);
                 }
+                else if (npcField.FieldType.BaseType == typeof(Enum))
+                {
+                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc));
+                }
                 else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
                 {
                     npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc) > 0);
@@ -109,7 +114,7 @@ namespace ElfLib
                     npcField.SetValue(npc, rawNpcField.GetValue(rawNpc));
                 }
                 else
-                    throw new Exception($"Internal error: NPC field {npcField} and RawNPC field {rawNpcField} types don't match");
+                    throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
             }
             Trace.Unindent();
 

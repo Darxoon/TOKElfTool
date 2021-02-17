@@ -130,6 +130,10 @@ namespace ElfLib
                     else
                         rawNpcField.SetValue(rawNPC, stringPointer);
                 }
+                else if (npcField.FieldType.BaseType == typeof(Enum))
+                {
+                    rawNpcField.SetValue(rawNPC, npcField.GetValue(npc));
+                }
                 else if (npcField.FieldType == typeof(bool))
                 {
                     rawNpcField.SetValue(rawNPC, (bool)npcField.GetValue(npc) ? 1 : 0);

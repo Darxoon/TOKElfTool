@@ -14,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ElfLib.CustomDataTypes.NPC;
 using ZstdNet;
 
 namespace TOKElfTool
@@ -70,154 +71,198 @@ namespace TOKElfTool
             EmptyLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
 
-            for (int objectIndex = 0; objectIndex < objects.Length; objectIndex++)
+            for (int i = 0; i < objects.Length; i++)
             {
-                object currentObject = objects[objectIndex].value;
+                object currentObject = objects[i].value;
 
-                Expander expander = new Expander
-                {
-                    Header = $"{objectName} {objectIndex}"
-                };
-
-                Grid grid = new Grid();
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
-                grid.ColumnDefinitions.Add(new ColumnDefinition());
-                for (int j = 0; j < 100; j++)
-                {
-                    grid.RowDefinitions.Add(new RowDefinition());
-                }
-
-                Button removeButton = new Button
-                {
-                    Margin = new Thickness(5),
-                    Content = "Remove",
-                    Tag = objectIndex
-                };
-                Grid.SetColumn(removeButton, 0);
-                Grid.SetRow(removeButton, 0);
-
-                removeButton.Click += RemoveButton_OnClick;
-
-                grid.Children.Add(removeButton);
-
-                Button duplicateButton = new Button
-                {
-                    Margin = new Thickness(5),
-                    Content = "Duplicate",
-                    Tag = objectIndex
-                };
-                Grid.SetColumn(duplicateButton, 1);
-                Grid.SetRow(duplicateButton, 0);
-
-                duplicateButton.Click += DuplicateButton_OnClick;
-
-                grid.Children.Add(duplicateButton);
-
-                Type objectType = objects[0].value.GetType();
-                FieldInfo[] fields = objectType.GetFields();
-                for (int j = 0; j < fields.Length; j++)
-                {
-                    string name = fields[j].Name;
-
-                    TextBlock label = new TextBlock
-                    {
-                        Text = name,
-                        Margin = new Thickness(0, 0, 0, 5),
-                        FontFamily = ConsolasFontFamily,
-                        Padding = new Thickness(2, 4, 0, 2),
-                    };
-                    Grid.SetColumn(label, 0);
-                    Grid.SetRow(label, j + 1);
-                    grid.Children.Add(label);
-                    if (j % 2 == 1)
-                        label.Background = new SolidColorBrush(Color.FromRgb(230, 230, 230));
-
-                    Type fieldType = fields[j].FieldType;
-
-                    if (fieldType == typeof(bool))
-                    {
-                        CheckBox checkBox = new CheckBox
-                        {
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Margin = new Thickness(0, 03, 0, 8),
-                            ToolTip = "boolean",
-                            //Padding = new Thickness(0, 3, 0, 3),
-                            //Content = "Value",
-                        };
-                        Grid.SetColumn(checkBox, 1);
-                        Grid.SetRow(checkBox, j + 1);
-                        grid.Children.Add(checkBox);
-                        label.ToolTip = "boolean";
-                    }
-                    else
-                    {
-                        TextBox textBox = new TextBox
-                        {
-                            VerticalContentAlignment = VerticalAlignment.Center,
-                            Margin = new Thickness(0, 0, 0, 5),
-                            Padding = new Thickness(0, 3, 0, 3),
-                            //Height = 26,
-                            FontFamily = ConsolasFontFamily,
-                        };
-                        Grid.SetColumn(textBox, 1);
-                        Grid.SetRow(textBox, j + 1);
-                        grid.Children.Add(textBox);
-                        if (fieldType == typeof(string))
-                        {
-                            string value = (string)fields[j].GetValue(currentObject);
-                            textBox.Text = value != null ? $"\"{value}\"" : "null";
-                            label.ToolTip = "String";
-                            textBox.ToolTip = "String";
-                        }
-                        else if (fieldType == typeof(Vector3))
-                        {
-                            textBox.Text = ((Vector3)fields[j].GetValue(currentObject)).ToString();
-                            textBox.KeyDown += Vector3_KeyDown;
-                            label.ToolTip = "Vector3";
-                            textBox.ToolTip = "Vector3";
-                        }
-                        else if (fieldType == typeof(int))
-                        {
-                            textBox.Text = ((int)fields[j].GetValue(currentObject)).ToString();
-                            textBox.PreviewTextInput += Int_PreviewTextInput;
-                            textBox.KeyDown += Int_KeyDown;
-                            label.ToolTip = "32-bit integer";
-                            textBox.ToolTip = "32-bit integer";
-                        }
-                        else if (fieldType == typeof(long))
-                        {
-                            textBox.Text = ((long)fields[j].GetValue(currentObject)).ToString();
-                            textBox.PreviewTextInput += Int_PreviewTextInput;
-                            textBox.KeyDown += Int_KeyDown;
-                            label.ToolTip = "64-bit integer";
-                            textBox.ToolTip = "64-bit integer";
-                        }
-                        else if (fieldType == typeof(float))
-                        {
-                            string text = ((float)fields[j].GetValue(currentObject)).ToString("0.0#################", Nfi) + 'f';
-                            textBox.Text = text;
-                            textBox.PreviewTextInput += Float_PreviewTextInput;
-                            textBox.KeyDown += Float_KeyDown;
-                            label.ToolTip = "float (32-bit decimal)";
-                            textBox.ToolTip = "float (32-bit decimal)";
-                        }
-                        else if (fieldType == typeof(double))
-                        {
-                            string text = ((double)fields[j].GetValue(currentObject)).ToString("0.0#################", Nfi);
-                            if (!text.Contains("."))
-                                text += ".0";
-                            textBox.Text = text;
-                            textBox.PreviewTextInput += Double_PreviewTextInput;
-                            textBox.KeyDown += Float_KeyDown;
-                            label.ToolTip = "double (64-bit decimal)";
-                            textBox.ToolTip = "double (64-bit decimal)";
-                        }
-                    }
-                }
-
-                expander.Content = grid;
-                ObjectTabPanel.Children.Add(expander);
+                ObjectTabPanel.Children.Add(CreateObjectControl(currentObject, objectName, i));
             }
+        }
+
+        private Expander CreateObjectControl(object currentObject, string objectName, int objectIndex)
+        {
+            Expander expander = new Expander
+            {
+                Header = $"{objectName} {objectIndex}",
+            };
+
+            // grid
+            Grid grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            for (int j = 0; j < 100; j++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition());
+            }
+
+            // removeButton
+            Button removeButton = new Button
+            {
+                Margin = new Thickness(5),
+                Content = "Remove",
+                Tag = objectIndex,
+            };
+            Grid.SetColumn(removeButton, 0);
+            Grid.SetRow(removeButton, 0);
+
+            removeButton.Click += RemoveButton_OnClick;
+
+            grid.Children.Add(removeButton);
+
+            // duplicateButton
+            Button duplicateButton = new Button
+            {
+                Margin = new Thickness(5),
+                Content = "Duplicate",
+                Tag = objectIndex
+            };
+            Grid.SetColumn(duplicateButton, 1);
+            Grid.SetRow(duplicateButton, 0);
+
+            duplicateButton.Click += DuplicateButton_OnClick;
+
+            grid.Children.Add(duplicateButton);
+
+            // fields
+            Type objectType = currentObject.GetType();
+            FieldInfo[] fields = objectType.GetFields();
+            for (int i = 0; i < fields.Length; i++)
+            {
+                AddFieldControls(currentObject, fields[i], grid, i);
+            }
+
+            expander.Content = grid;
+
+            return expander;
+        }
+
+        private void AddFieldControls(object currentObject, FieldInfo field, Grid grid, int fieldIndex)
+        {
+            string name = field.Name;
+
+            TextBlock label = new TextBlock
+            {
+                Text = name,
+                Margin = new Thickness(0, 0, 0, 5),
+                FontFamily = ConsolasFontFamily,
+                Padding = new Thickness(2, 4, 0, 2),
+            };
+            Grid.SetColumn(label, 0);
+            Grid.SetRow(label, fieldIndex + 1);
+            grid.Children.Add(label);
+            if (fieldIndex % 2 == 1)
+                label.Background = new SolidColorBrush(Color.FromRgb(230, 230, 230));
+
+            Type fieldType = field.FieldType;
+
+            // checkbox
+            if (fieldType == typeof(bool))
+            {
+                CheckBox checkBox = new CheckBox
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 03, 0, 8),
+                    ToolTip = "boolean",
+                    //Padding = new Thickness(0, 3, 0, 3),
+                    //Content = "Value",
+                };
+                Grid.SetColumn(checkBox, 1);
+                Grid.SetRow(checkBox, fieldIndex + 1);
+                grid.Children.Add(checkBox);
+                label.ToolTip = "boolean";
+
+                return;
+            }
+
+
+            if (fieldType.BaseType == typeof(Enum))
+            {
+                ComboBox comboBox = new ComboBox
+                {
+                    Margin = new Thickness(0, 0, 0, 5),
+                };
+                IEnumerable<FieldInfo> enumFields = fieldType.GetFields()
+                    .Where(value => value.IsStatic);
+
+                foreach (FieldInfo enumField in enumFields)
+                {
+                    EnumMetadataAttribute[] attributes = enumField.GetCustomAttributes(typeof(EnumMetadataAttribute), false).Cast<EnumMetadataAttribute>().ToArray();
+                    comboBox.Items.Add(attributes.Length > 0 ? attributes[0].DisplayName : enumField.Name);
+                }
+
+                Trace.WriteLine(Array.IndexOf(Enum.GetValues(fieldType), field.GetValue(currentObject)));
+                comboBox.SelectedIndex = Array.IndexOf(Enum.GetValues(fieldType), field.GetValue(currentObject));
+
+                Grid.SetColumn(comboBox, 1);
+                Grid.SetRow(comboBox, fieldIndex + 1);
+                grid.Children.Add(comboBox);
+                label.ToolTip = fieldType.Name;
+
+                return;
+            }
+
+
+            // TextBox
+            TextBox textBox = new TextBox
+            {
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 5),
+                Padding = new Thickness(0, 3, 0, 3),
+                //Height = 26,
+                FontFamily = ConsolasFontFamily,
+            };
+            Grid.SetColumn(textBox, 1);
+            Grid.SetRow(textBox, fieldIndex + 1);
+            grid.Children.Add(textBox);
+
+            switch (fieldType.Name)
+            {
+                case "String":
+                    string value = (string)field.GetValue(currentObject);
+                    textBox.Text = value != null ? $"\"{value}\"" : "null";
+                    label.ToolTip = "String";
+                    textBox.ToolTip = "String";
+                    break;
+                case "Vector3":
+                    textBox.Text = ((Vector3)field.GetValue(currentObject)).ToString();
+                    textBox.KeyDown += Vector3_KeyDown;
+                    label.ToolTip = "Vector3";
+                    textBox.ToolTip = "Vector3";
+                    break;
+                case "Int32":
+                    textBox.Text = ((int)field.GetValue(currentObject)).ToString();
+                    textBox.PreviewTextInput += Int_PreviewTextInput;
+                    textBox.KeyDown += Int_KeyDown;
+                    label.ToolTip = "32-bit integer";
+                    textBox.ToolTip = "32-bit integer";
+                    break;
+                case "Int64":
+                    textBox.Text = ((long)field.GetValue(currentObject)).ToString();
+                    textBox.PreviewTextInput += Int_PreviewTextInput;
+                    textBox.KeyDown += Int_KeyDown;
+                    label.ToolTip = "64-bit integer";
+                    textBox.ToolTip = "64-bit integer";
+                    break;
+                case "Single":
+                    string floatText = ((float)field.GetValue(currentObject)).ToString("0.0#################", Nfi) + 'f';
+                    textBox.Text = floatText;
+                    textBox.PreviewTextInput += Float_PreviewTextInput;
+                    textBox.KeyDown += Float_KeyDown;
+                    label.ToolTip = "float (32-bit decimal)";
+                    textBox.ToolTip = "float (32-bit decimal)";
+                    break;
+                case "Double":
+                    string doubleText = ((double)field.GetValue(currentObject)).ToString("0.0#################", Nfi);
+                    textBox.Text = doubleText;
+                    textBox.PreviewTextInput += Double_PreviewTextInput;
+                    textBox.KeyDown += Float_KeyDown;
+                    label.ToolTip = "double (64-bit decimal)";
+                    textBox.ToolTip = "double (64-bit decimal)";
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
         }
 
         private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
@@ -274,7 +319,7 @@ namespace TOKElfTool
                     textBox.Text = parsed.ToString();
                 }
                 else
-                    MessageBox.Show(window, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    MessageBox.Show(this, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
             }
         }
 
@@ -295,7 +340,7 @@ namespace TOKElfTool
                     else
                     {
                         enterHandled = true;
-                        MessageBox.Show(window, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        MessageBox.Show(this, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                     }
                 }
                 else
@@ -303,7 +348,7 @@ namespace TOKElfTool
             }
             else if (e.Key == Key.OemPeriod)
             {
-                MessageBox.Show(window, "Field is an integer and doesn't support floating point numbers", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
+                MessageBox.Show(this, "Field is an integer and doesn't support floating point numbers", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
             }
         }
         private void Float_KeyDown(object sender, KeyEventArgs e)
@@ -323,7 +368,7 @@ namespace TOKElfTool
                     else
                     {
                         enterHandled = true;
-                        MessageBox.Show(window, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        MessageBox.Show(this, "Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                     }
                 }
                 else
@@ -420,7 +465,7 @@ namespace TOKElfTool
                 DefaultExt = ".elf",
                 Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst"
             };
-            bool? result = dialog.ShowDialog(window);
+            bool? result = dialog.ShowDialog(this);
             if (result == true)
             {
                 Title = $"{dialog.FileName} - TOK ELF Editor";
@@ -455,7 +500,7 @@ namespace TOKElfTool
                     DefaultExt = ".elf",
                     Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
                 };
-                bool? result = dialog.ShowDialog(window);
+                bool? result = dialog.ShowDialog(this);
                 if (result == true)
                     savePath = dialog.FileName;
             }
@@ -500,7 +545,7 @@ namespace TOKElfTool
                 catch (Exception exception)
                 {
                     Trace.WriteLine(exception);
-                    MessageBox.Show(window, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -537,7 +582,7 @@ namespace TOKElfTool
                 catch (Exception exception)
                 {
                     Trace.WriteLine(exception);
-                    MessageBox.Show(window, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -553,78 +598,95 @@ namespace TOKElfTool
                     continue;
 
                 Expander expander = (Expander)objectPanel.Children[i];
-                Grid grid = (Grid)expander.Content;
+                
 
-                Trace.WriteLine(expander);
-
-                // go through all property controls
-                object currentNpc = new NPC();
-                string propertyName = "";
-                Type propertyType = null;
-                object propertyValue = null;
-
-                for (int j = 0; j < grid.Children.Count; j++)
-                {
-                    UIElement child = grid.Children[j];
-
-                    if (j < 2)
-                        continue;
-                    else if (j % 2 == 0)
-                    {
-                        // label
-                        propertyName = ((TextBlock)child).Text;
-                        propertyType = typeof(NPC).GetField(propertyName).FieldType;
-                    }
-                    else
-                    {
-                        if (propertyType == typeof(bool))
-                        {
-                            CheckBox checkBox = (CheckBox)child;
-                            propertyValue = checkBox.IsChecked;
-                            Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
-                        }
-                        else
-                        {
-                            // TextBox
-                            TextBox textBox = (TextBox)child;
-                            string text = textBox.Text;
-                            switch (propertyType?.Name)
-                            {
-                                case "String":
-                                    propertyValue = text.StartsWith("\"") && text.EndsWith("\"") ? text.Substring(1, text.Length - 2) : null;
-                                    break;
-                                case "Vector3":
-                                    propertyValue = Vector3.FromString(text);
-                                    break;
-                                case "Int32":
-                                    _ = int.TryParse(text, out int propertyValueInt);
-                                    propertyValue = propertyValueInt;
-                                    break;
-                                case "Int64":
-                                    long.TryParse(text, out long propertyValueLong);
-                                    propertyValue = propertyValueLong;
-                                    break;
-                                case "Single":
-                                    string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
-                                    float.TryParse(floatString, out float propertyValueFloat);
-                                    propertyValue = propertyValueFloat;
-                                    break;
-                                case "Double":
-                                    double.TryParse(text, out double propertyValueDouble);
-                                    propertyValue = propertyValueDouble;
-                                    break;
-                            }
-                            Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue} (original {text})");
-                        }
-                        typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
-                    }
-
-                }
-
-                objects.Add(new Element<NPC>((NPC)currentNpc));
+                objects.Add(new Element<NPC>((NPC)CollectObject(expander)));
             }
 
             return objects;
+        }
+
+        private object CollectObject(Expander expander)
+        {
+            Grid grid = (Grid)expander.Content;
+
+            Trace.WriteLine(expander);
+
+            // go through all property controls
+            object currentNpc = new NPC();
+            string propertyName = "";
+            Type propertyType = null;
+            object propertyValue = null;
+
+            for (int j = 0; j < grid.Children.Count; j++)
+            {
+                UIElement child = grid.Children[j];
+
+                // Ignore first child (Control buttons)
+                if (j < 2)
+                    continue;
+                
+                // key label
+                if (j % 2 == 0)
+                {
+                    propertyName = ((TextBlock)child).Text;
+                    propertyType = typeof(NPC).GetField(propertyName).FieldType;
+
+                    continue;
+                }
+
+                // checkbox
+                if (propertyType == typeof(bool))
+                {
+                    CheckBox checkBox = (CheckBox)child;
+                    propertyValue = checkBox.IsChecked;
+                    Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
+
+                    continue;
+                }
+
+                // dropdown
+
+
+                // TextBox
+                TextBox textBox = (TextBox)child;
+                string text = textBox.Text;
+                switch (propertyType?.Name)
+                {
+                    case "String":
+                        propertyValue = text.StartsWith("\"") && text.EndsWith("\"")
+                            ? text.Substring(1, text.Length - 2)
+                            : null;
+                        break;
+                    case "Vector3":
+                        propertyValue = Vector3.FromString(text);
+                        break;
+                    case "Int32":
+                        _ = int.TryParse(text, out int propertyValueInt);
+                        propertyValue = propertyValueInt;
+                        break;
+                    case "Int64":
+                        long.TryParse(text, out long propertyValueLong);
+                        propertyValue = propertyValueLong;
+                        break;
+                    case "Single":
+                        string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
+                        float.TryParse(floatString, out float propertyValueFloat);
+                        propertyValue = propertyValueFloat;
+                        break;
+                    case "Double":
+                        double.TryParse(text, out double propertyValueDouble);
+                        propertyValue = propertyValueDouble;
+                        break;
+                }
+
+                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue} (original {text})");
+
+                typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
+
+            }
+
+            return currentNpc;
         }
 
         private void MenuItem_About_Click(object sender, RoutedEventArgs e)
@@ -653,7 +715,7 @@ namespace TOKElfTool
                 DefaultExt = ".zst",
                 Filter = "ZSTD Compressed File (*.zst; *.zstd)|*.zst;*.zstd|All Files (*.*)|*",
             };
-            bool? result = openFileDialog.ShowDialog(window);
+            bool? result = openFileDialog.ShowDialog(this);
             if (result == true)
             {
 
@@ -683,7 +745,7 @@ namespace TOKElfTool
                     Filter = "All Files (*.*)|*",
                     OverwritePrompt = true,
                 };
-                bool? saveResult = saveFileDialog.ShowDialog(window);
+                bool? saveResult = saveFileDialog.ShowDialog(this);
                 if (saveResult == true)
                 {
                     try
@@ -707,7 +769,7 @@ namespace TOKElfTool
                 DefaultExt = "",
                 Filter = "All Files (*.*)|*",
             };
-            bool? openResult = openFileDialog.ShowDialog(window);
+            bool? openResult = openFileDialog.ShowDialog(this);
             if (openResult == true)
             {
                 Trace.WriteLine(openFileDialog.FileName);
@@ -732,7 +794,7 @@ namespace TOKElfTool
                     Filter = "ZSTD Compressed File (*.zst; *.zstd)|*.zst;*.zstd|All Files (*.*)|*",
                     OverwritePrompt = true,
                 };
-                bool? saveResult = saveFileDialog.ShowDialog(window);
+                bool? saveResult = saveFileDialog.ShowDialog(this);
                 if (saveResult == true)
                 {
                     try
