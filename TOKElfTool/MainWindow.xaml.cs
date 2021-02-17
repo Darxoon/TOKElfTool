@@ -74,21 +74,6 @@ namespace TOKElfTool
             }
         }
 
-        private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            Button duplicateButton = (Button)sender;
-            Grid grid = (Grid)duplicateButton.Parent;
-            ObjectEditControl originalExpander = (ObjectEditControl)grid.Parent;
-
-            ObjectEditControl clone = null;
-            await Dispatcher.InvokeAsync(() => clone = originalExpander.XamlClone());
-
-            clone.IsExpanded = false;
-            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(originalExpander), clone);
-
-            FixExpanderNames();
-        }
-
         private void FixExpanderNames()
         {
             for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
@@ -103,6 +88,20 @@ namespace TOKElfTool
         /// </summary>
         private ObjectEditControl duplicateExpander;
 
+        private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Button duplicateButton = (Button)sender;
+            Grid grid = (Grid)duplicateButton.Parent;
+            ObjectEditControl originalExpander = (ObjectEditControl)grid.Parent;
+
+            ObjectEditControl clone = null;
+            await Dispatcher.InvokeAsync(() => clone = originalExpander.XamlClone());
+
+            clone.IsExpanded = false;
+            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(originalExpander), clone);
+
+            FixExpanderNames();
+        }
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
             Button duplicateButton = (Button)sender;
@@ -118,8 +117,8 @@ namespace TOKElfTool
             }
         }
 
-        private readonly List<string> recentlyOpenedFiles = new List<string>();
 
+        private readonly List<string> recentlyOpenedFiles = new List<string>();
         private void AddRecentlyOpened(string filepath)
         {
             recentlyOpenedFiles.Remove(filepath);
