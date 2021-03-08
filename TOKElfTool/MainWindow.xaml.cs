@@ -116,13 +116,14 @@ namespace TOKElfTool
         {
             Button duplicateButton = (Button)sender;
             Grid grid = (Grid)duplicateButton.Parent;
-            ObjectEditControl expander = (ObjectEditControl)grid.Parent;
+            Expander expander = (Expander)grid.Parent;
+            ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
 
             bool? result = MyMessageBox.Show(this, $"Are you sure you want to delete this {loadedDataType}?", "TOK ELF Editor", MessageBoxResult.Yes);
             if (result == true)
             {
-                ObjectTabPanel.Children.Remove(expander);
-                duplicateExpander = expander;
+                ObjectTabPanel.Children.Remove(objectEditControl);
+                duplicateExpander = objectEditControl;
 
                 hasUnsavedChanges = true;
 
