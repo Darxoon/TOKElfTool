@@ -15,12 +15,14 @@ using ElfLib;
 
 namespace TOKElfTool
 {
-    public class ObjectEditControl : Expander
+    public class ObjectEditControl2 : Expander
     {
         public event RoutedEventHandler RemoveButtonClick;
         public event RoutedEventHandler DuplicateButtonClick;
 
-        public ObjectEditControl(object currentObject, string header)
+        public event EventHandler ValueChanged;
+
+        public ObjectEditControl2(object currentObject, string header)
         {
             Header = header;
 
@@ -71,6 +73,12 @@ namespace TOKElfTool
         }
 
 
+        static ObjectEditControl2()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ObjectEditControl2), new
+                FrameworkPropertyMetadata(typeof(ObjectEditControl2)));
+        }
+
 
         private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
         private static readonly NumberFormatInfo Nfi = new NumberFormatInfo
@@ -112,6 +120,7 @@ namespace TOKElfTool
                 Grid.SetRow(checkBox, fieldIndex + 1);
                 grid.Children.Add(checkBox);
                 label.ToolTip = "boolean";
+                checkBox.Click += (sender, args) => ValueChanged?.Invoke(sender, args);
 
                 return;
             }
@@ -140,6 +149,8 @@ namespace TOKElfTool
                 grid.Children.Add(comboBox);
                 label.ToolTip = fieldType.Name;
 
+                comboBox.DropDownClosed += (sender, args) => ValueChanged?.Invoke(sender, args);
+
                 return;
             }
 
@@ -156,6 +167,8 @@ namespace TOKElfTool
             Grid.SetColumn(textBox, 1);
             Grid.SetRow(textBox, fieldIndex + 1);
             grid.Children.Add(textBox);
+
+            textBox.KeyDown += (sender, args) => ValueChanged?.Invoke(sender, args);
 
             switch (fieldType.Name)
             {

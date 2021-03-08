@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -56,6 +57,8 @@ namespace TOKElfTool
 
         private GameDataType loadedDataType = GameDataType.NPC;
 
+        private bool hasUnsavedChanges;
+
         private void InitializeObjectsPanel<T>(Element<T>[] objects, string objectName)
         {
             EmptyLabel.Visibility = Visibility.Collapsed;
@@ -70,8 +73,11 @@ namespace TOKElfTool
                 expander.RemoveButtonClick += RemoveButton_OnClick;
                 expander.DuplicateButtonClick += DuplicateButton_OnClick;
 
+                expander.ValueChanged += (sender, args) => hasUnsavedChanges = true;
+
                 ObjectTabPanel.Children.Add(expander);
             }
+
         }
 
         private void FixExpanderNames()
@@ -92,13 +98,16 @@ namespace TOKElfTool
         {
             Button duplicateButton = (Button)sender;
             Grid grid = (Grid)duplicateButton.Parent;
-            ObjectEditControl originalExpander = (ObjectEditControl)grid.Parent;
+            Expander expander = (Expander)grid.Parent;
+            ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
 
             ObjectEditControl clone = null;
-            await Dispatcher.InvokeAsync(() => clone = originalExpander.XamlClone());
+            await Dispatcher.InvokeAsync(() => clone = objectEditControl.XamlClone());
 
             clone.IsExpanded = false;
-            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(originalExpander), clone);
+            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(objectEditControl), clone);
+
+            hasUnsavedChanges = true;
 
             FixExpanderNames();
         }
@@ -113,6 +122,9 @@ namespace TOKElfTool
             {
                 ObjectTabPanel.Children.Remove(expander);
                 duplicateExpander = expander;
+
+                hasUnsavedChanges = true;
+
                 FixExpanderNames();
             }
         }
@@ -259,6 +271,7 @@ namespace TOKElfTool
             {
                 try
                 {
+                    hasUnsavedChanges = false;
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                 }
                 catch (Exception exception)
@@ -296,6 +309,7 @@ namespace TOKElfTool
             {
                 try
                 {
+                    hasUnsavedChanges = false;
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                 }
                 catch (Exception exception)
@@ -553,6 +567,19 @@ namespace TOKElfTool
             clone.IsExpanded = true;
             ObjectTabPanel.Children.Add(clone);
             FixExpanderNames();
+        }
+        
+
+        private void MainWindow_OnClosing(object sender, CancelEventArgs e)
+        {
+            if (hasUnsavedChanges)
+            {
+                bool? result = MyMessageBox.Show(this, "You have unsaved changes. Do you want to quit?",
+                    "TOK ELF Editor",
+                    MessageBoxResult.No);
+
+                e.Cancel = !result ?? false;
+            }
         }
     }
 }

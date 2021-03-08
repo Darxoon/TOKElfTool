@@ -7,7 +7,8 @@
         xmlns:st="http://schemas.spicytaco.io/"
         mc:Ignorable="d"
         Title="TOK ELF Editor" Height="Auto" Width="600"
-        FlowDirection="LeftToRight">
+        FlowDirection="LeftToRight"
+        Closing="MainWindow_OnClosing">
 
 
 
