@@ -103,7 +103,7 @@ namespace TOKElfTool
             ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
 
             ObjectEditControl clone = null;
-            await Dispatcher.InvokeAsync(() => clone = objectEditControl.XamlClone());
+            await Dispatcher.InvokeAsync(() => clone = objectEditControl.Clone());
 
             clone.IsExpanded = false;
             ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(objectEditControl), clone);
@@ -421,6 +421,9 @@ namespace TOKElfTool
                         : null;
                 case "Vector3":
                     return Vector3.FromString(text);
+                case "Byte":
+                    _ = byte.TryParse(text, out byte propertyValueByte);
+                    return propertyValueByte;
                 case "Int32":
                     _ = int.TryParse(text, out int propertyValueInt);
                     return propertyValueInt;
@@ -578,9 +581,12 @@ namespace TOKElfTool
         {
             ObjectEditControl clone = null;
             e.Handled = true;
-            await Dispatcher.InvokeAsync(() => clone = (ObjectEditControl)(ObjectTabPanel.Children.Count > 1
-                ? ObjectTabPanel.Children.Last()
-                : duplicateExpander).XamlClone());
+            await Dispatcher.InvokeAsync(() =>
+            {
+                clone = ObjectTabPanel.Children.Count > 1 
+                    ? ((ObjectEditControl)ObjectTabPanel.Children.Last()).Clone() 
+                    : duplicateExpander.Clone();
+            });
             clone.IsExpanded = true;
             ObjectTabPanel.Children.Add(clone);
             FixExpanderNames();

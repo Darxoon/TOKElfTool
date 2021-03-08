@@ -69,15 +69,18 @@ namespace TOKElfTool
             }
         }
 
-        public ObjectEditControl XamlClone()
+        public ObjectEditControl Clone()
         {
             ObjectEditControl clone = new ObjectEditControl
             {
                 RemoveButtonClick = RemoveButtonClick,
                 DuplicateButtonClick = DuplicateButtonClick,
                 ValueChanged = ValueChanged,
-                Expander = Expander.XamlClone(),
             };
+            for (int i = 2; i < Grid.Children.Count; i++)
+            {
+                clone.Grid.Children.Add(Grid.Children[i].XamlClone());
+            }
             return clone;
         }
 
