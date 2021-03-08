@@ -105,7 +105,7 @@ namespace TOKElfTool
                 return;
             }
 
-
+            // ComboBox
             if (fieldType.BaseType == typeof(Enum))
             {
                 ComboBox comboBox = new ComboBox

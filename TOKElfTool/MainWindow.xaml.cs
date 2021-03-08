@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using ElfLib.CustomDataTypes.NPC;
 using ZstdNet;
@@ -339,11 +340,12 @@ namespace TOKElfTool
             return objects;
         }
 
-        private object CollectObject(ObjectEditControl expander)
+        private object CollectObject(ObjectEditControl objectEditControl)
         {
+            Expander expander = (Expander)objectEditControl.Content;
             Grid grid = (Grid)expander.Content;
 
-            Trace.WriteLine(expander);
+            Trace.WriteLine(objectEditControl);
 
             // go through all property controls
             object currentNpc = new NPC();
@@ -368,58 +370,73 @@ namespace TOKElfTool
                     continue;
                 }
 
-                // checkbox
-                if (propertyType == typeof(bool))
-                {
-                    CheckBox checkBox = (CheckBox)child;
-                    propertyValue = checkBox.IsChecked;
-                    Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
-
+                if(propertyType is null)
                     continue;
-                }
 
-                // dropdown
+                propertyValue = ReadFromControl(propertyType, propertyName, child);
 
-
-                // TextBox
-                TextBox textBox = (TextBox)child;
-                string text = textBox.Text;
-                switch (propertyType?.Name)
-                {
-                    case "String":
-                        propertyValue = text.StartsWith("\"") && text.EndsWith("\"")
-                            ? text.Substring(1, text.Length - 2)
-                            : null;
-                        break;
-                    case "Vector3":
-                        propertyValue = Vector3.FromString(text);
-                        break;
-                    case "Int32":
-                        _ = int.TryParse(text, out int propertyValueInt);
-                        propertyValue = propertyValueInt;
-                        break;
-                    case "Int64":
-                        long.TryParse(text, out long propertyValueLong);
-                        propertyValue = propertyValueLong;
-                        break;
-                    case "Single":
-                        string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
-                        float.TryParse(floatString, out float propertyValueFloat);
-                        propertyValue = propertyValueFloat;
-                        break;
-                    case "Double":
-                        double.TryParse(text, out double propertyValueDouble);
-                        propertyValue = propertyValueDouble;
-                        break;
-                }
-
-                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue} (original {text})");
+                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
 
                 typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
 
             }
 
             return currentNpc;
+        }
+
+        private object ReadFromControl(Type propertyType, string propertyName, UIElement child)
+        {
+            // checkbox
+            if (propertyType == typeof(bool))
+            {
+                CheckBox checkBox = (CheckBox)child;
+                //Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
+
+                return checkBox.IsChecked;
+            }
+
+            // dropdown
+            if (propertyType.BaseType == typeof(Enum))
+            {
+                ComboBox comboBox = (ComboBox)child;
+                FieldInfo[] enumFields = propertyType.GetFields()
+                    .Where(value => value.IsStatic)
+                    .ToArray();
+
+                FieldInfo selectedField = enumFields[comboBox.SelectedIndex];
+                int selectedFieldValue = (int)selectedField.GetValue(null);
+
+                //Trace.WriteLine($"~~~~~~~~~~ {propertyValue}");
+                return selectedFieldValue;
+            }
+
+            // TextBox
+            TextBox textBox = (TextBox)child;
+            string text = textBox.Text;
+            switch (propertyType.Name)
+            {
+                case "String":
+                    return text.StartsWith("\"") && text.EndsWith("\"")
+                        ? text.Substring(1, text.Length - 2)
+                        : null;
+                case "Vector3":
+                    return Vector3.FromString(text);
+                case "Int32":
+                    _ = int.TryParse(text, out int propertyValueInt);
+                    return propertyValueInt;
+                case "Int64":
+                    long.TryParse(text, out long propertyValueLong);
+                    return propertyValueLong;
+                case "Single":
+                    string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
+                    float.TryParse(floatString, out float propertyValueFloat);
+                    return propertyValueFloat;
+                case "Double":
+                    double.TryParse(text, out double propertyValueDouble);
+                    return propertyValueDouble;
+            }
+
+            throw new Exception("Couldn't read the property value");
         }
 
         private void MenuItem_About_Click(object sender, RoutedEventArgs e)

@@ -81,7 +81,6 @@
     <Compile Include="ObjectEditControl.xaml.cs">
       <DependentUpon>ObjectEditControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ObjectEditControl2.cs" />
     <Compile Include="MyMessageBox.xaml.cs">
       <DependentUpon>MyMessageBox.xaml</DependentUpon>
     </Compile>
