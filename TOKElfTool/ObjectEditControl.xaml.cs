@@ -160,6 +160,13 @@ namespace TOKElfTool
                     label.ToolTip = "Vector3";
                     textBox.ToolTip = "Vector3";
                     break;
+                case "Byte":
+                    textBox.Text = ((byte)field.GetValue(currentObject)).ToString();
+                    textBox.PreviewTextInput += Int_PreviewTextInput;
+                    textBox.KeyDown += Int_KeyDown;
+                    label.ToolTip = "byte (8-bit integer)";
+                    textBox.ToolTip = "byte (8-bit integer)";
+                    break;
                 case "Int32":
                     textBox.Text = ((int)field.GetValue(currentObject)).ToString();
                     textBox.PreviewTextInput += Int_PreviewTextInput;
