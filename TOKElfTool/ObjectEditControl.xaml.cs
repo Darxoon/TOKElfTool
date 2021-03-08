@@ -69,6 +69,18 @@ namespace TOKElfTool
             }
         }
 
+        public ObjectEditControl XamlClone()
+        {
+            ObjectEditControl clone = new ObjectEditControl
+            {
+                RemoveButtonClick = RemoveButtonClick,
+                DuplicateButtonClick = DuplicateButtonClick,
+                ValueChanged = ValueChanged,
+                Expander = Expander.XamlClone(),
+            };
+            return clone;
+        }
+
 
         private void AddFieldControls(object currentObject, FieldInfo field, Grid grid, int fieldIndex)
         {
