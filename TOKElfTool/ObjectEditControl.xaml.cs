@@ -160,7 +160,7 @@ namespace TOKElfTool
             grid.Children.Add(textBox);
 
             textBox.KeyDown += (sender, args) => ValueChanged?.Invoke(sender, args);
-
+            Trace.WriteLine(fieldType.Name);
             switch (fieldType.Name)
             {
                 case "String":
@@ -179,8 +179,8 @@ namespace TOKElfTool
                     textBox.Text = ((byte)field.GetValue(currentObject)).ToString();
                     textBox.PreviewTextInput += Int_PreviewTextInput;
                     textBox.KeyDown += Int_KeyDown;
-                    label.ToolTip = "byte (8-bit integer)";
-                    textBox.ToolTip = "byte (8-bit integer)";
+                    label.ToolTip = "byte (8-bit integer or boolean)";
+                    textBox.ToolTip = "byte (8-bit integer or boolean)";
                     break;
                 case "Int32":
                     textBox.Text = ((int)field.GetValue(currentObject)).ToString();
@@ -212,6 +212,8 @@ namespace TOKElfTool
                     label.ToolTip = "double (64-bit decimal)";
                     textBox.ToolTip = "double (64-bit decimal)";
                     break;
+                case "ElfStringPointer":
+                    throw new Exception("ElfStringPointer didn't get replaced with string");
                 default:
                     throw new NotImplementedException();
             }

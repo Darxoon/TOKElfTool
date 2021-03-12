@@ -12,6 +12,11 @@ namespace ElfLib
         {
             this.value = value;
         }
+
+        public override string ToString()
+        {
+            return $"Element({value})";
+        }
     }
 
     /// <summary>
