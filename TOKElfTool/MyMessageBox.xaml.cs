@@ -29,7 +29,7 @@ namespace TOKElfTool
         {
             InitializeComponent();
 
-            Icon.Source = Imaging.CreateBitmapSourceFromHIcon(
+            icon.Source = Imaging.CreateBitmapSourceFromHIcon(
                 SystemIcons.Exclamation.Handle,
                 Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());

@@ -51,7 +51,7 @@
             </st:StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Image x:Name="Icon" Margin="15"></Image>
+            <Image x:Name="icon" Margin="15"></Image>
             <TextBlock x:Name="MainText" VerticalAlignment="Center">
                 Hello World<LineBreak/>Hi
             </TextBlock>

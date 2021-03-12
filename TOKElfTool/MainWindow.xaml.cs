@@ -6,14 +6,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Win32;
 using ElfLib;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using ElfLib.CustomDataTypes.NPC;
 using ZstdNet;
 
 namespace TOKElfTool
@@ -56,7 +54,8 @@ namespace TOKElfTool
             Environment.SpecialFolderOption.Create);
         private static readonly string HistoryPath = Path.Combine(DataFolderPath, "TOKElfTool/file_history.txt");
 
-        private GameDataType loadedDataType = GameDataType.NPC;
+        private GameDataType loadedDataType;
+        private Type loadedStructType;
 
         private bool hasUnsavedChanges;
 
@@ -70,7 +69,7 @@ namespace TOKElfTool
                 object currentObject = objects[i].value;
 
                 ObjectEditControl expander = new ObjectEditControl(currentObject, $"{objectName} {i}");
-                
+
                 expander.RemoveButtonClick += RemoveButton_OnClick;
                 expander.DuplicateButtonClick += DuplicateButton_OnClick;
 
@@ -184,13 +183,12 @@ namespace TOKElfTool
             }
         }
 
-        private ElfBinary<NPC> loadedBinary;
+        private ElfBinary<object> loadedBinary;
 
         private string containingFolderPath = "";
 
         private async void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            loadedDataType = GameDataType.NPC;
 
             OpenFileDialog dialog = new OpenFileDialog
             {
@@ -201,9 +199,32 @@ namespace TOKElfTool
             bool? result = dialog.ShowDialog(this);
             if (result == true)
             {
+                GameDataType? type = ObjectTypeSelector.Show();
+
+                if (type is null)
+                    return;
+
+                loadedDataType = (GameDataType)type;
+                switch (type)
+                {
+                    case GameDataType.NPC:
+                        loadedStructType = typeof(NPC);
+                        break;
+                    case GameDataType.Mobj:
+                        loadedStructType = typeof(Mobj);
+                        break;
+                    case GameDataType.None:
+                        loadedStructType = null;
+                        break;
+                    default:
+                        throw new Exception("Data type currently not supported");
+                }
+
                 Title = $"{dialog.FileName} - TOK ELF Editor";
                 RemoveAllObjects();
-                if (dialog.FilterIndex == 2)
+
+                bool compressedFileOpened = dialog.FilterIndex == 2;
+                if (compressedFileOpened)
                 {
                     byte[] input = File.ReadAllBytes(dialog.FileName);
                     byte[] decompessed = decompressor.Unwrap(input);
@@ -213,14 +234,15 @@ namespace TOKElfTool
                     };
                     BinaryReader reader = new BinaryReader(memoryStream);
 
-                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<NPC>(reader, GameDataType.NPC));
+                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
                 }
                 else
-                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<NPC>(dialog.FileName, GameDataType.NPC));
+                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(dialog.FileName, loadedDataType));
+
                 fileSavePath = null;
                 containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
                 AddRecentlyOpened(dialog.FileName);
-                await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), "NPC"));
+                await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
             }
         }
         private string ShowOptionalSaveDialog(string savePath)
@@ -252,7 +274,7 @@ namespace TOKElfTool
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List<Element<NPC>> objects = CollectObjects(ObjectTabPanel);
+            List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
             #region Logging
             Trace.WriteLine("NPCs:");
@@ -290,7 +312,7 @@ namespace TOKElfTool
 
         private void CommandBinding_SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List<Element<NPC>> objects = CollectObjects(ObjectTabPanel);
+            List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
             #region Logging
             Trace.WriteLine("NPCs:");
@@ -322,9 +344,9 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<NPC>> CollectObjects(Panel objectPanel)
+        private List<Element<object>> CollectObjects(Panel objectPanel)
         {
-            List<Element<NPC>> objects = new List<Element<NPC>>();
+            List<Element<object>> objects = new List<Element<object>>();
 
             // go through all NPC's
             for (int i = 0; i < objectPanel.Children.Count; i++)
@@ -335,7 +357,7 @@ namespace TOKElfTool
                 ObjectEditControl expander = (ObjectEditControl)objectPanel.Children[i];
 
 
-                objects.Add(new Element<NPC>((NPC)CollectObject(expander)));
+                objects.Add(new Element<object>(CollectObject(expander)));
             }
 
             return objects;
@@ -349,10 +371,20 @@ namespace TOKElfTool
             Trace.WriteLine(objectEditControl);
 
             // go through all property controls
-            object currentNpc = new NPC();
+            object currentObjects;
+            switch (loadedDataType)
+            {
+                case GameDataType.NPC:
+                    currentObjects = new NPC();
+                    break;
+                case GameDataType.Mobj:
+                    currentObjects = new Mobj();
+                    break;
+                default:
+                    throw new Exception("Data type not supported");
+            }
             string propertyName = "";
             Type propertyType = null;
-            object propertyValue = null;
 
             for (int j = 0; j < grid.Children.Count; j++)
             {
@@ -366,23 +398,23 @@ namespace TOKElfTool
                 if (j % 2 == 0)
                 {
                     propertyName = ((TextBlock)child).Text;
-                    propertyType = typeof(NPC).GetField(propertyName).FieldType;
+                    propertyType = loadedStructType.GetField(propertyName).FieldType;
 
                     continue;
                 }
 
-                if(propertyType is null)
+                if (propertyType is null)
                     continue;
 
-                propertyValue = ReadFromControl(propertyType, propertyName, child);
+                object propertyValue = ReadFromControl(propertyType, propertyName, child);
 
                 Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
 
-                typeof(NPC).GetField(propertyName).SetValue(currentNpc, propertyValue);
+                loadedStructType.GetField(propertyName).SetValue(currentObjects, propertyValue);
 
             }
 
-            return currentNpc;
+            return currentObjects;
         }
 
         private object ReadFromControl(Type propertyType, string propertyName, UIElement child)
@@ -584,15 +616,15 @@ namespace TOKElfTool
             e.Handled = true;
             await Dispatcher.InvokeAsync(() =>
             {
-                clone = ObjectTabPanel.Children.Count > 1 
-                    ? ((ObjectEditControl)ObjectTabPanel.Children.Last()).Clone() 
+                clone = ObjectTabPanel.Children.Count > 1
+                    ? ((ObjectEditControl)ObjectTabPanel.Children.Last()).Clone()
                     : duplicateExpander.Clone();
             });
             clone.IsExpanded = true;
             ObjectTabPanel.Children.Add(clone);
             FixExpanderNames();
         }
-        
+
 
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
