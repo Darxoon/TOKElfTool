@@ -1,19 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
 
 namespace ElfLib
 {
 	[StructLayout(LayoutKind.Sequential)]
-    public struct Mobj
+    public struct RawMobj
     {
-		public string level_str;
-		public string obj_str;
-		public string shape_str;
+		public ElfStringPointer level_str;
+		public ElfStringPointer obj_str;
+		public ElfStringPointer shape_str;
 		public Vector3 pos;
 		public Vector3 ang;
         #region Misc and unknown fields
@@ -70,7 +68,7 @@ namespace ElfLib
 		public int field_EC;
 		public int field_F0;
 		public int field_F4;
-		public string init_function_str;
+		public ElfStringPointer init_function_str;
 		public int field_100;
 		public int field_104;
 		public int field_108;
@@ -104,48 +102,15 @@ namespace ElfLib
         #endregion
 
 
-        internal static Mobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseStreamPosition)
+        internal static RawMobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
         {
-            Mobj mobj = Util.FromBinaryReader<Mobj>(binaryReader);
+            RawMobj rawMobj = Util.FromBinaryReader<RawMobj>(binaryReader);
+            rawMobj.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
+            rawMobj.obj_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
+            rawMobj.shape_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
+            rawMobj.init_function_str = ElfStringPointer.ResolveRelocation(relas, 248, baseOffset);
 
-            return mobj;
+			return rawMobj;
         }
-
-        internal static Mobj From(RawMobj rawNpc, Section stringSection)
-        {
-            object npc = new Mobj();
-            Trace.WriteLine("Loading Mobj from RawMobj");
-            Trace.Indent();
-            foreach (FieldInfo npcField in typeof(Mobj).GetFields())
-            {
-                FieldInfo rawNpcField = typeof(RawMobj).GetField(npcField.Name);
-                //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
-                if (npcField.FieldType == typeof(string))
-                {
-                    Trace.WriteLine("Peter bghjmnv ");
-                    Trace.WriteLine(rawNpcField.Name);
-                    Trace.WriteLine(rawNpcField.GetValue(rawNpc));
-                    string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(rawNpc));
-                    npcField.SetValue(npc, str);
-                }
-                else if (npcField.FieldType.BaseType == typeof(Enum))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc));
-                }
-                else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc) > 0);
-                }
-                else if (npcField.FieldType == rawNpcField.FieldType)
-                {
-                    npcField.SetValue(npc, rawNpcField.GetValue(rawNpc));
-                }
-                else
-                    throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
-            }
-            Trace.Unindent();
-
-            return (Mobj)npc;
-        }
-    }
+	}
 }

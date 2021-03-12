@@ -12,8 +12,9 @@ namespace ElfLib
     {
         None,
         NPC,
-        RawNPC, // TODO: temporary
         Mobj,
+        RawNPC, // TODO: temporary
+        RawMobj,
         // TODO: Add more
     }
 
@@ -164,8 +165,21 @@ namespace ElfLib
                         objects.Add(RawNPC.ReadBinaryData(reader, relas, reader.BaseStream.Position));
                     }
                     break;
-                default:
+                case GameDataType.Mobj:
+                    {
+                        IEnumerable<RawMobj> rawMobjs = ParseData(sections, relas, GameDataType.RawMobj).Cast<RawMobj>();
+                        IEnumerable<Mobj> mobjs = rawMobjs.Select(rawMobj => Mobj.From(rawMobj, stringSection));
+                        List<object> output = mobjs.Cast<object>().ToList();
+                        return output;
+                    }
+                case GameDataType.RawMobj:
+                    while (stream.Position != stream.Length)
+                    {
+                        objects.Add(RawMobj.ReadBinaryData(reader, relas, reader.BaseStream.Position));
+                    }
                     break;
+                default:
+                    throw new NotImplementedException();
             }
 
             return objects;
