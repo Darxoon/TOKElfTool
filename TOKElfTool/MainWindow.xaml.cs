@@ -199,7 +199,8 @@ namespace TOKElfTool
             bool? result = dialog.ShowDialog(this);
             if (result == true)
             {
-                GameDataType? type = ObjectTypeSelector.Show();
+                string simpleFileName = dialog.SafeFileName.Split('.')[0];
+                GameDataType? type = ObjectTypeSelector.Show(simpleFileName);
 
                 if (type is null)
                     return;

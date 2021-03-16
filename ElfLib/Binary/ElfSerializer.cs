@@ -165,6 +165,18 @@ namespace ElfLib
                         allStrings.Add(npc.action_function_str);
                     }
                     break;
+                case GameDataType.Mobj:
+                    foreach (Element<T> element in data)
+                    {
+                        Mobj npc = (Mobj)(object)element.value;
+                        allStrings.Add(npc.level_str);
+                        allStrings.Add(npc.obj_str);
+                        allStrings.Add(npc.shape_str);
+                        allStrings.Add(npc.init_function_str);
+                    }
+                    break;
+                case GameDataType.None:
+                    break;
                 default:
                     throw new NotImplementedException($"Data Type {dataType} not Supported yet");
             }
@@ -201,6 +213,13 @@ namespace ElfLib
                         dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
                     }
                     break;
+                case GameDataType.Mobj:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawMobj.FromMobj((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawMobj));
+                    }
+                    break;
                 default:
                     throw new NotImplementedException("Data Type not supported yet");
             }
@@ -227,7 +246,7 @@ namespace ElfLib
             BinaryWriter binaryWriter = new BinaryWriter(dataStream);
             foreach (var item in rawObjects)
             {
-                Util.ToBinaryWriter<RawNPC>(binaryWriter, (RawNPC)item);
+                Util.ToBinaryWriter(binaryWriter, item);
             }
 
             byte[] output = dataStream.ToArray();

@@ -27,15 +27,31 @@ namespace TOKElfTool
             InitializeComponent();
         }
 
-        public new static GameDataType? Show()
+        public static GameDataType? Show(GameDataType defaultValue = GameDataType.None)
         {
-            ObjectTypeSelector typeSelector = new ObjectTypeSelector();
+            ObjectTypeSelector typeSelector = new ObjectTypeSelector
+            {
+                SelectionBox = {SelectedIndex = (int)defaultValue}
+            };
             typeSelector.ShowDialog();
 
             if (typeSelector.submitted == true)
                 return (GameDataType)typeSelector.SelectionBox.SelectedIndex;
             else
                 return null;
+        }
+
+        public static GameDataType? Show(string fileName)
+        {
+            switch (fileName)
+            {
+                case "dispos_Npc":
+                    return Show(GameDataType.NPC);
+                case "dispos_Mobj":
+                    return Show(GameDataType.Mobj);
+                default:
+                    return Show();
+            }
         }
 
         private void OkButton_OnClick(object sender, RoutedEventArgs e)
@@ -48,5 +64,6 @@ namespace TOKElfTool
         {
             Close();
         }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -111,6 +112,44 @@ namespace ElfLib
             rawMobj.init_function_str = ElfStringPointer.ResolveRelocation(relas, 248, baseOffset);
 
 			return rawMobj;
+        }
+
+        public static RawMobj FromMobj(Mobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        {
+            object rawMobj = new RawMobj();
+
+            foreach (FieldInfo rawNpcField in typeof(RawMobj).GetFields())
+            {
+                FieldInfo npcField = typeof(Mobj).GetField(rawNpcField.Name);
+                if (npcField == null)
+                    throw new Exception($"Didn't find field `{rawNpcField.Name}` in type NPC");
+
+                if (rawNpcField.FieldType == typeof(ElfStringPointer) && npcField.FieldType == typeof(string))
+                {
+                    string str = (string)npcField.GetValue(npc);
+                    ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
+                    if (stringRelocTable != null)
+                        stringRelocTable.Add(rawNpcField.GetFieldOffset() + baseOffset, stringPointer);
+                    else
+                        rawNpcField.SetValue(rawMobj, stringPointer);
+                }
+                else if (npcField.FieldType.BaseType == typeof(Enum))
+                {
+                    rawNpcField.SetValue(rawMobj, npcField.GetValue(npc));
+                }
+                else if (npcField.FieldType == typeof(bool))
+                {
+                    rawNpcField.SetValue(rawMobj, (bool)npcField.GetValue(npc) ? 1 : 0);
+                }
+                else if (npcField.FieldType == rawNpcField.FieldType)
+                {
+                    rawNpcField.SetValue(rawMobj, npcField.GetValue(npc));
+                }
+                else
+                    throw new Exception($"Types `{npcField.FieldType}` and `{rawNpcField.FieldType}` didn't match on field `{npcField.Name}`");
+            }
+
+            return (RawMobj)rawMobj;
         }
 	}
 }
