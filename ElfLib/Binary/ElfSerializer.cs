@@ -11,13 +11,13 @@ namespace ElfLib
 {
     public static class ElfSerializer
     {
-        public static byte[] SerializeBinary<T>(ElfBinary<T> binary, GameDataType dataType)
+        public static byte[] SerializeBinary<T>(ElfBinary<T> binary, GameDataType dataType, bool updateRodataCount)
         {
             // Serialize .data and .rodata.str1.1
             Trace.WriteLine("Serializing .data and .rodata.str1.1\n");
             byte[] serializedData = SerializeData(binary.Data, dataType,
                 out byte[] stringSectionData,
-                out var stringRelocTable);
+                out SortedDictionary<long, ElfStringPointer> stringRelocTable);
 
             File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname2.bin", serializedData);
 
@@ -26,10 +26,10 @@ namespace ElfLib
             File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname3.bin", relaData);
 
             // Make new section list
-            Section[] updatedSections = UpdateSections(binary, serializedData, stringSectionData, relaData);
+            Section[] updatedSections = UpdateSections(binary, serializedData, stringSectionData, relaData, updateRodataCount);
 
             // Clone and order by offset
-            Section[] offsetSortedSections = (from x in updatedSections orderby x.Offset select x).ToArray();
+            IOrderedEnumerable<Section> offsetSortedSections = (from x in updatedSections orderby x.Offset select x);
 
             // Set up writing
             MemoryStream outputStream = new MemoryStream();
@@ -89,7 +89,7 @@ namespace ElfLib
             return output;
         }
 
-        private static Section[] UpdateSections<T>(ElfBinary<T> binary, byte[] serializedData, byte[] stringSectionData, byte[] relaData)
+        private static Section[] UpdateSections<T>(ElfBinary<T> binary, byte[] serializedData, byte[] stringSectionData, byte[] relaData, bool updateRodataCount)
         {
             List<Section> updatedSections = new List<Section>();
 
@@ -107,6 +107,9 @@ namespace ElfLib
                         break;
                     case ".rela.data":
                         newContent = relaData;
+                        break;
+                    case ".rodata":
+                        newContent = updateRodataCount ? BitConverter.GetBytes(binary.Data.Count) : null;
                         break;
                     default:
                         break;

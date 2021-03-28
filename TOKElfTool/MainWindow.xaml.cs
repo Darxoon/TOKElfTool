@@ -289,7 +289,7 @@ namespace TOKElfTool
 
             loadedBinary.Data = objects;
 
-            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
+            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
 
             fileSavePath = ShowOptionalSaveDialog(fileSavePath);
             if (fileSavePath != null)
@@ -327,7 +327,7 @@ namespace TOKElfTool
 
             loadedBinary.Data = objects;
 
-            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType);
+            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
 
             fileSavePath = ShowOptionalSaveDialog(null);
             if (fileSavePath != null)
@@ -407,7 +407,7 @@ namespace TOKElfTool
                 if (propertyType is null)
                     continue;
 
-                object propertyValue = ReadFromControl(propertyType, propertyName, child);
+                object propertyValue = ReadFromControl(propertyType, child);
 
                 Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
 
@@ -418,7 +418,7 @@ namespace TOKElfTool
             return currentObjects;
         }
 
-        private object ReadFromControl(Type propertyType, string propertyName, UIElement child)
+        private object ReadFromControl(Type propertyType, UIElement child)
         {
             // checkbox
             if (propertyType == typeof(bool))
