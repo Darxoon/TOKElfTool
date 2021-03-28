@@ -14,8 +14,8 @@ namespace ElfLib
 		public string level_str;
 		public string obj_str;
 		public string shape_str;
-		public Vector3 pos;
-		public Vector3 ang;
+		public Vector3 position;
+		public Vector3 rotation;
         #region Misc and unknown fields
         public byte unk_bool_30;
 		public byte field_31;

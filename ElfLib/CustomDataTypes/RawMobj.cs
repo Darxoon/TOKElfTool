@@ -13,8 +13,8 @@ namespace ElfLib
 		public ElfStringPointer level_str;
 		public ElfStringPointer obj_str;
 		public ElfStringPointer shape_str;
-		public Vector3 pos;
-		public Vector3 ang;
+		public Vector3 position;
+		public Vector3 rotation;
         #region Misc and unknown fields
         public byte unk_bool_30;
 		public byte field_31;
