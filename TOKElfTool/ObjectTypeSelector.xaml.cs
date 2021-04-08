@@ -51,6 +51,8 @@ namespace TOKElfTool
                     return Show(GameDataType.Mobj);
                 case "dispos_Aobj":
                     return Show(GameDataType.Aobj);
+                case "dispos_BShape":
+                    return Show(GameDataType.BShape);
                 default:
                     return Show();
             }

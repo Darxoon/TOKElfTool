@@ -46,6 +46,7 @@
     <DockPanel>
         <StackPanel Background="#f0f0f0" DockPanel.Dock="Bottom">
             <st:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10" MarginBetweenChildren="10">
+                <Button x:Name="OkButton" Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_Ok</Button>
                 <Button x:Name="NoButton"  Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_No</Button>
                 <Button x:Name="YesButton" Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_Yes</Button>
             </st:StackPanel>

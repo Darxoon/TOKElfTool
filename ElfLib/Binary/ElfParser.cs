@@ -9,16 +9,20 @@ using ElfLib.CustomDataTypes;
 
 namespace ElfLib
 {
-    public enum GameDataType
+    [Serializable]
+    public class ElfParseException : Exception
     {
-        None,
-        NPC,
-        Mobj,
-        Aobj,
-        RawNPC, // TODO: temporary
-        RawMobj,
-        RawAobj,
-        // TODO: Add more
+        public ElfParseException() { }
+
+        public ElfParseException(string message) : base(message) { }
+    }
+
+    [Serializable]
+    public class ElfContentNotFoundException : Exception
+    {
+        public ElfContentNotFoundException() { }
+
+        public ElfContentNotFoundException(string message) : base(message) { }
     }
 
     public static class ElfParser
@@ -67,6 +71,11 @@ namespace ElfLib
             foreach (Section section in sections)
             {
                 section.Name = stringTable.GetString(section.namePointer.AsInt);
+            }
+
+            if (GetSection(sections, ".data") == null)
+            {
+                throw new ElfContentNotFoundException("Could not find content");
             }
 
             List<SectionRela> relas = ParseRelocations(sections);
@@ -120,7 +129,7 @@ namespace ElfLib
         }
 
         private static Section GetSection(List<Section> sections, string name) =>
-            sections.Find(value => value.Name == name);
+            sections.Find(section => section.Name == name);
 
         private static List<SectionRela> ParseRelocations(List<Section> sections)
         {
@@ -142,8 +151,6 @@ namespace ElfLib
         {
             Section dataSection = GetSection(sections, ".data");
             Section stringSection = GetSection(sections, ".rodata.str1.1");
-            if (dataSection == null || stringSection == null)
-                throw new Exception("Couldn't find .data or .rodata.str1.1 section");
 
             List<object> objects = new List<object>();
 
@@ -194,8 +201,21 @@ namespace ElfLib
                         objects.Add(RawAobj.ReadBinaryData(reader, relas, reader.BaseStream.Position));
                     }
                     break;
+                case GameDataType.BShape:
+                    {
+                        IEnumerable<RawBShape> rawMobjs = ParseData(sections, relas, GameDataType.RawAobj).Cast<RawBShape>();
+                        IEnumerable<BShape> mobjs = rawMobjs.Select(rawMobj => BShape.From(rawMobj, stringSection));
+                        List<object> output = mobjs.Cast<object>().ToList();
+                        return output;
+                    }
+                case GameDataType.RawBShape:
+                    while (stream.Position != stream.Length)
+                    {
+                        objects.Add(RawBShape.ReadBinaryData(reader, relas, reader.BaseStream.Position));
+                    }
+                    break;
                 default:
-                    throw new NotImplementedException();
+                    throw new ElfParseException("Data type not implemented");
             }
 
             return objects;

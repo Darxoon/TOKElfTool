@@ -104,12 +104,6 @@ namespace ElfLib
         #endregion
 
 
-        internal static Mobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseStreamPosition)
-        {
-            Mobj mobj = Util.FromBinaryReader<Mobj>(binaryReader);
-
-            return mobj;
-        }
 
         internal static Mobj From(RawMobj rawNpc, Section stringSection)
         {

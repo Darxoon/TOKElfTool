@@ -25,14 +25,21 @@ namespace TOKElfTool
         // ReSharper restore InconsistentNaming IdentifierTypo
         #endregion
 
-        public MyMessageBox()
+        public MyMessageBox(Icon messageIcon, bool showYes = true, bool showNo = true, bool showOk = false)
         {
             InitializeComponent();
 
             icon.Source = Imaging.CreateBitmapSourceFromHIcon(
-                SystemIcons.Exclamation.Handle,
+                messageIcon.Handle,
                 Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());
+
+            if (showYes == false)
+                YesButton.Visibility = Visibility.Collapsed;
+            if (showNo == false)
+                NoButton.Visibility = Visibility.Collapsed;
+            if (showOk == false)
+                OkButton.Visibility = Visibility.Collapsed;
 
             Loaded += (sender, args) =>
             {
@@ -45,11 +52,39 @@ namespace TOKElfTool
             };
         }
 
+        public MyMessageBox() : this(SystemIcons.Exclamation) { }
+
         private bool? result = false;
 
-        public static bool? Show(Window owner, string mainText, string title, MessageBoxResult defaultResult)
+        public static bool? Show(Window owner, string mainText, string title, MessageBoxResult defaultResult, MessageBoxButton buttons = MessageBoxButton.YesNo, MessageBoxImage icon = MessageBoxImage.Warning)
         {
-            MyMessageBox myMessageBox = new MyMessageBox
+            Icon messageIcon;
+            switch (icon)
+            {
+                case MessageBoxImage.Warning:
+                    messageIcon = SystemIcons.Warning;
+                    break;
+                case MessageBoxImage.Error:
+                    messageIcon = SystemIcons.Error;
+                    break;
+                case MessageBoxImage.Asterisk:
+                    messageIcon = SystemIcons.Asterisk;
+                    break;
+                case MessageBoxImage.None:
+                    messageIcon = null;
+                    break;
+                case MessageBoxImage.Question:
+                    messageIcon = SystemIcons.Question;
+                    break;
+                default:
+                    messageIcon = SystemIcons.Exclamation;
+                    break;
+            }
+
+            MyMessageBox myMessageBox = new MyMessageBox(messageIcon, 
+                buttons == MessageBoxButton.YesNo || buttons == MessageBoxButton.YesNoCancel,
+                buttons == MessageBoxButton.YesNo || buttons == MessageBoxButton.YesNoCancel,
+                buttons == MessageBoxButton.OK || buttons == MessageBoxButton.OKCancel)
             {
                 Owner = owner, 
                 Title = title, 
@@ -97,6 +132,8 @@ namespace TOKElfTool
                 result = false;
             else if (sender == YesButton)
                 result = true;
+            else if (sender == OkButton)
+                result = null;
             else
                 result = null;
 

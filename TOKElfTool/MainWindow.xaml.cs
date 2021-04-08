@@ -229,6 +229,9 @@ namespace TOKElfTool
                 RemoveAllObjects();
 
                 bool compressedFileOpened = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
+
+                BinaryReader reader;
+
                 if (compressedFileOpened)
                 {
                     byte[] input = File.ReadAllBytes(dialog.FileName);
@@ -237,12 +240,33 @@ namespace TOKElfTool
                     {
                         Position = 0,
                     };
-                    BinaryReader reader = new BinaryReader(memoryStream);
+                    reader = new BinaryReader(memoryStream);
 
-                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
                 }
                 else
-                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(dialog.FileName, loadedDataType));
+                {
+                    FileStream input = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, (int)new FileInfo(dialog.FileName).Length);
+                    reader = new BinaryReader(input);
+                }
+
+                try
+                {
+                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
+                }
+                catch (ElfContentNotFoundException elfException)
+                {
+                    MyMessageBox.Show(this, "Could not find content", "TOK ELF Editor", MessageBoxResult.OK,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+#if !DEBUG
+                catch (ElfParseException elfException)
+                {
+                    MyMessageBox.Show(this, $"An error occured: \"{elfException}\"\n{elfException.StackTrace}", 
+                        "TOK ELF Editor", MessageBoxResult.OK, MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+#endif
 
                 fileSavePath = null;
                 containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
@@ -281,7 +305,7 @@ namespace TOKElfTool
         {
             List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
-            #region Logging
+#region Logging
             Trace.WriteLine("NPCs:");
             Trace.Indent();
             foreach (var item in objects)
@@ -289,7 +313,7 @@ namespace TOKElfTool
                 Trace.WriteLine(item);
             }
             Trace.Unindent();
-            #endregion
+#endregion
 
             loadedBinary.Data = objects;
 
@@ -319,7 +343,7 @@ namespace TOKElfTool
         {
             List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
-            #region Logging
+#region Logging
             Trace.WriteLine("NPCs:");
             Trace.Indent();
             foreach (var item in objects)
@@ -327,7 +351,7 @@ namespace TOKElfTool
                 Trace.WriteLine(item);
             }
             Trace.Unindent();
-            #endregion
+#endregion
 
             loadedBinary.Data = objects;
 

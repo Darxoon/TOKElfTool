@@ -10,6 +10,14 @@ using ElfLib.CustomDataTypes;
 
 namespace ElfLib
 {
+    [Serializable]
+    public class ElfSerializeException : Exception
+    {
+        public ElfSerializeException() { }
+
+        public ElfSerializeException(string message) : base(message) { }
+    }
+
     public static class ElfSerializer
     {
         public static byte[] SerializeBinary<T>(ElfBinary<T> binary, GameDataType dataType, bool updateRodataCount)
@@ -189,10 +197,20 @@ namespace ElfLib
                         //allStrings.Add(npc.init_function_str);
                     }
                     break;
+                case GameDataType.BShape:
+                    foreach (Element<T> element in data)
+                    {
+                        BShape npc = (BShape)(object)element.value;
+                        allStrings.Add(npc.level_str);
+                        allStrings.Add(npc.shape_str);
+                        allStrings.Add(npc.field_40);
+                        //allStrings.Add(npc.init_function_str);
+                    }
+                    break;
                 case GameDataType.None:
                     break;
                 default:
-                    throw new NotImplementedException($"Data Type {dataType} not Supported yet");
+                    throw new ElfSerializeException($"Data Type {dataType} not Supported yet");
             }
 
 
@@ -241,8 +259,15 @@ namespace ElfLib
                         dataSectionPosition += Marshal.SizeOf(typeof(RawAobj));
                     }
                     break;
+                case GameDataType.BShape:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawBShape.From((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawBShape));
+                    }
+                    break;
                 default:
-                    throw new NotImplementedException("Data Type not supported yet");
+                    throw new ElfSerializeException("Data Type not supported yet");
             }
 
             #region Logging
