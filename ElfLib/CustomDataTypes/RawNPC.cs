@@ -106,7 +106,7 @@ namespace ElfLib
         /// <param name="stringSectionTable">The table where the string pointers are stored</param>
         /// <param name="stringRelocTable">The table it adds the string pointer references to, for relocation. Can be left as null</param>
         /// <returns>The output RawNPC</returns>
-        public static RawNPC FromNPC(NPC npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawNPC From(NPC npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
         {
             object rawNPC = new RawNPC();
 

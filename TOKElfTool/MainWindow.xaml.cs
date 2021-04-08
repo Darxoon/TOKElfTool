@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ElfLib.CustomDataTypes;
 using ZstdNet;
 
 namespace TOKElfTool
@@ -213,6 +214,9 @@ namespace TOKElfTool
                         break;
                     case GameDataType.Mobj:
                         loadedStructType = typeof(Mobj);
+                        break;
+                    case GameDataType.Aobj:
+                        loadedStructType = typeof(Aobj);
                         break;
                     case GameDataType.None:
                         loadedStructType = null;

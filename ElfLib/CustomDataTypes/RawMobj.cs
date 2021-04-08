@@ -114,7 +114,7 @@ namespace ElfLib
 			return rawMobj;
         }
 
-        public static RawMobj FromMobj(Mobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawMobj From(Mobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
         {
             object rawMobj = new RawMobj();
 

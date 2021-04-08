@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using ElfLib.CustomDataTypes;
 
 namespace ElfLib
 {
@@ -178,6 +179,16 @@ namespace ElfLib
                         allStrings.Add(npc.init_function_str);
                     }
                     break;
+                case GameDataType.Aobj:
+                    foreach (Element<T> element in data)
+                    {
+                        Aobj npc = (Aobj)(object)element.value;
+                        allStrings.Add(npc.level_str);
+                        allStrings.Add(npc.obj_str);
+                        allStrings.Add(npc.shape_str);
+                        //allStrings.Add(npc.init_function_str);
+                    }
+                    break;
                 case GameDataType.None:
                     break;
                 default:
@@ -212,15 +223,22 @@ namespace ElfLib
                 case GameDataType.NPC:
                     foreach (Element<T> element in data)
                     {
-                        rawObjects.Add(RawNPC.FromNPC((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        rawObjects.Add(RawNPC.From((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
                     }
                     break;
                 case GameDataType.Mobj:
                     foreach (Element<T> element in data)
                     {
-                        rawObjects.Add(RawMobj.FromMobj((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        rawObjects.Add(RawMobj.From((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         dataSectionPosition += Marshal.SizeOf(typeof(RawMobj));
+                    }
+                    break;
+                case GameDataType.Aobj:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawAobj.From((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawAobj));
                     }
                     break;
                 default:

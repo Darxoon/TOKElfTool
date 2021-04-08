@@ -5,6 +5,7 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection;
+using ElfLib.CustomDataTypes;
 
 namespace ElfLib
 {
@@ -13,8 +14,10 @@ namespace ElfLib
         None,
         NPC,
         Mobj,
+        Aobj,
         RawNPC, // TODO: temporary
         RawMobj,
+        RawAobj,
         // TODO: Add more
     }
 
@@ -176,6 +179,19 @@ namespace ElfLib
                     while (stream.Position != stream.Length)
                     {
                         objects.Add(RawMobj.ReadBinaryData(reader, relas, reader.BaseStream.Position));
+                    }
+                    break;
+                case GameDataType.Aobj:
+                    {
+                        IEnumerable<RawAobj> rawMobjs = ParseData(sections, relas, GameDataType.RawAobj).Cast<RawAobj>();
+                        IEnumerable<Aobj> mobjs = rawMobjs.Select(rawMobj => Aobj.From(rawMobj, stringSection));
+                        List<object> output = mobjs.Cast<object>().ToList();
+                        return output;
+                    }
+                case GameDataType.RawAobj:
+                    while (stream.Position != stream.Length)
+                    {
+                        objects.Add(RawAobj.ReadBinaryData(reader, relas, reader.BaseStream.Position));
                     }
                     break;
                 default:
