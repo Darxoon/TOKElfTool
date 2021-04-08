@@ -195,7 +195,7 @@ namespace TOKElfTool
             {
                 FileName = "dispos_Npc.elf",
                 DefaultExt = ".elf",
-                Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst"
+                Filter = "All ELF Files (*.elf; *.elf.zst)|*.elf;*.elf.zst|ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
             };
             bool? result = dialog.ShowDialog(this);
             if (result == true)
@@ -228,7 +228,7 @@ namespace TOKElfTool
                 Title = $"{dialog.FileName} - TOK ELF Editor";
                 RemoveAllObjects();
 
-                bool compressedFileOpened = dialog.FilterIndex == 2;
+                bool compressedFileOpened = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
                 if (compressedFileOpened)
                 {
                     byte[] input = File.ReadAllBytes(dialog.FileName);
