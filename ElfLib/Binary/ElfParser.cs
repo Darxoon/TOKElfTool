@@ -203,7 +203,7 @@ namespace ElfLib
                     break;
                 case GameDataType.BShape:
                     {
-                        IEnumerable<RawBShape> rawMobjs = ParseData(sections, relas, GameDataType.RawAobj).Cast<RawBShape>();
+                        IEnumerable<RawBShape> rawMobjs = ParseData(sections, relas, GameDataType.RawBShape).Cast<RawBShape>();
                         IEnumerable<BShape> mobjs = rawMobjs.Select(rawMobj => BShape.From(rawMobj, stringSection));
                         List<object> output = mobjs.Cast<object>().ToList();
                         return output;
