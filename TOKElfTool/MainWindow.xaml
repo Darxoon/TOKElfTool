@@ -83,7 +83,12 @@
         </Menu>
 
         <Label x:Name="EmptyLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Open a file to edit it</Label>
-        
+        <Label x:Name="LoadingLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Loading...</Label>
+
+        <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom">
+            <StatusBarItem><TextBlock x:Name="statusLabel"></TextBlock></StatusBarItem>
+        </StatusBar>
+
         <ScrollViewer x:Name="ScrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
             <TabControl Margin="10">
                 <TabItem Header="Object Data">

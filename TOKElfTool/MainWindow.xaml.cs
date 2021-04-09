@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -206,7 +206,11 @@ namespace TOKElfTool
                     return;
 
                 Title = $"{dialog.FileName} - TOK ELF Editor";
-                
+                EmptyLabel.Visibility = Visibility.Collapsed;
+                LoadingLabel.Visibility = Visibility.Visible;
+
+                statusLabel.Text = "Loading ELF file...";
+
                 LoadDataType((GameDataType)type);
                 RemoveAllObjects();
 
@@ -222,9 +226,12 @@ namespace TOKElfTool
                 containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
                 AddRecentlyOpened(dialog.FileName);
-                
+
                 // initialize objects panel
                 await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
+
+                LoadingLabel.Visibility = Visibility.Collapsed;
+                statusLabel.Text = "Loaded file";
             }
         }
 
@@ -322,7 +329,7 @@ namespace TOKElfTool
             {
                 SaveFileDialog dialog = new SaveFileDialog
                 {
-                    FileName = "dispos_Npc.elf",
+                    FileName = $"dispos_{(loadedStructType == typeof(NPC) ? "Npc" : nameof(loadedStructType))}.elf",
                     DefaultExt = ".elf",
                     Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
                 };
@@ -345,6 +352,7 @@ namespace TOKElfTool
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+
             List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
             #region Logging
@@ -364,15 +372,18 @@ namespace TOKElfTool
             fileSavePath = ShowOptionalSaveDialog(fileSavePath);
             if (fileSavePath != null)
             {
+                statusLabel.Text = "Saving file...";
                 try
                 {
                     hasUnsavedChanges = false;
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                    statusLabel.Text = "Saved file";
                 }
                 catch (Exception exception)
                 {
                     Trace.WriteLine(exception);
                     MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                    statusLabel.Text = "Failed to save file";
                 }
             }
         }
@@ -385,7 +396,7 @@ namespace TOKElfTool
         {
             List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
-#region Logging
+            #region Logging
             Trace.WriteLine("NPCs:");
             Trace.Indent();
             foreach (var item in objects)
@@ -393,7 +404,7 @@ namespace TOKElfTool
                 Trace.WriteLine(item);
             }
             Trace.Unindent();
-#endregion
+            #endregion
 
             loadedBinary.Data = objects;
 
@@ -402,15 +413,18 @@ namespace TOKElfTool
             fileSavePath = ShowOptionalSaveDialog(null);
             if (fileSavePath != null)
             {
+                statusLabel.Text = "Saving file...";
                 try
                 {
                     hasUnsavedChanges = false;
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+                    statusLabel.Text = "Saved file";
                 }
                 catch (Exception exception)
                 {
                     Trace.WriteLine(exception);
                     MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
+                    statusLabel.Text = "Failed to save file";
                 }
             }
         }
@@ -545,6 +559,7 @@ namespace TOKElfTool
         private void MenuItem_OpenRepo_Click(object sender, RoutedEventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://github.com/Darxoon/TOKElfTool/"));
+            statusLabel.Text = "Opened online repository";
             e.Handled = true;
         }
 
@@ -565,6 +580,7 @@ namespace TOKElfTool
             bool? result = openFileDialog.ShowDialog(this);
             if (result == true)
             {
+                statusLabel.Text = "Decompressing file...";
 
                 byte[] input;
                 try
@@ -575,6 +591,7 @@ namespace TOKElfTool
                 {
                     MyMessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
                         "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    statusLabel.Text = "Failed to decompress file";
                     return;
                 }
 
@@ -598,11 +615,13 @@ namespace TOKElfTool
                     try
                     {
                         File.WriteAllBytes(saveFileDialog.FileName, decompressed);
+                        statusLabel.Text = "Decompressed file";
                     }
                     catch
                     {
                         MessageBox.Show(this, "Couldn't save the file. Maybe it's opened by another program",
                             "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        statusLabel.Text = "Failed to decompress file";
                     }
                 }
             }
@@ -619,6 +638,7 @@ namespace TOKElfTool
             bool? openResult = openFileDialog.ShowDialog(this);
             if (openResult == true)
             {
+                statusLabel.Text = "Compressing file...";
                 Trace.WriteLine(openFileDialog.FileName);
                 byte[] input;
                 try
@@ -629,6 +649,7 @@ namespace TOKElfTool
                 {
                     MessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
                         "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    statusLabel.Text = "Failed to compress file";
                     return;
                 }
 
@@ -647,11 +668,13 @@ namespace TOKElfTool
                     try
                     {
                         File.WriteAllBytes(saveFileDialog.FileName, compressed);
+                        statusLabel.Text = "Compressed file";
                     }
                     catch
                     {
                         MessageBox.Show(this, "Couldn't save the file. Maybe it's opened by another program",
                             "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        statusLabel.Text = "Failed to compress file";
                     }
                 }
             }
