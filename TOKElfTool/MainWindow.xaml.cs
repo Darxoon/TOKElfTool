@@ -275,6 +275,10 @@ namespace TOKElfTool
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 // Load empty.elf
                 Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
+
+                object newObject = Activator.CreateInstance(loadedStructType);
+                duplicateExpander = new ObjectEditControl(newObject, "");
+
                 return await LoadBinary(new BinaryReader(emptyElfStream));
             }
             // don't catch this during debug so it can be caught by the debugger
@@ -343,7 +347,7 @@ namespace TOKElfTool
         {
             List<Element<object>> objects = CollectObjects(ObjectTabPanel);
 
-#region Logging
+            #region Logging
             Trace.WriteLine("NPCs:");
             Trace.Indent();
             foreach (var item in objects)
@@ -351,7 +355,7 @@ namespace TOKElfTool
                 Trace.WriteLine(item);
             }
             Trace.Unindent();
-#endregion
+            #endregion
 
             loadedBinary.Data = objects;
 
