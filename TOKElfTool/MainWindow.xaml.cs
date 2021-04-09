@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -190,7 +190,6 @@ namespace TOKElfTool
 
         private async void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-
             OpenFileDialog dialog = new OpenFileDialog
             {
                 FileName = "dispos_Npc.elf",
@@ -206,77 +205,113 @@ namespace TOKElfTool
                 if (type is null)
                     return;
 
-                loadedDataType = (GameDataType)type;
-                switch (type)
-                {
-                    case GameDataType.NPC:
-                        loadedStructType = typeof(NPC);
-                        break;
-                    case GameDataType.Mobj:
-                        loadedStructType = typeof(Mobj);
-                        break;
-                    case GameDataType.Aobj:
-                        loadedStructType = typeof(Aobj);
-                        break;
-                    case GameDataType.BShape:
-                        loadedStructType = typeof(BShape);
-                        break;
-                    case GameDataType.None:
-                        loadedStructType = null;
-                        break;
-                    default:
-                        throw new Exception("Data type currently not supported");
-                }
-
                 Title = $"{dialog.FileName} - TOK ELF Editor";
+                
+                LoadDataType((GameDataType)type);
                 RemoveAllObjects();
 
-                bool compressedFileOpened = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
+                bool isCompressed = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
+                ElfBinary<object> binary = await LoadBinary(isCompressed, dialog.FileName);
 
-                BinaryReader reader;
-
-                if (compressedFileOpened)
-                {
-                    byte[] input = File.ReadAllBytes(dialog.FileName);
-                    byte[] decompessed = decompressor.Unwrap(input);
-                    MemoryStream memoryStream = new MemoryStream(decompessed)
-                    {
-                        Position = 0,
-                    };
-                    reader = new BinaryReader(memoryStream);
-
-                }
-                else
-                {
-                    FileStream input = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, (int)new FileInfo(dialog.FileName).Length);
-                    reader = new BinaryReader(input);
-                }
-
-                try
-                {
-                    loadedBinary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
-                }
-                catch (ElfContentNotFoundException elfException)
-                {
-                    MyMessageBox.Show(this, "Could not find content", "TOK ELF Editor", MessageBoxResult.OK,
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                if (binary is null)
                     return;
-                }
-#if !DEBUG
-                catch (ElfParseException elfException)
-                {
-                    MyMessageBox.Show(this, $"An error occured: \"{elfException}\"\n{elfException.StackTrace}", 
-                        "TOK ELF Editor", MessageBoxResult.OK, MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-#endif
+
+                loadedBinary = binary;
 
                 fileSavePath = null;
-                containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? @"C:\Users";
+                containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
                 AddRecentlyOpened(dialog.FileName);
+                
+                // initialize objects panel
                 await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
             }
         }
+
+        private void LoadDataType(GameDataType type)
+        {
+            loadedDataType = type;
+            switch (type)
+            {
+                case GameDataType.NPC:
+                    loadedStructType = typeof(NPC);
+                    break;
+                case GameDataType.Mobj:
+                    loadedStructType = typeof(Mobj);
+                    break;
+                case GameDataType.Aobj:
+                    loadedStructType = typeof(Aobj);
+                    break;
+                case GameDataType.BShape:
+                    loadedStructType = typeof(BShape);
+                    break;
+                case GameDataType.None:
+                    loadedStructType = null;
+                    break;
+                default:
+                    throw new Exception("Data type currently not supported");
+            }
+        }
+
+
+        private async Task<ElfBinary<object>> LoadBinary(bool isCompressed, string filename)
+        {
+            BinaryReader reader = CreateFileReader(isCompressed, filename);
+
+            return await LoadBinary(reader);
+        }
+
+        private async Task<ElfBinary<object>> LoadBinary(BinaryReader reader)
+        {
+            ElfBinary<object> binary;
+
+            try
+            {
+                binary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
+            }
+            catch (ElfContentNotFoundException)
+            {
+                MyMessageBox.Show(this, "The file is empty.", "TOK ELF Editor", MessageBoxResult.OK,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                // Load empty.elf
+                Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
+                return await LoadBinary(new BinaryReader(emptyElfStream));
+            }
+            // don't catch this during debug so it can be caught by the debugger
+#if !DEBUG
+            catch (ElfParseException elfException)
+            {
+                MyMessageBox.Show(this, $"An error occurred: \"{elfException}\"\n{elfException.StackTrace}", 
+                    "TOK ELF Editor", MessageBoxResult.OK, MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+#endif
+            return binary;
+        }
+
+        private BinaryReader CreateFileReader(bool isCompressed, string filename)
+        {
+            if (isCompressed)
+            {
+                byte[] input = File.ReadAllBytes(filename);
+                byte[] decompessed = decompressor.Unwrap(input);
+                MemoryStream memoryStream = new MemoryStream(decompessed)
+                {
+                    Position = 0,
+                };
+
+                return new BinaryReader(memoryStream);
+            }
+            else
+            {
+                FileStream input = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read,
+                    (int)new FileInfo(filename).Length);
+
+                return new BinaryReader(input);
+            }
+        }
+
+
         private string ShowOptionalSaveDialog(string savePath)
         {
             if (savePath == null)
