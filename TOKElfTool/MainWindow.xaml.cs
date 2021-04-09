@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -573,7 +573,7 @@ namespace TOKElfTool
                 }
                 catch
                 {
-                    MessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
+                    MyMessageBox.Show(this, "Couldn't read file. Maybe it's opened by another program or doesn't exist",
                         "TOK ELF Tool ZSTD Tools", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                     return;
                 }

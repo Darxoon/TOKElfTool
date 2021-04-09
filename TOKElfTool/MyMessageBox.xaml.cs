@@ -56,7 +56,13 @@ namespace TOKElfTool
 
         private bool? result = false;
 
-        public static bool? Show(Window owner, string mainText, string title, MessageBoxResult defaultResult, MessageBoxButton buttons = MessageBoxButton.YesNo, MessageBoxImage icon = MessageBoxImage.Warning)
+        public static bool? Show(Window owner, string mainText, string title,
+            MessageBoxButton buttons, MessageBoxImage icon, MessageBoxResult defaultResult) =>
+            Show(owner, mainText, title, defaultResult, buttons, icon);
+
+        public static bool? Show(Window owner, string mainText, string title, 
+            MessageBoxResult defaultResult, MessageBoxButton buttons = MessageBoxButton.YesNo, 
+            MessageBoxImage icon = MessageBoxImage.Warning)
         {
             Icon messageIcon;
             switch (icon)
