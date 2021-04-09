@@ -41,6 +41,11 @@ namespace TOKElfTool
             {
                 recentlyOpenedFiles = File.ReadAllLines(HistoryPath).ToList();
                 RegenerateRecentlyOpened();
+                EmptyLabel.UpdateList(4, recentlyOpenedFiles.ToArray());
+            }
+            else
+            {
+                EmptyLabel.UpdateList(0, new string[0]);
             }
         }
 
