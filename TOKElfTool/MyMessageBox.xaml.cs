@@ -111,6 +111,8 @@ namespace TOKElfTool
             }
             myMessageBox.ShowDialog();
 
+            owner.Focus();
+
             return myMessageBox.result;
         }
 
