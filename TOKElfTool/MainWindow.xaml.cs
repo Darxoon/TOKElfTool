@@ -154,7 +154,7 @@ namespace TOKElfTool
 
                 MenuItem menuItem = new MenuItem
                 {
-                    Header = name,
+                    Header = Util.ShortenPath(name),
                 };
                 OpenRecentItem.Items.Add(menuItem);
             }
@@ -205,7 +205,7 @@ namespace TOKElfTool
                 if (type is null)
                     return;
 
-                Title = $"{dialog.FileName} - TOK ELF Editor";
+                Title = $"{Util.ShortenPath(dialog.FileName)} - TOK ELF Editor";
                 EmptyLabel.Visibility = Visibility.Collapsed;
                 LoadingLabel.Visibility = Visibility.Visible;
 
