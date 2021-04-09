@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -217,6 +217,9 @@ namespace TOKElfTool
                         break;
                     case GameDataType.Aobj:
                         loadedStructType = typeof(Aobj);
+                        break;
+                    case GameDataType.BShape:
+                        loadedStructType = typeof(BShape);
                         break;
                     case GameDataType.None:
                         loadedStructType = null;
