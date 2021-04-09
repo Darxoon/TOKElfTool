@@ -91,47 +91,47 @@ namespace ElfLib
             return (T)npc;
         }
 
-        public static TRaw NormalToRawObject<TRaw, TSource>(TSource npc,
+        public static TRaw NormalToRawObject<TRaw, TSource>(TSource source,
             Dictionary<string, ElfStringPointer> stringSectionTable,
             SortedDictionary<long, ElfStringPointer> stringRelocTable = null,
             long baseOffset = 0)
 
             where TRaw : struct where TSource : struct
         {
-            object rawNPC = new TRaw();
+            object rawObject = new TRaw();
 
-            foreach (FieldInfo rawNpcField in typeof(RawNPC).GetFields())
+            foreach (FieldInfo rawField in typeof(TRaw).GetFields())
             {
-                FieldInfo npcField = typeof(NPC).GetField(rawNpcField.Name);
-                if (npcField == null)
-                    throw new Exception($"Didn't find field `{rawNpcField.Name}` in type NPC");
+                FieldInfo field = typeof(TSource).GetField(rawField.Name);
+                if (field == null)
+                    throw new Exception($"Didn't find field `{rawField.Name}` in type {nameof(TSource)}");
 
-                if (rawNpcField.FieldType == typeof(ElfStringPointer) && npcField.FieldType == typeof(string))
+                if (rawField.FieldType == typeof(ElfStringPointer) && field.FieldType == typeof(string))
                 {
-                    string str = (string)npcField.GetValue(npc);
+                    string str = (string)field.GetValue(source);
                     ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
                     if (stringRelocTable != null)
-                        stringRelocTable.Add(rawNpcField.GetFieldOffset() + baseOffset, stringPointer);
+                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, stringPointer);
                     else
-                        rawNpcField.SetValue(rawNPC, stringPointer);
+                        rawField.SetValue(rawObject, stringPointer);
                 }
-                else if (npcField.FieldType.BaseType == typeof(Enum))
+                else if (field.FieldType.BaseType == typeof(Enum))
                 {
-                    rawNpcField.SetValue(rawNPC, npcField.GetValue(npc));
+                    rawField.SetValue(rawObject, field.GetValue(source));
                 }
-                else if (npcField.FieldType == typeof(bool))
+                else if (field.FieldType == typeof(bool))
                 {
-                    rawNpcField.SetValue(rawNPC, (bool)npcField.GetValue(npc) ? 1 : 0);
+                    rawField.SetValue(rawObject, (bool)field.GetValue(source) ? 1 : 0);
                 }
-                else if (npcField.FieldType == rawNpcField.FieldType)
+                else if (field.FieldType == rawField.FieldType)
                 {
-                    rawNpcField.SetValue(rawNPC, npcField.GetValue(npc));
+                    rawField.SetValue(rawObject, field.GetValue(source));
                 }
                 else
-                    throw new Exception($"Types `{npcField.FieldType}` and `{rawNpcField.FieldType}` didn't match on field `{npcField.Name}`");
+                    throw new Exception($"Types `{field.FieldType}` and `{rawField.FieldType}` didn't match on field `{field.Name}`");
             }
 
-            return (TRaw)rawNPC;
+            return (TRaw)rawObject;
         }
 
         public static long CalculatePadding(long position, long alignment) =>
