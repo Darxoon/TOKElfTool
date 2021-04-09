@@ -442,18 +442,8 @@ namespace TOKElfTool
             Trace.WriteLine(objectEditControl);
 
             // go through all property controls
-            object currentObjects;
-            switch (loadedDataType)
-            {
-                case GameDataType.NPC:
-                    currentObjects = new NPC();
-                    break;
-                case GameDataType.Mobj:
-                    currentObjects = new Mobj();
-                    break;
-                default:
-                    throw new Exception("Data type not supported");
-            }
+            object currentObjects = Activator.CreateInstance(loadedStructType);
+
             string propertyName = "";
             Type propertyType = null;
 
