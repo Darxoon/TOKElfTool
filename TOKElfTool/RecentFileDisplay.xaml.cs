@@ -20,7 +20,7 @@ namespace TOKElfTool
     /// </summary>
     public partial class RecentFileDisplay : UserControl
     {
-        public event EventHandler OnEntryClick;
+        public event EventHandler<MouseButtonEventArgs> OnEntryClick;
 
         public RecentFileDisplay()
         {
@@ -54,6 +54,8 @@ namespace TOKElfTool
 
         private void GenerateEntries(IEnumerable<string> entries)
         {
+            int index = 0;
+
             foreach (string entryName in entries)
             {
                 Label label = new Label
@@ -63,7 +65,11 @@ namespace TOKElfTool
                     Style = FindResource("Underlined") as Style,
                     HorizontalAlignment = HorizontalAlignment.Center,
                 };
+                int senderIndex = index;
+                label.MouseLeftButtonUp += (sender, args) => OnEntryClick?.Invoke(senderIndex, args);
                 stackPanel.Children.Add(label);
+
+                index += 1;
             }
         }
     }

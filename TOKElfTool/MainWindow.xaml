@@ -82,7 +82,7 @@
             </MenuItem>
         </Menu>
 
-        <local:RecentFileDisplay x:Name="EmptyLabel" DockPanel.Dock="Top"></local:RecentFileDisplay>
+        <local:RecentFileDisplay x:Name="EmptyLabel" DockPanel.Dock="Top" OnEntryClick="EmptyLabel_OnEntryClick"></local:RecentFileDisplay>
         <Label x:Name="LoadingLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Loading...</Label>
 
         <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom">

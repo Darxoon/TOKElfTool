@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ZstdNet;
 
@@ -210,34 +211,39 @@ namespace TOKElfTool
                 if (type is null)
                     return;
 
-                Title = $"{Util.ShortenPath(dialog.FileName)} - TOK ELF Editor";
-                EmptyLabel.Visibility = Visibility.Collapsed;
-                LoadingLabel.Visibility = Visibility.Visible;
-
-                statusLabel.Text = "Loading ELF file...";
-
-                LoadDataType((GameDataType)type);
-                RemoveAllObjects();
-
                 bool isCompressed = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
-                ElfBinary<object> binary = await LoadBinary(isCompressed, dialog.FileName);
-
-                if (binary is null)
-                    return;
-
-                loadedBinary = binary;
-
-                fileSavePath = null;
-                containingFolderPath = Path.GetDirectoryName(dialog.FileName) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-                AddRecentlyOpened(dialog.FileName);
-
-                // initialize objects panel
-                await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
-
-                LoadingLabel.Visibility = Visibility.Collapsed;
-                statusLabel.Text = "Loaded file";
+                await OpenFile(dialog.FileName, (GameDataType)type, isCompressed);
             }
+        }
+
+        private async Task OpenFile(string filename, GameDataType type, bool isCompressed)
+        {
+            Title = $"{Util.ShortenPath(filename)} - TOK ELF Editor";
+            EmptyLabel.Visibility = Visibility.Collapsed;
+            LoadingLabel.Visibility = Visibility.Visible;
+
+            statusLabel.Text = "Loading ELF file...";
+
+            LoadDataType(type);
+            RemoveAllObjects();
+
+            ElfBinary<object> binary = await LoadBinary(isCompressed, filename);
+
+            if (binary is null)
+                return;
+
+            loadedBinary = binary;
+
+            fileSavePath = null;
+            containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            AddRecentlyOpened(filename);
+
+            // initialize objects panel
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
+
+            LoadingLabel.Visibility = Visibility.Collapsed;
+            statusLabel.Text = "Loaded file";
         }
 
         private void LoadDataType(GameDataType type)
@@ -725,6 +731,19 @@ namespace TOKElfTool
 
                 e.Cancel = !result ?? false;
             }
+        }
+
+        private void EmptyLabel_OnEntryClick(object sender, MouseButtonEventArgs e)
+        {
+            string path = recentlyOpenedFiles[(int)sender];
+            string filename = Path.GetFileName(path);
+
+            GameDataType? type = ObjectTypeSelector.Show(filename.Split('.')[0]);
+
+            if (type is null)
+                return;
+
+            Dispatcher.InvokeAsync(() => OpenFile(path, (GameDataType)type, filename.EndsWith(".zst")));
         }
     }
 }
