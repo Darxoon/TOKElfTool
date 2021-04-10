@@ -9,10 +9,13 @@ namespace ElfLib
         Mobj,
         Aobj,
         BShape,
-        RawNPC, // TODO: temporary
+        Item,
+
+        RawNPC,
         RawMobj,
         RawAobj,
         RawBShape,
+        RawItem,
         // TODO: Add more
     }
 }

@@ -214,11 +214,37 @@ namespace ElfLib
                         objects.Add(RawBShape.ReadBinaryData(reader, relas, reader.BaseStream.Position));
                     }
                     break;
+
+                case GameDataType.Item:
+                    return ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, GameDataType.RawItem, Item.From);
+                case GameDataType.RawItem:
+                    ParseRawObjectsOfType(stream, objects, reader, relas, RawItem.ReadBinaryData);
+                    break;
                 default:
                     throw new ElfParseException("Data type not implemented");
             }
 
             return objects;
+        }
+
+        private delegate T ObjectConverter<out T, in TRaw>(TRaw rawBShape, Section stringSection);
+
+        private static List<object> ParseObjectsOfType<T, TRaw>(List<Section> sections, List<SectionRela> relas, Section stringSection,
+            GameDataType rawType, ObjectConverter<T, TRaw> converter)
+        {
+            List<object> rawObjects = ParseData(sections, relas, rawType);
+            IEnumerable<T> objects = rawObjects.Select(rawMobj => converter((TRaw)rawMobj, stringSection));
+            return objects.Cast<object>().ToList();
+        }
+
+        private delegate TRaw ReadBinaryData<out TRaw>(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset);
+
+        private static void ParseRawObjectsOfType<TRaw>(MemoryStream stream, List<object> objects, BinaryReader reader, List<SectionRela> relas, ReadBinaryData<TRaw> readBinaryData)
+        {
+            while (stream.Position != stream.Length)
+            {
+                objects.Add(readBinaryData(reader, relas, reader.BaseStream.Position));
+            }
         }
 
     }
