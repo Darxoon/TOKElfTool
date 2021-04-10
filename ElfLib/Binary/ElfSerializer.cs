@@ -207,6 +207,15 @@ namespace ElfLib
                         //allStrings.Add(npc.init_function_str);
                     }
                     break;
+                case GameDataType.Item:
+                    foreach (Element<T> element in data)
+                    {
+                        Item npc = (Item)(object)element.value;
+                        allStrings.Add(npc.level_str);
+                        allStrings.Add(npc.shape_str);
+                        allStrings.Add(npc.obj_str);
+                    }
+                    break;
                 case GameDataType.None:
                     break;
                 default:
@@ -264,6 +273,13 @@ namespace ElfLib
                     {
                         rawObjects.Add(RawBShape.From((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         dataSectionPosition += Marshal.SizeOf(typeof(RawBShape));
+                    }
+                    break;
+                case GameDataType.Item:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawItem.From((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawItem));
                     }
                     break;
                 default:

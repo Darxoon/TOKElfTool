@@ -263,6 +263,9 @@ namespace TOKElfTool
                 case GameDataType.BShape:
                     loadedStructType = typeof(BShape);
                     break;
+                case GameDataType.Item:
+                    loadedStructType = typeof(Item);
+                    break;
                 case GameDataType.None:
                     loadedStructType = null;
                     break;

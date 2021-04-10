@@ -46,5 +46,6 @@ namespace ElfLib.CustomDataTypes
             rawItem.shape_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
 
             return rawItem;
+        }
     }
 }
