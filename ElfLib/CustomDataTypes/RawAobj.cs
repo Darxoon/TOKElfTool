@@ -41,7 +41,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0x98;
         public int field_0x9c;
         public int field_0xa0;
-        public int field_0xa4;
+        public float field_0xa4;
         public int field_0xa8;
         public float field_0xac;
         public int field_0xb0;
