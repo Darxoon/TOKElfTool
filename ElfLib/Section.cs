@@ -10,7 +10,7 @@ namespace ElfLib
     {
         internal ElfStringPointer namePointer;
 
-        public string Name { get; set; } = "";
+        public string Name { get; internal set; }
         public int Type { get; set; }
         public long Flags { get; set; }
         public long Addr { get; set; }

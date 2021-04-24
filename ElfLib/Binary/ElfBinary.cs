@@ -19,25 +19,43 @@ namespace ElfLib
         }
     }
 
+    public enum ElfSymbolType
+    {
+        Main,
+        MapLinkNodes,
+        MapLink,
+    }
+
     /// <summary>
     /// An elf binary loaded into memory. Can be obtained through <see cref="ElfParser"/> and be serialized using ElfSerializer.
     /// </summary>
     /// <typeparam name="T">The type of the data which this file holds</typeparam>
-    public class ElfBinary<T>
+    public sealed class ElfBinary<T>
     {
 
-        public virtual List<Section> Sections { get; }
-        public virtual List<Element<T>> Data { get; set; }
+        public List<Symbol> SymbolTable { get; }
+        public List<Section> Sections { get; }
+        public Dictionary<Symbol, ElfSymbolType> SymbolTypes { get; }
+        public Dictionary<Symbol, List<Element<T>>> UnmappedData { get; }
+        public Dictionary<ElfSymbolType, List<Element<T>>> Data { get; }
 
-        public virtual Section GetSection(string name)
+        public Section GetSection(string name)
         {
             return Sections.Find(value => value.Name == name);
         }
 
-        internal ElfBinary(List<Section> sections, List<Element<T>> data)
+        internal ElfBinary(
+            List<Section> sections,
+            Dictionary<Symbol, List<Element<T>>> unmappedData,
+            Dictionary<ElfSymbolType, List<Element<T>>> data,
+            Dictionary<Symbol, ElfSymbolType> symbolTypes,
+            List<Symbol> symbolTable)
         {
             Sections = sections;
+            UnmappedData = unmappedData;
             Data = data;
+            SymbolTypes = symbolTypes;
+            SymbolTable = symbolTable;
         }
     }
 }
