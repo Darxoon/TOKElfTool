@@ -32,30 +32,13 @@ namespace ElfLib
     /// <typeparam name="T">The type of the data which this file holds</typeparam>
     public sealed class ElfBinary<T>
     {
-
-        public List<Symbol> SymbolTable { get; }
-        public List<Section> Sections { get; }
-        public Dictionary<Symbol, ElfSymbolType> SymbolTypes { get; }
-        public Dictionary<Symbol, List<Element<T>>> UnmappedData { get; }
-        public Dictionary<ElfSymbolType, List<Element<T>>> Data { get; }
+        public List<Symbol> SymbolTable { get; internal set; }
+        public List<Section> Sections { get; internal set; }
+        public List<Element<T>>[] Data { get; internal set; }
 
         public Section GetSection(string name)
         {
             return Sections.Find(value => value.Name == name);
-        }
-
-        internal ElfBinary(
-            List<Section> sections,
-            Dictionary<Symbol, List<Element<T>>> unmappedData,
-            Dictionary<ElfSymbolType, List<Element<T>>> data,
-            Dictionary<Symbol, ElfSymbolType> symbolTypes,
-            List<Symbol> symbolTable)
-        {
-            Sections = sections;
-            UnmappedData = unmappedData;
-            Data = data;
-            SymbolTypes = symbolTypes;
-            SymbolTable = symbolTable;
         }
     }
 }

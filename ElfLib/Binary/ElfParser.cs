@@ -94,15 +94,14 @@ namespace ElfLib
             }
             List<Symbol> symbolTable = ParseSymbolTable(sections, stringTable);
 
-            Dictionary<Symbol, List<Element<T>>> unmappedData = ParseData<T>(sections, relas, dataType, symbolTable);
-            Dictionary<ElfSymbolType, List<Element<T>>> mappedData = MapData<T>(unmappedData, symbolTable, sections, out Dictionary<Symbol, ElfSymbolType> symbolMappings);
+            List<Element<T>>[] data = ParseData<T>(sections, relas, dataType, symbolTable);
 
             if (verbose)
             {
                 #region Log fields
                 Trace.WriteLine("Data:");
                 Trace.Indent();
-                foreach (var item in unmappedData)
+                foreach (var item in data)
                 {
                     Trace.WriteLine(item);
                 }
@@ -114,25 +113,12 @@ namespace ElfLib
             reader.Dispose();
             input.Close();
 
-            return new ElfBinary<T>(sections, unmappedData, mappedData, symbolMappings, symbolTable);
-        }
-
-        private static Dictionary<ElfSymbolType, List<Element<T>>> MapData<T>(Dictionary<Symbol, List<Element<T>>> data, List<Symbol> symbolTable, List<Section> sections, out Dictionary<Symbol, ElfSymbolType> symbolMappings)
-        {
-            Section dataSection = GetSection(sections, ".data");
-            List<Symbol> symbols = symbolTable.Where(symbol => symbol.Section == dataSection).OrderBy(symbol => symbol.Value).ToList();
-
-            Dictionary<ElfSymbolType, List<Element<T>>> output = new Dictionary<ElfSymbolType, List<Element<T>>>();
-            symbolMappings = new Dictionary<Symbol, ElfSymbolType>();
-
-            foreach ((Symbol symbol, List<Element<T>> list) in data)
+            return new ElfBinary<T>
             {
-                ElfSymbolType mapped = symbols.Count > 1 ? (symbols.IndexOf(symbol) == 0 ? ElfSymbolType.MapLinkNodes : ElfSymbolType.MapLink) : ElfSymbolType.Main;
-                output.Add(mapped, list);
-                symbolMappings.Add(symbol, mapped);
-            }
-
-            return output;
+                Data = data,
+                Sections = sections,
+                SymbolTable = symbolTable,
+            };
         }
 
 
@@ -173,33 +159,26 @@ namespace ElfLib
             Section relaSection = GetSection(sections, ".rela.data");
             List<SectionRela> relas = new List<SectionRela>();
 
-            using (BinaryReader reader = relaSection.CreateBinaryReader())
+            using BinaryReader reader = relaSection.CreateBinaryReader();
+            while (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-                while (reader.BaseStream.Position != reader.BaseStream.Length)
-                {
-                    relas.Add(SectionRela.FromBinary(reader));
-                }
+                relas.Add(SectionRela.FromBinary(reader));
             }
 
             return relas;
         }
 
 
-        private static Dictionary<Symbol, List<Element<T>>> ParseData<T>(List<Section> sections, List<SectionRela> relas,
+        private static List<Element<T>>[] ParseData<T>(List<Section> sections, List<SectionRela> relas,
             GameDataType dataType, List<Symbol> symbolTable)
         {
-            Dictionary<Symbol, List<object>> data = ParseData(sections, relas, dataType, symbolTable);
-            Dictionary<Symbol, List<Element<T>>> typedData = new Dictionary<Symbol, List<Element<T>>>();
+            List<List<object>> data = ParseData(sections, relas, dataType, symbolTable);
+            IEnumerable<List<Element<T>>> typedData = data.Select(list => list.Select(value => new Element<T>((T)value)).ToList());
 
-            foreach ((Symbol symbol, List<object> list) in data)
-            {
-                typedData.Add(symbol, list.Cast<T>().Select(value => new Element<T>(value)).ToList());
-            }
-
-            return typedData;
+            return typedData.ToArray();
         }
 
-        private static Dictionary<Symbol, List<object>> ParseData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
+        private static List<List<object>> ParseData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
         {
             if (dataType == GameDataType.None)
                 return null;
@@ -225,7 +204,7 @@ namespace ElfLib
 
         }
 
-        private static Dictionary<Symbol, List<object>> ParseRawData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
+        private static List<List<object>> ParseRawData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
         {
             Section dataSection = GetSection(sections, ".data");
 
@@ -278,7 +257,7 @@ namespace ElfLib
 
         private delegate T ObjectConverter<out T, in TRaw>(TRaw rawBShape, Section stringSection);
 
-        private static Dictionary<Symbol, List<object>> ParseObjectsOfType<T, TRaw>(List<Section> sections, List<SectionRela> relas, Section stringSection,
+        private static List<List<object>> ParseObjectsOfType<T, TRaw>(List<Section> sections, List<SectionRela> relas, Section stringSection,
             List<Symbol> symbolTable, GameDataType rawType, ObjectConverter<T, TRaw> converter)
         {
             Dictionary<Symbol, List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
