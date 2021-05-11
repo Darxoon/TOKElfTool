@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TOKElfTool"
-        xmlns:st="http://schemas.spicytaco.io/"
         mc:Ignorable="d"
         Title="ObjectTypeSelector" Height="143" Width="303"
         ResizeMode="NoResize">
@@ -18,9 +17,9 @@
             <ComboBoxItem>BShape</ComboBoxItem>
             <ComboBoxItem>Item</ComboBoxItem>
         </ComboBox>
-        <st:StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0" MarginBetweenChildren="10" HorizontalAlignment="Right">
-            <Button Height="23" Width="68" Click="OkButton_OnClick">OK</Button>
-            <Button Height="23" Width="68" Click="CancelButton_Onclick">Cancel</Button>
-        </st:StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0" HorizontalAlignment="Right">
+            <Button Height="23" Width="68" Click="OkButton_OnClick" Margin="10,0,0,0">OK</Button>
+            <Button Height="23" Width="68" Click="CancelButton_Onclick" Margin="10,0,0,0">Cancel</Button>
+        </StackPanel>
     </StackPanel>
 </Window>

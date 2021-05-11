@@ -9,5 +9,12 @@
             <Setter Property="TextBlock.TextDecorations" Value="Underline" />
         </Style>
 
+        <Style x:Key="WinButton" TargetType="{x:Type Button}">
+            <Style.Setters>
+                <Setter Property="BorderBrush" Value="#adadad"></Setter>
+                <Setter Property="Background" Value="#e1e1e1"></Setter>
+            </Style.Setters>
+        </Style>
+
     </Application.Resources>
 </Application>

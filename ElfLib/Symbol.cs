@@ -43,7 +43,13 @@ namespace ElfLib
             Info = reader.ReadByte();
             Visibility = reader.ReadByte();
             SectionHeaderIndex = reader.ReadInt16();
-            Section = sections[SectionHeaderIndex];
+            try
+            {
+                Section = sections[SectionHeaderIndex];
+            } catch (ArgumentOutOfRangeException)
+            {
+                Section = null;
+            }
             Value = reader.ReadInt64();
             Size = reader.ReadInt64();
         }

@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TOKElfTool"
-        xmlns:st="http://schemas.spicytaco.io/"
         mc:Ignorable="d"
         Title="TOK ELF Editor" Height="Auto" Width="600"
         FlowDirection="LeftToRight"
@@ -94,8 +93,8 @@
                 <TabItem Header="Object Data">
                     <StackPanel x:Name="ObjectTabPanel">
                         <StackPanel Margin="5" Orientation="Horizontal">
-                            <Button Margin="0 0 5 0" Click="Button_AddObject_OnClick">Add Object</Button>
-                            <Button Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick">Remove All Objects</Button>
+                            <Button Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
+                            <Button Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
                         </StackPanel>
 
 

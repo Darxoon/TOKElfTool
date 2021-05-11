@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FDF79075-AD2C-4511-8B2F-834181E0C7AF}</ProjectGuid>
+    <ProjectGuid>{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>TOKElfTool</RootNamespace>
     <AssemblyName>TOKElfTool</AssemblyName>
@@ -32,15 +32,11 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SpicyTaco.AutoGrid, Version=1.2.29.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SpicyTaco.AutoGrid.1.2.29\lib\net40\SpicyTaco.AutoGrid.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -78,18 +74,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ObjectEditControl.xaml.cs">
-      <DependentUpon>ObjectEditControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MyMessageBox.xaml.cs">
-      <DependentUpon>MyMessageBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ObjectTypeSelector.xaml.cs">
-      <DependentUpon>ObjectTypeSelector.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="RecentFileDisplay.xaml.cs">
-      <DependentUpon>RecentFileDisplay.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="RecentFileDisplay.xaml.cs" />
     <Compile Include="Util.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -104,23 +89,26 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MyMessageBox.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="ObjectEditControl.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="ObjectTypeSelector.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="RecentFileDisplay.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyMessageBox.xaml.cs" />
+    <Compile Include="ObjectEditControl.xaml.cs" />
+    <Compile Include="ObjectTypeSelector.xaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -138,7 +126,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="empty.elf" />
+    <None Include="empty.elf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

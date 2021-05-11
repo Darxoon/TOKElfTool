@@ -66,23 +66,28 @@ namespace TOKElfTool
 
         private bool hasUnsavedChanges;
 
-        private void InitializeObjectsPanel<T>(Element<T>[] objects, string objectName)
+        private void InitializeObjectsPanel<T>(List<Element<T>>[] objects, string objectName)
         {
             EmptyLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
 
-            for (int i = 0; i < objects.Length; i++)
+            for (int j = 0; j < objects.Length; j++)
             {
-                object currentObject = objects[i].value;
+                List<Element<T>> sectionObjects = objects[j];
 
-                ObjectEditControl expander = new ObjectEditControl(currentObject, $"{objectName} {i}");
+                for (int i = 0; i < sectionObjects.Count; i++)
+                {
+                    object currentObject = sectionObjects[i].value;
 
-                expander.RemoveButtonClick += RemoveButton_OnClick;
-                expander.DuplicateButtonClick += DuplicateButton_OnClick;
+                    ObjectEditControl expander = new ObjectEditControl(currentObject, $"{objectName} {i}");
 
-                expander.ValueChanged += (sender, args) => hasUnsavedChanges = true;
+                    expander.RemoveButtonClick += RemoveButton_OnClick;
+                    expander.DuplicateButtonClick += DuplicateButton_OnClick;
 
-                ObjectTabPanel.Children.Add(expander);
+                    expander.ValueChanged += (sender, args) => hasUnsavedChanges = true;
+
+                    ObjectTabPanel.Children.Add(expander);
+                }
             }
 
         }
@@ -216,11 +221,12 @@ namespace TOKElfTool
             }
         }
 
-        private async Task OpenFile(string filename, GameDataType type, bool isCompressed)
+        private async Task<ElfBinary<object>> OpenFile(string filename, GameDataType type, bool isCompressed)
         {
             Title = $"{Util.ShortenPath(filename)} - TOK ELF Editor";
             EmptyLabel.Visibility = Visibility.Collapsed;
             LoadingLabel.Visibility = Visibility.Visible;
+            ScrollViewer.Visibility = Visibility.Collapsed;
 
             statusLabel.Text = "Loading ELF file...";
 
@@ -230,7 +236,10 @@ namespace TOKElfTool
             ElfBinary<object> binary = await LoadBinary(isCompressed, filename);
 
             if (binary is null)
-                return;
+                return null;
+
+            Trace.WriteLine("symbol table:");
+            Trace.WriteLine(string.Join(", ", binary.SymbolTable.Select(x => x.Name)));
 
             loadedBinary = binary;
 
@@ -240,10 +249,13 @@ namespace TOKElfTool
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data.ToArray(), loadedDataType.ToString()));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType.ToString()));
 
             LoadingLabel.Visibility = Visibility.Collapsed;
+            ScrollViewer.Visibility = Visibility.Visible;
             statusLabel.Text = "Loaded file";
+
+            return binary;
         }
 
         private void LoadDataType(GameDataType type)
@@ -367,22 +379,6 @@ namespace TOKElfTool
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
 
-            List<Element<object>> objects = CollectObjects(ObjectTabPanel);
-
-            #region Logging
-            Trace.WriteLine("NPCs:");
-            Trace.Indent();
-            foreach (var item in objects)
-            {
-                Trace.WriteLine(item);
-            }
-            Trace.Unindent();
-            #endregion
-
-            loadedBinary.Data = objects;
-
-            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
-
             fileSavePath = ShowOptionalSaveDialog(fileSavePath);
             if (fileSavePath != null)
             {
@@ -390,6 +386,11 @@ namespace TOKElfTool
                 try
                 {
                     hasUnsavedChanges = false;
+
+                    List<Element<object>> objects = CollectObjects(ObjectTabPanel);
+                    loadedBinary.Data[0] = objects;
+                    byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
+
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                     statusLabel.Text = "Saved file";
                 }
@@ -408,21 +409,6 @@ namespace TOKElfTool
 
         private void CommandBinding_SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List<Element<object>> objects = CollectObjects(ObjectTabPanel);
-
-            #region Logging
-            Trace.WriteLine("NPCs:");
-            Trace.Indent();
-            foreach (var item in objects)
-            {
-                Trace.WriteLine(item);
-            }
-            Trace.Unindent();
-            #endregion
-
-            loadedBinary.Data = objects;
-
-            byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
 
             fileSavePath = ShowOptionalSaveDialog(null);
             if (fileSavePath != null)
@@ -431,6 +417,11 @@ namespace TOKElfTool
                 try
                 {
                     hasUnsavedChanges = false;
+
+                    List<Element<object>> objects = CollectObjects(ObjectTabPanel);
+                    loadedBinary.Data[0] = objects;
+                    byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
+
                     File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
                     statusLabel.Text = "Saved file";
                 }
@@ -464,8 +455,7 @@ namespace TOKElfTool
 
         private object CollectObject(ObjectEditControl objectEditControl)
         {
-            Expander expander = (Expander)objectEditControl.Content;
-            Grid grid = (Grid)expander.Content;
+            Grid grid = objectEditControl.Grid;
 
             Trace.WriteLine(objectEditControl);
 
@@ -478,10 +468,6 @@ namespace TOKElfTool
             for (int j = 0; j < grid.Children.Count; j++)
             {
                 UIElement child = grid.Children[j];
-
-                // Ignore first child (Control buttons)
-                if (j < 2)
-                    continue;
 
                 // key label
                 if (j % 2 == 0)

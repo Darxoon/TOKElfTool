@@ -30,6 +30,8 @@ namespace ElfLib
 
             File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname2.bin", serializedData);
 
+            // TODO: Serialize symbols
+
             // Serialize .rela.data
             byte[] relaData = SerializeRelaData(stringRelocTable);
             File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname3.bin", relaData);
@@ -92,8 +94,8 @@ namespace ElfLib
 
             byte[] output = outputStream.ToArray();
 
-            writer.Dispose();
             outputStream.Dispose();
+            writer.Dispose();
 
             return output;
         }
@@ -118,7 +120,7 @@ namespace ElfLib
                         newContent = relaData;
                         break;
                     case ".rodata":
-                        newContent = updateRodataCount ? BitConverter.GetBytes(binary.Data.Count) : null;
+                        newContent = updateRodataCount ? BitConverter.GetBytes(binary.Data.Aggregate(0, (amount, dataSection) => amount + dataSection.Count)) : null;
                         break;
                     default:
                         break;
@@ -149,19 +151,132 @@ namespace ElfLib
 
             byte[] output = stream.ToArray();
 
-            writer.Dispose();
             stream.Dispose();
+            writer.Dispose();
 
             return output;
         }
 
-        private static byte[] SerializeData<T>(List<Element<T>> data, GameDataType dataType,
+        private static byte[] SerializeData<T>(List<Element<T>>[] data, GameDataType dataType,
             out byte[] stringSectionData,
             out SortedDictionary<long, ElfStringPointer> stringRelocTable)
         {
             // Prepare list of all strings
             HashSet<string> allStrings = new HashSet<string>();
 
+            foreach (List<Element<T>> list in data)
+            {
+                AddAllStrings(list, dataType, allStrings);
+            }
+
+
+            // Write list of strings
+            stringSectionData = CreateStringSectionData(allStrings,
+                out Dictionary<string, ElfStringPointer> stringDeclarationMap);
+
+            #region Logging
+            Trace.WriteLine("all strings: " + string.Join(", ", allStrings.ToArray()));
+            Trace.WriteLine("all string offsets:");
+            Trace.Indent();
+            foreach (var item in stringDeclarationMap)
+            {
+                Trace.WriteLine($"String \"{item.Key}\" -> {item.Value}");
+            }
+            Trace.Unindent();
+            File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname.bin", stringSectionData);
+            #endregion
+
+            List<object> rawObjects = new List<object>();
+            stringRelocTable = new SortedDictionary<long, ElfStringPointer>();
+
+            // Convert objects to raw objects and serialize them
+            long dataSectionPosition = 0;
+            // TODO: collect new symbol positions
+
+            foreach (List<Element<T>> list in data)
+            {
+                ConvertToRawObjects(list, dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
+            }
+
+            #region Logging
+            Trace.WriteLine("Raw NPC's:");
+            Trace.Indent();
+            foreach (object item in rawObjects)
+            {
+                Trace.WriteLine(item);
+            }
+            Trace.Unindent();
+            Trace.WriteLine("Sting Reloc Table:");
+            Trace.Indent();
+            foreach (var item in stringRelocTable)
+            {
+                Trace.WriteLine($"{item.Key} -> {item.Value}");
+            }
+            Trace.Unindent();
+            #endregion
+
+            // Serialize 
+            MemoryStream dataStream = new MemoryStream();
+            BinaryWriter binaryWriter = new BinaryWriter(dataStream);
+            foreach (var item in rawObjects)
+            {
+                Util.ToBinaryWriter(binaryWriter, item);
+            }
+
+            byte[] output = dataStream.ToArray();
+
+            dataStream.Dispose();
+            binaryWriter.Dispose();
+
+            return output;
+        }
+
+        private static void ConvertToRawObjects<T>(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, List<object> rawObjects, SortedDictionary<long, ElfStringPointer> stringRelocTable, ref long dataSectionPosition)
+        {
+            switch (dataType)
+            {
+                case GameDataType.NPC:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawNPC.From((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
+                    }
+                    break;
+                case GameDataType.Mobj:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawMobj.From((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawMobj));
+                    }
+                    break;
+                case GameDataType.Aobj:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawAobj.From((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawAobj));
+                    }
+                    break;
+                case GameDataType.BShape:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawBShape.From((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawBShape));
+                    }
+                    break;
+                case GameDataType.Item:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawItem.From((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawItem));
+                    }
+                    break;
+                default:
+                    throw new ElfSerializeException("Data Type not supported yet");
+            }
+        }
+
+        private static void AddAllStrings<T>(List<Element<T>> data, GameDataType dataType, HashSet<string> allStrings)
+        {
             switch (dataType)
             {
                 case GameDataType.NPC:
@@ -221,105 +336,9 @@ namespace ElfLib
                 default:
                     throw new ElfSerializeException($"Data Type {dataType} not Supported yet");
             }
-
-
-            // Write list of strings
-            CreateStringSectionData(allStrings,
-                out Dictionary<string, ElfStringPointer> stringDeclarationMap,
-                out stringSectionData);
-
-            #region Logging
-            Trace.WriteLine("all strings: " + string.Join(", ", allStrings.ToArray()));
-            Trace.WriteLine("all string offsets:");
-            Trace.Indent();
-            foreach (var item in stringDeclarationMap)
-            {
-                Trace.WriteLine($"String \"{item.Key}\" -> {item.Value}");
-            }
-            Trace.Unindent();
-            File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname.bin", stringSectionData);
-            #endregion
-
-            List<object> rawObjects = new List<object>();
-            stringRelocTable = new SortedDictionary<long, ElfStringPointer>();
-
-            // Convert objects to raw objects and serialize them
-            long dataSectionPosition = 0;
-            switch (dataType)
-            {
-                case GameDataType.NPC:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawNPC.From((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
-                    }
-                    break;
-                case GameDataType.Mobj:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawMobj.From((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawMobj));
-                    }
-                    break;
-                case GameDataType.Aobj:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawAobj.From((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawAobj));
-                    }
-                    break;
-                case GameDataType.BShape:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawBShape.From((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawBShape));
-                    }
-                    break;
-                case GameDataType.Item:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawItem.From((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawItem));
-                    }
-                    break;
-                default:
-                    throw new ElfSerializeException("Data Type not supported yet");
-            }
-
-            #region Logging
-            Trace.WriteLine("Raw NPC's:");
-            Trace.Indent();
-            foreach (object item in rawObjects)
-            {
-                Trace.WriteLine(item);
-            }
-            Trace.Unindent();
-            Trace.WriteLine("Sting Reloc Table:");
-            Trace.Indent();
-            foreach (var item in stringRelocTable)
-            {
-                Trace.WriteLine($"{item.Key} -> {item.Value}");
-            }
-            Trace.Unindent();
-            #endregion
-
-            // Serialize 
-            MemoryStream dataStream = new MemoryStream();
-            BinaryWriter binaryWriter = new BinaryWriter(dataStream);
-            foreach (var item in rawObjects)
-            {
-                Util.ToBinaryWriter(binaryWriter, item);
-            }
-
-            byte[] output = dataStream.ToArray();
-
-            binaryWriter.Dispose();
-            dataStream.Dispose();
-
-            return output;
         }
 
-        private static void CreateStringSectionData(HashSet<string> allStrings, out Dictionary<string, ElfStringPointer> stringDeclarationMap, out byte[] sectionData)
+        private static byte[] CreateStringSectionData(HashSet<string> allStrings, out Dictionary<string, ElfStringPointer> stringDeclarationMap)
         {
             stringDeclarationMap = new Dictionary<string, ElfStringPointer>();
             MemoryStream stream = new MemoryStream
@@ -329,28 +348,27 @@ namespace ElfLib
             };
             BinaryWriter binaryWriter = new BinaryWriter(stream);
 
-            foreach (string str in allStrings)
+            foreach (string str in allStrings.Where(str => str != null))
             {
-                if (str != null)
+                // Add entry to dict
+                stringDeclarationMap.Add(str, new ElfStringPointer(stream.Position));
+
+                // Create char[]
+                char[] chars = new char[str.Length + 1];
+                for (int i = 0; i < str.Length; i++)
                 {
-                    // Add entry to dict
-                    stringDeclarationMap.Add(str, new ElfStringPointer(stream.Position));
-
-                    // Create char[]
-                    char[] chars = new char[str.Length + 1];
-                    for (int i = 0; i < str.Length; i++)
-                    {
-                        chars[i] = str[i];
-                    }
-                    chars[chars.Length - 1] = '\0';
-                    // Write char array
-                    binaryWriter.Write(chars);
+                    chars[i] = str[i];
                 }
+                chars[chars.Length - 1] = '\0';
+                // Write char array
+                binaryWriter.Write(chars);
             }
-            sectionData = stream.GetBuffer().Take((int)stream.Position).ToArray();
+            byte[] output = stream.GetBuffer().Take((int)stream.Position).ToArray();
 
-            binaryWriter.Dispose();
             stream.Dispose();
+            binaryWriter.Dispose();
+
+            return output;
         }
     }
 }

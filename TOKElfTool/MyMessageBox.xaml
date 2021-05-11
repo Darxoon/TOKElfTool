@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TOKElfTool"
-        xmlns:st="http://schemas.spicytaco.io/"
         mc:Ignorable="d"
         Title="Window1" Height="162.342" Width="366.256"
         ResizeMode="NoResize">
@@ -17,6 +16,7 @@
                     <Style x:Key="SelectedButtonStyle" TargetType="{x:Type Button}">
 
                         <Style.Setters>
+                            <Setter Property="Margin" Value="0,0,10,0"></Setter>
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"></Setter>
                         </Style.Setters>
 
@@ -45,11 +45,11 @@
 
     <DockPanel>
         <StackPanel Background="#f0f0f0" DockPanel.Dock="Bottom">
-            <st:StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10" MarginBetweenChildren="10">
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10">
                 <Button x:Name="OkButton" Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_Ok</Button>
                 <Button x:Name="NoButton"  Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_No</Button>
                 <Button x:Name="YesButton" Height="23" Width="68" Click="Button_OnClick" Style="{StaticResource SelectedButtonStyle}">_Yes</Button>
-            </st:StackPanel>
+            </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Image x:Name="icon" Margin="15"></Image>

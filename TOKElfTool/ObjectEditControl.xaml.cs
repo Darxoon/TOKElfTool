@@ -65,6 +65,7 @@ namespace TOKElfTool
             FieldInfo[] fields = objectType.GetFields();
             for (int i = 0; i < fields.Length; i++)
             {
+                Grid.RowDefinitions.Add(new RowDefinition());
                 AddFieldControls(currentObject, fields[i], Grid, i);
             }
         }
@@ -96,6 +97,8 @@ namespace TOKElfTool
                 FontFamily = ConsolasFontFamily,
                 Padding = new Thickness(2, 4, 0, 2),
             };
+            Grid.SetColumn(label, 0);
+            Grid.SetRow(label, fieldIndex);
             grid.Children.Add(label);
             if (fieldIndex % 2 == 1)
                 label.Background = new SolidColorBrush(Color.FromRgb(230, 230, 230));
@@ -113,6 +116,8 @@ namespace TOKElfTool
                     //Padding = new Thickness(0, 3, 0, 3),
                     //Content = "Value",
                 };
+                Grid.SetColumn(checkBox, 1);
+                Grid.SetRow(checkBox, fieldIndex);
                 grid.Children.Add(checkBox);
                 label.ToolTip = "boolean";
                 checkBox.Click += (sender, args) => ValueChanged?.Invoke(sender, args);
@@ -139,6 +144,9 @@ namespace TOKElfTool
                 Trace.WriteLine(Array.IndexOf(Enum.GetValues(fieldType), field.GetValue(currentObject)));
                 comboBox.SelectedIndex = Array.IndexOf(Enum.GetValues(fieldType), field.GetValue(currentObject));
 
+                Grid.SetColumn(comboBox, 1);
+                Grid.SetRow(comboBox, fieldIndex);
+
                 grid.Children.Add(comboBox);
                 label.ToolTip = fieldType.Name;
 
@@ -157,6 +165,8 @@ namespace TOKElfTool
                 //Height = 26,
                 FontFamily = ConsolasFontFamily,
             };
+            Grid.SetColumn(textBox, 1);
+            Grid.SetRow(textBox, fieldIndex);
             grid.Children.Add(textBox);
 
             textBox.KeyDown += (sender, args) => ValueChanged?.Invoke(sender, args);

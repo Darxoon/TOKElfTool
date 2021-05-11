@@ -109,9 +109,7 @@ namespace ElfLib
                 #endregion
             }
 
-
-            reader.Dispose();
-            input.Close();
+            input.Dispose();
 
             return new ElfBinary<T>
             {
@@ -159,11 +157,13 @@ namespace ElfLib
             Section relaSection = GetSection(sections, ".rela.data");
             List<SectionRela> relas = new List<SectionRela>();
 
-            using BinaryReader reader = relaSection.CreateBinaryReader();
+            BinaryReader reader = relaSection.CreateBinaryReader();
             while (reader.BaseStream.Position != reader.BaseStream.Length)
             {
                 relas.Add(SectionRela.FromBinary(reader));
             }
+
+            reader.Dispose();
 
             return relas;
         }
@@ -208,10 +208,13 @@ namespace ElfLib
         {
             Section dataSection = GetSection(sections, ".data");
 
-            List<Symbol> symbols = symbolTable.Where(symbol => symbol.Section == dataSection).OrderBy(symbol => symbol.Value).ToList();
+            List<Symbol> symbols = symbolTable.Where((symbol, index) => index > 5 && symbol.Section == dataSection).OrderBy(symbol => symbol.Value).ToList();
             int symbolIndex = 0;
 
-            Dictionary<Symbol, List<object>> objects = new Dictionary<Symbol, List<object>>();
+            List<List<object>> objects = new List<List<object>>
+            {
+                new List<object>()
+            };
 
             byte[] data = dataSection.Content;
             MemoryStream stream = new MemoryStream(data);
@@ -219,30 +222,28 @@ namespace ElfLib
 
             while (stream.Position != stream.Length)
             {
-                if (symbols[symbolIndex + 1].Value >= stream.Position)
+                if (symbols.Count > symbolIndex + 1 && symbols[symbolIndex + 1].Value >= stream.Position)
                 {
                     symbolIndex += 1;
-                    objects.Add(symbolTable[symbolIndex], new List<object>());
+                    objects.Add(new List<object>());
                 }
-
-                Symbol currentSymbol = symbolTable[symbolIndex];
 
                 switch (dataType)
                 {
                     case GameDataType.RawNPC:
-                        ParseRawObjectsOfType(stream, objects[currentSymbol], reader, relas, RawNPC.ReadBinaryData);
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawNPC.ReadBinaryData);
                         break;
                     case GameDataType.RawMobj:
-                        ParseRawObjectsOfType(stream, objects[currentSymbol], reader, relas, RawMobj.ReadBinaryData);
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMobj.ReadBinaryData);
                         break;
                     case GameDataType.RawAobj:
-                        ParseRawObjectsOfType(stream, objects[currentSymbol], reader, relas, RawAobj.ReadBinaryData);
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawAobj.ReadBinaryData);
                         break;
                     case GameDataType.RawBShape:
-                        ParseRawObjectsOfType(stream, objects[currentSymbol], reader, relas, RawBShape.ReadBinaryData);
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawBShape.ReadBinaryData);
                         break;
                     case GameDataType.RawItem:
-                        ParseRawObjectsOfType(stream, objects[currentSymbol], reader, relas, RawItem.ReadBinaryData);
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawItem.ReadBinaryData);
                         break;
 
                     default:
@@ -260,10 +261,10 @@ namespace ElfLib
         private static List<List<object>> ParseObjectsOfType<T, TRaw>(List<Section> sections, List<SectionRela> relas, Section stringSection,
             List<Symbol> symbolTable, GameDataType rawType, ObjectConverter<T, TRaw> converter)
         {
-            Dictionary<Symbol, List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
-            Dictionary<Symbol, List<object>> objects = rawObjects
-                .Select(pair => new KeyValuePair<Symbol, List<object>>(pair.Key, pair.Value.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList()))
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
+            List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
+            List<List<object>> objects = rawObjects
+                .Select(list => list.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList())
+                .ToList();
             return objects;
         }
 

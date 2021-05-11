@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElfLib", "ElfLib\ElfLib.csproj", "{BDFDD17D-0195-413D-BAC5-5A93B49B8C47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TOKElfTool", "TOKElfTool\TOKElfTool.csproj", "{FDF79075-AD2C-4511-8B2F-834181E0C7AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TOKElfTool", "TOKElfTool\TOKElfTool.csproj", "{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{BDFDD17D-0195-413D-BAC5-5A93B49B8C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDFDD17D-0195-413D-BAC5-5A93B49B8C47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDFDD17D-0195-413D-BAC5-5A93B49B8C47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FDF79075-AD2C-4511-8B2F-834181E0C7AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDF79075-AD2C-4511-8B2F-834181E0C7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDF79075-AD2C-4511-8B2F-834181E0C7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDF79075-AD2C-4511-8B2F-834181E0C7AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DAB834B-F4EC-4B66-BE87-945FF60C3B54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
