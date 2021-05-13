@@ -241,6 +241,8 @@ namespace TOKElfTool
 
                 bool isCompressed = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
                 await OpenFile(dialog.FileName, (GameDataType)type, isCompressed);
+
+                openContainingItem.IsEnabled = true;
             }
         }
 

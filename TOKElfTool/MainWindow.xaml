@@ -39,7 +39,7 @@
                 </MenuItem>
 
                 <Separator />
-                <MenuItem Header="Open _Containing Folder" Click="MenuItem_OpenContainingFolder_Click" />
+                <MenuItem x:Name="openContainingItem"  Header="Open _Containing Folder" Click="MenuItem_OpenContainingFolder_Click" IsEnabled="False" />
 
                 <Separator />
                 <MenuItem Command="Save" />
