@@ -43,7 +43,7 @@ namespace TOKElfTool
             {
                 recentlyOpenedFiles = File.ReadAllLines(HistoryPath).ToList();
                 RegenerateRecentlyOpened();
-                EmptyLabel.UpdateList(4, recentlyOpenedFiles.ToArray());
+                EmptyLabel.UpdateList(4, ((IEnumerable<string>) recentlyOpenedFiles).Reverse().ToArray());
             }
             else
             {
@@ -184,11 +184,22 @@ namespace TOKElfTool
             OpenRecentItem.Items.Clear();
             for (int i = recentlyOpenedFiles.Count - 1; i >= 0; i--)
             {
-                string name = recentlyOpenedFiles[i];
+                string path = recentlyOpenedFiles[i];
 
                 MenuItem menuItem = new MenuItem
                 {
-                    Header = Util.ShortenPath(name),
+                    Header = Util.ShortenPath(path),
+                };
+                menuItem.Click += async (sender, args) =>
+                {
+                    string filename = Path.GetFileName(path);
+
+                    GameDataType? type = ObjectTypeSelector.Show(filename.Split('.')[0]);
+
+                    if (type is null)
+                        return;
+
+                    await OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
                 };
                 OpenRecentItem.Items.Add(menuItem);
             }
@@ -734,9 +745,9 @@ namespace TOKElfTool
             }
         }
 
-        private void EmptyLabel_OnEntryClick(object sender, MouseButtonEventArgs e)
+        private async void EmptyLabel_OnEntryClick(object sender, MouseButtonEventArgs e)
         {
-            string path = recentlyOpenedFiles[(int)sender];
+            string path = recentlyOpenedFiles[recentlyOpenedFiles.Count - 1 - (int)sender];
             string filename = Path.GetFileName(path);
 
             GameDataType? type = ObjectTypeSelector.Show(filename.Split('.')[0]);
@@ -744,7 +755,7 @@ namespace TOKElfTool
             if (type is null)
                 return;
 
-            Dispatcher.InvokeAsync(() => OpenFile(path, (GameDataType)type, filename.EndsWith(".zst")));
+            await OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
         }
     }
 }
