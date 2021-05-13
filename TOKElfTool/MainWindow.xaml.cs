@@ -383,23 +383,19 @@ namespace TOKElfTool
             if (fileSavePath != null)
             {
                 statusLabel.Text = "Saving file...";
-                try
-                {
-                    hasUnsavedChanges = false;
 
-                    List<Element<object>> objects = CollectObjects(ObjectTabPanel);
-                    loadedBinary.Data[0] = objects;
-                    byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
+                hasUnsavedChanges = false;
 
-                    File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
-                    statusLabel.Text = "Saved file";
-                }
-                catch (Exception exception)
+                loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
+
+                SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
-                    Trace.WriteLine(exception);
-                    MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
-                    statusLabel.Text = "Failed to save file";
-                }
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                };
+                popup.ShowDialog();
+
+                statusLabel.Text = "Saved file";
             }
         }
         private void CommandBinding_SaveAs_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -414,37 +410,33 @@ namespace TOKElfTool
             if (fileSavePath != null)
             {
                 statusLabel.Text = "Saving file...";
-                try
-                {
-                    hasUnsavedChanges = false;
 
-                    List<Element<object>> objects = CollectObjects(ObjectTabPanel);
-                    loadedBinary.Data[0] = objects;
-                    byte[] serialized = ElfSerializer.SerializeBinary(loadedBinary, loadedDataType, true);
+                hasUnsavedChanges = false;
 
-                    File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
-                    statusLabel.Text = "Saved file";
-                }
-                catch (Exception exception)
+                loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
+
+                SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
-                    Trace.WriteLine(exception);
-                    MessageBox.Show(this, "Couldn't save the file. Maybe it's in use or doesn't exist", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error);
-                    statusLabel.Text = "Failed to save file";
-                }
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                };
+                popup.ShowDialog();
+
+                statusLabel.Text = "Saved file";
             }
         }
 
-        private List<Element<object>> CollectObjects(Panel objectPanel)
+        private List<Element<object>> CollectObjects(UIElementCollection children)
         {
             List<Element<object>> objects = new List<Element<object>>();
 
             // go through all NPC's
-            for (int i = 0; i < objectPanel.Children.Count; i++)
+            for (int i = 0; i < children.Count; i++)
             {
                 if (i == 0)
                     continue;
 
-                ObjectEditControl expander = (ObjectEditControl)objectPanel.Children[i];
+                ObjectEditControl expander = (ObjectEditControl)children[i];
 
 
                 objects.Add(new Element<object>(CollectObject(expander)));
