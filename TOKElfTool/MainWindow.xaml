@@ -93,8 +93,8 @@
                 <TabItem Header="Object Data">
                     <StackPanel x:Name="ObjectTabPanel">
                         <StackPanel Margin="5" Orientation="Horizontal">
-                            <Button Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
-                            <Button Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
+                            <Button Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
+                            <Button Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
                         </StackPanel>
 
 
