@@ -54,10 +54,11 @@ namespace TOKElfTool
             InitializeComponent();
         }
 
-        public ObjectEditControl(object currentObject, string header)
+        public ObjectEditControl(object currentObject, string header, int index)
         {
             InitializeComponent();
 
+            this.Index = index;
             Expander.Header = header;
 
             // fields
@@ -306,6 +307,8 @@ namespace TOKElfTool
         private static readonly Regex IntRegex = new Regex("^[0-9]+$");
         private static readonly Regex FloatRegex = new Regex(@"^[0-9]*\.*[0-9]*$");
         private static readonly Regex StrictFloatRegex = new Regex(@"^[0-9]*\.*[0-9]*f?$");
+
+        public int Index { get; set; }
 
         private static void Int_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {

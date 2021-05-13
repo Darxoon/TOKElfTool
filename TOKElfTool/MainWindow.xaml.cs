@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ZstdNet;
+using UIElement = System.Windows.UIElement;
 
 namespace TOKElfTool
 {
@@ -66,6 +67,8 @@ namespace TOKElfTool
 
         private bool hasUnsavedChanges;
 
+        private List<bool> modifiedObjects = new List<bool>();
+
         private void InitializeObjectsPanel<T>(List<Element<T>>[] objects, string objectName)
         {
             EmptyLabel.Visibility = Visibility.Collapsed;
@@ -79,24 +82,30 @@ namespace TOKElfTool
                 {
                     object currentObject = sectionObjects[i].value;
 
-                    ObjectEditControl expander = new ObjectEditControl(currentObject, $"{objectName} {i}");
+                    ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i);
 
-                    expander.RemoveButtonClick += RemoveButton_OnClick;
-                    expander.DuplicateButtonClick += DuplicateButton_OnClick;
+                    control.RemoveButtonClick += RemoveButton_OnClick;
+                    control.DuplicateButtonClick += DuplicateButton_OnClick;
 
-                    expander.ValueChanged += (sender, args) => hasUnsavedChanges = true;
+                    int objectIndex = i;
+                    control.ValueChanged += (sender, args) =>
+                    {
+                        hasUnsavedChanges = true;
+                        modifiedObjects[control.Index] = true;
+                    };
 
-                    ObjectTabPanel.Children.Add(expander);
+                    ObjectTabPanel.Children.Add(control);
                 }
             }
 
         }
 
-        private void FixExpanderNames()
+        private void FixExpanderIndexes()
         {
             for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
             {
                 ObjectEditControl expander = (ObjectEditControl)ObjectTabPanel.Children[i];
+                expander.Index = i - 1;
                 expander.Header = $"{loadedDataType} {i - 1}";
             }
         }
@@ -121,7 +130,7 @@ namespace TOKElfTool
 
             hasUnsavedChanges = true;
 
-            FixExpanderNames();
+            FixExpanderIndexes();
         }
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
@@ -138,7 +147,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = true;
 
-                FixExpanderNames();
+                FixExpanderIndexes();
             }
         }
 
@@ -246,6 +255,9 @@ namespace TOKElfTool
             fileSavePath = null;
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
+            hasUnsavedChanges = false;
+            modifiedObjects = new List<bool>(new bool[binary.Data.Aggregate(0, (i, list) => i + list.Count)]);
+
             AddRecentlyOpened(filename);
 
             // initialize objects panel
@@ -310,7 +322,7 @@ namespace TOKElfTool
                 Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
 
                 object newObject = Activator.CreateInstance(loadedStructType);
-                duplicateExpander = new ObjectEditControl(newObject, "");
+                duplicateExpander = new ObjectEditControl(newObject, "", 0);
 
                 return await LoadBinary(new BinaryReader(emptyElfStream));
             }
@@ -428,21 +440,11 @@ namespace TOKElfTool
 
         private List<Element<object>> CollectObjects(UIElementCollection children)
         {
-            List<Element<object>> objects = new List<Element<object>>();
-
-            // go through all NPC's
-            for (int i = 0; i < children.Count; i++)
-            {
-                if (i == 0)
-                    continue;
-
-                ObjectEditControl expander = (ObjectEditControl)children[i];
-
-
-                objects.Add(new Element<object>(CollectObject(expander)));
-            }
-
-            return objects;
+            return children.OfType<UIElement>().Skip(1)
+                .Select((child, i) => modifiedObjects[i] == true 
+                    ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1])) 
+                    : loadedBinary.Data[0][i])
+                .ToList();
         }
 
         private object CollectObject(ObjectEditControl objectEditControl)
