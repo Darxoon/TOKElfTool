@@ -79,9 +79,12 @@ namespace TOKElfTool
                 DuplicateButtonClick = DuplicateButtonClick,
                 ValueChanged = ValueChanged,
             };
-            for (int i = 2; i < Grid.Children.Count; i++)
+            for (int i = 0; i < Grid.Children.Count; i++)
             {
-                clone.Grid.Children.Add(Grid.Children[i].XamlClone());
+                UIElement element = Grid.Children[i].XamlClone();
+                clone.Grid.Children.Add(element);
+                clone.Grid.RowDefinitions.Add(new RowDefinition());
+                Grid.SetRow(element, i / 2);
             }
             return clone;
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -117,16 +117,30 @@ namespace TOKElfTool
 
         private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Button duplicateButton = (Button)sender;
-            Grid grid = (Grid)duplicateButton.Parent;
-            Expander expander = (Expander)grid.Parent;
-            ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
+            ObjectEditControl sourceControl;
+            // get source control
+            {
+                Button duplicateButton = (Button)sender;
+                StackPanel stackPanel = (StackPanel)duplicateButton.Parent;
+                DockPanel dockPanel = (DockPanel)stackPanel.Parent;
+                Expander expander = (Expander)dockPanel.Parent;
+                sourceControl = (ObjectEditControl)expander.Parent;
+            }
 
             ObjectEditControl clone = null;
-            await Dispatcher.InvokeAsync(() => clone = objectEditControl.Clone());
+            await Dispatcher.InvokeAsync(() => clone = sourceControl.Clone());
 
             clone.IsExpanded = false;
-            ObjectTabPanel.Children.Insert(ObjectTabPanel.Children.IndexOf(objectEditControl), clone);
+            int insertIndex = ObjectTabPanel.Children.IndexOf(sourceControl);
+            ObjectTabPanel.Children.Insert(insertIndex, clone);
+
+            // update modified objects (yes, results in slower save times)
+            modifiedObjects.Add(true);
+
+            for (int i = insertIndex; i < modifiedObjects.Count; i++)
+            {
+                modifiedObjects[i] = true;
+            }
 
             hasUnsavedChanges = true;
 
@@ -441,8 +455,8 @@ namespace TOKElfTool
         private List<Element<object>> CollectObjects(UIElementCollection children)
         {
             return children.OfType<UIElement>().Skip(1)
-                .Select((child, i) => modifiedObjects[i] == true 
-                    ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1])) 
+                .Select((child, i) => modifiedObjects[i] == true
+                    ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1]))
                     : loadedBinary.Data[0][i])
                 .ToList();
         }
@@ -699,8 +713,10 @@ namespace TOKElfTool
                     : duplicateExpander.Clone();
             });
             clone.IsExpanded = true;
+            clone.Index = ObjectTabPanel.Children.Count;
             ObjectTabPanel.Children.Add(clone);
-            FixExpanderNames();
+            modifiedObjects.Add(true);
+            FixExpanderIndexes();
         }
 
 
