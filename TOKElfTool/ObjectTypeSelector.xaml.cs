@@ -27,11 +27,13 @@ namespace TOKElfTool
             InitializeComponent();
         }
 
-        public static GameDataType? Show(GameDataType defaultValue = GameDataType.None)
+        public static GameDataType? Show(Window parent, GameDataType defaultValue = GameDataType.None)
         {
             ObjectTypeSelector typeSelector = new ObjectTypeSelector
             {
-                SelectionBox = {SelectedIndex = (int)defaultValue}
+                SelectionBox = {SelectedIndex = (int)defaultValue},
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = parent,
             };
             typeSelector.ShowDialog();
 
@@ -41,22 +43,22 @@ namespace TOKElfTool
                 return null;
         }
 
-        public static GameDataType? Show(string fileName)
+        public static GameDataType? Show(Window parent, string fileName)
         {
             switch (fileName)
             {
                 case "dispos_Npc":
-                    return Show(GameDataType.NPC);
+                    return Show(parent, GameDataType.NPC);
                 case "dispos_Mobj":
-                    return Show(GameDataType.Mobj);
+                    return Show(parent, GameDataType.Mobj);
                 case "dispos_Aobj":
-                    return Show(GameDataType.Aobj);
+                    return Show(parent, GameDataType.Aobj);
                 case "dispos_BShape":
-                    return Show(GameDataType.BShape);
+                    return Show(parent, GameDataType.BShape);
                 case "dispos_Item":
-                    return Show(GameDataType.Item);
+                    return Show(parent, GameDataType.Item);
                 default:
-                    return Show();
+                    return Show(parent);
             }
         }
 

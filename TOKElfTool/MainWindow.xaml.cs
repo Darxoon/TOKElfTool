@@ -194,7 +194,7 @@ namespace TOKElfTool
                 {
                     string filename = Path.GetFileName(path);
 
-                    GameDataType? type = ObjectTypeSelector.Show(filename.Split('.')[0]);
+                    GameDataType? type = ObjectTypeSelector.Show(this, filename.Split('.')[0]);
 
                     if (type is null)
                         return;
@@ -245,7 +245,7 @@ namespace TOKElfTool
             if (result == true)
             {
                 string simpleFileName = dialog.SafeFileName.Split('.')[0];
-                GameDataType? type = ObjectTypeSelector.Show(simpleFileName);
+                GameDataType? type = ObjectTypeSelector.Show(this, simpleFileName);
 
                 if (type is null)
                     return;
@@ -750,7 +750,7 @@ namespace TOKElfTool
             string path = recentlyOpenedFiles[recentlyOpenedFiles.Count - 1 - (int)sender];
             string filename = Path.GetFileName(path);
 
-            GameDataType? type = ObjectTypeSelector.Show(filename.Split('.')[0]);
+            GameDataType? type = ObjectTypeSelector.Show(this, filename.Split('.')[0]);
 
             if (type is null)
                 return;
