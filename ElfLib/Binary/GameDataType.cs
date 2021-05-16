@@ -10,12 +10,14 @@ namespace ElfLib
         Aobj,
         BShape,
         Item,
+        Maplink,
 
         RawNPC,
         RawMobj,
         RawAobj,
         RawBShape,
         RawItem,
+        RawMaplink,
         // TODO: Add more
     }
 }

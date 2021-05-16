@@ -16,6 +16,7 @@
             <ComboBoxItem>Aobj</ComboBoxItem>
             <ComboBoxItem>BShape</ComboBoxItem>
             <ComboBoxItem>Item</ComboBoxItem>
+            <ComboBoxItem>Maplink</ComboBoxItem>
         </ComboBox>
         <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0" HorizontalAlignment="Right">
             <Button Height="23" Width="68" Click="OkButton_OnClick" Margin="10,0,0,0">OK</Button>

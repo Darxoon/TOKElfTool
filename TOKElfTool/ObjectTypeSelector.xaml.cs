@@ -57,6 +57,8 @@ namespace TOKElfTool
                     return Show(parent, GameDataType.BShape);
                 case "dispos_Item":
                     return Show(parent, GameDataType.Item);
+                case "maplink":
+                    return Show(parent, GameDataType.Maplink);
                 default:
                     return Show(parent);
             }

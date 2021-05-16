@@ -270,6 +270,13 @@ namespace ElfLib
                         dataSectionPosition += Marshal.SizeOf(typeof(RawItem));
                     }
                     break;
+                case GameDataType.Maplink:
+                    foreach (Element<T> element in data)
+                    {
+                        rawObjects.Add(RawMaplinkNode.From((MaplinkNode)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkNode));
+                    }
+                    break;
                 default:
                     throw new ElfSerializeException("Data Type not supported yet");
             }

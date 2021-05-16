@@ -74,29 +74,29 @@ namespace TOKElfTool
             EmptyLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
 
-            for (int j = 0; j < objects.Length; j++)
+            //for (int j = 0; j < objects.Length; j++)
+            //{
+            List<Element<T>> sectionObjects = objects[0]; //= objects[j];
+
+            for (int i = 0; i < sectionObjects.Count; i++)
             {
-                List<Element<T>> sectionObjects = objects[j];
+                object currentObject = sectionObjects[i].value;
 
-                for (int i = 0; i < sectionObjects.Count; i++)
+                ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i);
+
+                control.RemoveButtonClick += RemoveButton_OnClick;
+                control.DuplicateButtonClick += DuplicateButton_OnClick;
+
+                int objectIndex = i;
+                control.ValueChanged += (sender, args) =>
                 {
-                    object currentObject = sectionObjects[i].value;
+                    hasUnsavedChanges = true;
+                    modifiedObjects[control.Index] = true;
+                };
 
-                    ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i);
-
-                    control.RemoveButtonClick += RemoveButton_OnClick;
-                    control.DuplicateButtonClick += DuplicateButton_OnClick;
-
-                    int objectIndex = i;
-                    control.ValueChanged += (sender, args) =>
-                    {
-                        hasUnsavedChanges = true;
-                        modifiedObjects[control.Index] = true;
-                    };
-
-                    ObjectTabPanel.Children.Add(control);
-                }
+                ObjectTabPanel.Children.Add(control);
             }
+            //}
 
         }
 
@@ -316,6 +316,9 @@ namespace TOKElfTool
                     break;
                 case GameDataType.Item:
                     loadedStructType = typeof(Item);
+                    break;
+                case GameDataType.Maplink:
+                    loadedStructType = typeof(MaplinkNode);
                     break;
                 case GameDataType.None:
                     loadedStructType = null;

@@ -197,6 +197,8 @@ namespace ElfLib
                     return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, BShape.From);
                 case GameDataType.Item:
                     return ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From);
+                case GameDataType.Maplink:
+                    return ParseObjectsOfType<MaplinkNode, RawMaplinkNode>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, MaplinkNode.From);
 
                 default:
                     return ParseRawData(sections, relas, dataType, symbolTable);
@@ -245,6 +247,9 @@ namespace ElfLib
                     case GameDataType.RawItem:
                         ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawItem.ReadBinaryData);
                         break;
+                    case GameDataType.RawMaplink:
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkNode.ReadBinaryData);
+                        break;
 
                     default:
                         throw new ElfParseException("Data type not implemented");
@@ -263,7 +268,7 @@ namespace ElfLib
         {
             List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
             List<List<object>> objects = rawObjects
-                .Select(list => list.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList())
+                .Select((list, i) => i == 0 ? list.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList() : new List<object>(list))
                 .ToList();
             return objects;
         }
