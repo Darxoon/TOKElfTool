@@ -45,23 +45,16 @@ namespace TOKElfTool
 
         public static GameDataType? Show(Window parent, string fileName)
         {
-            switch (fileName)
+            return fileName switch
             {
-                case "dispos_Npc":
-                    return Show(parent, GameDataType.NPC);
-                case "dispos_Mobj":
-                    return Show(parent, GameDataType.Mobj);
-                case "dispos_Aobj":
-                    return Show(parent, GameDataType.Aobj);
-                case "dispos_BShape":
-                    return Show(parent, GameDataType.BShape);
-                case "dispos_Item":
-                    return Show(parent, GameDataType.Item);
-                case "maplink":
-                    return Show(parent, GameDataType.Maplink);
-                default:
-                    return Show(parent);
-            }
+                "dispos_Npc" => Show(parent, GameDataType.NPC),
+                "dispos_Mobj" => Show(parent, GameDataType.Mobj),
+                "dispos_Aobj" => Show(parent, GameDataType.Aobj),
+                "dispos_BShape" => Show(parent, GameDataType.BShape),
+                "dispos_Item" => Show(parent, GameDataType.Item),
+                "maplink" => Show(parent, GameDataType.Maplink),
+                _ => Show(parent)
+            };
         }
 
         private void OkButton_OnClick(object sender, RoutedEventArgs e)
