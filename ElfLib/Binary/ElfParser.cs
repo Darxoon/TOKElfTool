@@ -192,13 +192,13 @@ namespace ElfLib
                 case GameDataType.Mobj:
                     return ParseObjectsOfType<Mobj, RawMobj>(sections, relas, stringSection, symbolTable, GameDataType.RawMobj, Mobj.From);
                 case GameDataType.Aobj:
-                    return ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Aobj.From);
+                    return ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.Aobj, Aobj.From);
                 case GameDataType.BShape:
-                    return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, BShape.From);
+                    return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.BShape, BShape.From);
                 case GameDataType.Item:
                     return ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From);
                 case GameDataType.Maplink:
-                    return ParseObjectsOfType<MaplinkNode, RawMaplinkNode>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, MaplinkNode.From);
+                    return ParseObjectsOfType<MaplinkNode, RawMaplinkNode>(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From);
 
                 default:
                     return ParseRawData(sections, relas, dataType, symbolTable);
@@ -224,7 +224,7 @@ namespace ElfLib
 
             while (stream.Position != stream.Length)
             {
-                if (symbols.Count > symbolIndex + 1 && symbols[symbolIndex + 1].Value >= stream.Position)
+                if (symbols.Count > symbolIndex + 1 && symbols[symbolIndex + 1].Value <= stream.Position)
                 {
                     symbolIndex += 1;
                     objects.Add(new List<object>());

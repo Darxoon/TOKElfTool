@@ -288,7 +288,7 @@ namespace TOKElfTool
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType.ToString()));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType == GameDataType.Maplink ? "Maplink Node" : loadedDataType.ToString()));
 
             LoadingLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
