@@ -30,24 +30,22 @@ namespace ElfLib
     {
         const int HEADER_LENGTH = 0x40;
 
-        public static ElfBinary<T> ParseFile<T>(string filepath, GameDataType dataType, bool verbose = true)
+        public static ElfBinary<T> ParseFile<T>(string filepath, GameDataType dataType)
         {
             FileStream input = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.Read, (int)new FileInfo(filepath).Length);
             BinaryReader reader = new BinaryReader(input);
 
-            return ParseFile<T>(reader, dataType, verbose);
+            return ParseFile<T>(reader, dataType);
 
         }
 
-        public static ElfBinary<T> ParseFile<T>(BinaryReader reader, GameDataType dataType, bool verbose = true)
+        public static ElfBinary<T> ParseFile<T>(BinaryReader reader, GameDataType dataType)
         {
             Stream input = reader.BaseStream;
 
             // get constants from header
             input.Position = 0x28;
             int sectionHeaderTableOffset = (int)reader.ReadInt64();
-            if (verbose)
-                Trace.WriteLine(sectionHeaderTableOffset);
             input.Position = 60;
             int sectionAmount = reader.ReadInt16();
             input.Position = 62;
@@ -62,8 +60,6 @@ namespace ElfLib
             {
                 input.Position = sections[i].Offset;
                 sections[i].Content = reader.ReadBytes((int)sections[i].Size);
-                if (verbose)
-                    Trace.WriteLine(sections[i].ToString());
             }
 
             Section stringTable = sections[stringTableIndex];
@@ -81,33 +77,10 @@ namespace ElfLib
 
             List<SectionRela> relas = ParseRelocations(sections);
 
-            if (verbose)
-            {
-                #region Logging
-                Trace.Indent();
-                foreach (Section section in sections)
-                {
-                    Trace.WriteLine(section);
-                }
-                Trace.Unindent();
-                #endregion
-            }
             List<Symbol> symbolTable = ParseSymbolTable(sections, stringTable);
 
             List<Element<T>>[] data = ParseData<T>(sections, relas, dataType, symbolTable);
 
-            if (verbose)
-            {
-                #region Log fields
-                Trace.WriteLine("Data:");
-                Trace.Indent();
-                foreach (var item in data)
-                {
-                    Trace.WriteLine(item);
-                }
-                Trace.Unindent();
-                #endregion
-            }
 
             input.Dispose();
 

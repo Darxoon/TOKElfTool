@@ -18,28 +18,39 @@ namespace ElfLib
         public ElfSerializeException(string message) : base(message) { }
     }
 
-    public static class ElfSerializer
+    public class ElfSerializer<T>
     {
-        public static byte[] SerializeBinary<T>(ElfBinary<T> binary, GameDataType dataType, bool updateRodataCount)
+        private ElfSerializer()
         {
-            // Serialize .data and .rodata.str1.1
-            Trace.WriteLine("Serializing .data and .rodata.str1.1\n");
-            byte[] serializedData = SerializeData(binary.Data, dataType,
-                out byte[] stringSectionData,
-                out SortedDictionary<long, ElfStringPointer> stringRelocTable);
 
-            File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname2.bin", serializedData);
+        }
+
+        public static byte[] SerializeBinary(ElfBinary<T> binary, GameDataType dataType)
+        {
+            ElfSerializer<T> serializer = new ElfSerializer<T>
+            {
+                binary = binary,
+                dataType = dataType,
+            };
+            return serializer.Serialize();
+        }
+
+        private ElfBinary<T> binary;
+        private GameDataType dataType;
+
+        private byte[] stringSectionData;
+        private SortedDictionary<long, ElfStringPointer> stringRelocTable;
+
+        private byte[] Serialize()
+        {
+            byte[] serializedData = SerializeData(binary.Data);
 
             // TODO: Serialize symbols
 
-            // Serialize .rela.data
             byte[] relaData = SerializeRelaData(stringRelocTable, dataType);
-            File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname3.bin", relaData);
 
-            // Make new section list
-            Section[] updatedSections = UpdateSections(binary, serializedData, stringSectionData, relaData, updateRodataCount, dataType);
+            Section[] updatedSections = UpdateSections(serializedData, relaData);
 
-            // Clone and order by offset
             IOrderedEnumerable<Section> offsetSortedSections = (from x in updatedSections orderby x.Offset select x);
 
             // Set up writing
@@ -100,7 +111,7 @@ namespace ElfLib
             return output;
         }
 
-        private static Section[] UpdateSections<T>(ElfBinary<T> binary, byte[] serializedData, byte[] stringSectionData, byte[] relaData, bool updateRodataCount, GameDataType dataType)
+        private Section[] UpdateSections(byte[] serializedData, byte[] relaData)
         {
             List<Section> updatedSections = new List<Section>();
 
@@ -120,13 +131,9 @@ namespace ElfLib
                         newContent = relaData;
                         break;
                     case ".rodata":
-                        if (dataType != GameDataType.Maplink)
-                            newContent = updateRodataCount
-                                ? BitConverter.GetBytes(binary.Data.Aggregate(0,
-                                    (amount, dataSection) => amount + dataSection.Count))
-                                : null;
-                        else
-                            newContent = BitConverter.GetBytes(1);
+                        newContent = BitConverter.GetBytes(dataType != GameDataType.Maplink 
+                            ? binary.Data.Aggregate(0, (amount, dataSection) => amount + dataSection.Count) 
+                            : 1);
                         break;
                     default:
                         break;
@@ -164,9 +171,7 @@ namespace ElfLib
             return output;
         }
 
-        private static byte[] SerializeData<T>(List<Element<T>>[] data, GameDataType dataType,
-            out byte[] stringSectionData,
-            out SortedDictionary<long, ElfStringPointer> stringRelocTable)
+        private byte[] SerializeData(List<Element<T>>[] data)
         {
             // Prepare list of all strings
             HashSet<string> allStrings = new HashSet<string>();
