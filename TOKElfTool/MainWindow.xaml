@@ -73,6 +73,11 @@
                 <MenuItem Command="SelectAll" />
             </MenuItem>
 
+            <MenuItem Header="_View">
+                <MenuItem x:Name="collapseAllObjectsItem"  Header="_Collapse all Objects" IsEnabled="False" Click="CollapseAllObjects_OnClick" />
+                <MenuItem x:Name="expandAllObjectsItem" Header="_Expand all Objects" IsEnabled="False" Click="ExpandAllObjects_OnClick" />
+            </MenuItem>
+
             <MenuItem Header="_Help">
                 <MenuItem Header="Open _Online Repository" Click="MenuItem_OpenRepo_Click" />
 
@@ -85,7 +90,9 @@
         <Label x:Name="LoadingLabel" DockPanel.Dock="Top" HorizontalAlignment="Center" Visibility="Collapsed">Loading...</Label>
 
         <StatusBar x:Name="statusBar" DockPanel.Dock="Bottom">
-            <StatusBarItem><TextBlock x:Name="statusLabel"></TextBlock></StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="statusLabel"></TextBlock>
+            </StatusBarItem>
         </StatusBar>
 
         <ScrollViewer x:Name="ScrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
@@ -98,7 +105,7 @@
                         </StackPanel>
 
 
-                         <!--<Expander Header="Object 1">
+                        <!--<Expander Header="Object 1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"></ColumnDefinition>

@@ -279,7 +279,6 @@ namespace TOKElfTool
                 bool isCompressed = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
                 await OpenFile(dialog.FileName, (GameDataType)type, isCompressed);
 
-                openContainingItem.IsEnabled = true;
             }
         }
 
@@ -319,6 +318,10 @@ namespace TOKElfTool
                 GameDataType.Maplink => "Maplink Node",
                 _ => loadedDataType.ToString(),
             }));
+
+            openContainingItem.IsEnabled = true;
+            collapseAllObjectsItem.IsEnabled = true;
+            expandAllObjectsItem.IsEnabled = true;
 
             LoadingLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
@@ -867,6 +870,24 @@ namespace TOKElfTool
                 return;
 
             await OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
+        }
+
+        private void CollapseAllObjects_OnClick(object sender, RoutedEventArgs e)
+        {
+            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            {
+                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
+                control.IsExpanded = false;
+            }
+        }
+
+        private void ExpandAllObjects_OnClick(object sender, RoutedEventArgs e)
+        {
+            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            {
+                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
+                control.IsExpanded = true;
+            }
         }
     }
 }
