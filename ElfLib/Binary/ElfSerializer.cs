@@ -332,8 +332,14 @@ namespace ElfLib
                     {
                         Aobj npc = (Aobj)(object)element.value;
                         allStrings.Add(npc.level_str);
-                        allStrings.Add(npc.obj_str);
+                        allStrings.Add(npc.object_str);
                         allStrings.Add(npc.shape_str);
+                        allStrings.Add(npc.field_0x38);
+                        allStrings.Add(npc.field_0x40);
+                        allStrings.Add(npc.field_0x50);
+                        allStrings.Add(npc.field_0x60);
+                        allStrings.Add(npc.field_0x70);
+                        allStrings.Add(npc.field_0x108);
                         //allStrings.Add(npc.init_function_str);
                     }
                     break;

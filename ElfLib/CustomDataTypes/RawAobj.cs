@@ -1,35 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
 namespace ElfLib.CustomDataTypes
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawAobj
     {
         public ElfStringPointer level_str;
-        public ElfStringPointer obj_str;
+        public ElfStringPointer object_str;
         public ElfStringPointer shape_str;
         public Vector3 position;
-        public Vector3 rotation;
+        public float field_0x24;
+        public float field_0x28;
+        public float field_0x2c;
         public int field_0x30;
         public int field_0x34;
-        public int field_0x38;
-        public int field_0x3c;
-        public int field_0x40;
-        public int field_0x44;
+        public ElfStringPointer field_0x38;
+        public ElfStringPointer field_0x40;
         public int field_0x48;
         public int field_0x4c;
-        public int field_0x50;
-        public int field_0x54;
+        public ElfStringPointer field_0x50;
         public int field_0x58;
         public int field_0x5c;
-        public int field_0x60;
-        public int field_0x64;
+        public ElfStringPointer field_0x60;
         public int field_0x68;
         public int field_0x6c;
-        public int field_0x70;
-        public int field_0x74;
+        public ElfStringPointer field_0x70;
         public int field_0x78;
         public int field_0x7c;
         public int field_0x80;
@@ -66,8 +66,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0xfc;
         public int field_0x100;
         public int field_0x104;
-        public int field_0x108;
-        public int field_0x10c;
+        public ElfStringPointer field_0x108;
         public int field_0x110;
         public int field_0x114;
         public int field_0x118;
@@ -101,9 +100,15 @@ namespace ElfLib.CustomDataTypes
         internal static RawAobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
         {
             RawAobj rawMobj = Util.FromBinaryReader<RawAobj>(binaryReader);
-            rawMobj.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-            rawMobj.obj_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawMobj.shape_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
+            rawMobj.level_str  = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
+            rawMobj.object_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
+            rawMobj.shape_str  = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
+            rawMobj.field_0x38 = ElfStringPointer.ResolveRelocation(relas, 56, baseOffset);
+            rawMobj.field_0x40 = ElfStringPointer.ResolveRelocation(relas, 64, baseOffset);
+            rawMobj.field_0x50 = ElfStringPointer.ResolveRelocation(relas, 80, baseOffset);
+            rawMobj.field_0x60 = ElfStringPointer.ResolveRelocation(relas, 96, baseOffset);
+            rawMobj.field_0x70 = ElfStringPointer.ResolveRelocation(relas, 112, baseOffset);
+            rawMobj.field_0x108 = ElfStringPointer.ResolveRelocation(relas, 264, baseOffset);
 
 
             return rawMobj;
