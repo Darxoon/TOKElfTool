@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -76,13 +76,12 @@ namespace TOKElfTool
 
             //for (int j = 0; j < objects.Length; j++)
             //{
-            List<Element<T>> sectionObjects = objects[0]; //= objects[j];
 
-            for (int i = 0; i < sectionObjects.Count; i++)
+            for (int i = 0; i < objects[0].Count; i++)
             {
-                object currentObject = sectionObjects[i].value;
+                object currentObject = objects[0][i].value;
 
-                ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i);
+                ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i, loadedBinary.SymbolTable);
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
@@ -98,6 +97,24 @@ namespace TOKElfTool
             }
             //}
 
+            if (loadedDataType == GameDataType.Maplink)
+            {
+                object currentObject = objects[1][0].value;
+
+                ObjectEditControl control = new ObjectEditControl(currentObject, "Maplink Header (Advanced)", objects[0].Count, loadedBinary.SymbolTable);
+
+                control.RemoveButtonClick += RemoveButton_OnClick;
+                control.DuplicateButtonClick += DuplicateButton_OnClick;
+
+                control.ValueChanged += (sender, args) =>
+                {
+                    hasUnsavedChanges = true;
+                    modifiedObjects[control.Index] = true;
+                };
+
+                ObjectTabPanel.Children.Add(control);
+            }
+
         }
 
         private void FixExpanderIndexes()
@@ -106,7 +123,7 @@ namespace TOKElfTool
             {
                 ObjectEditControl expander = (ObjectEditControl)ObjectTabPanel.Children[i];
                 expander.Index = i - 1;
-                expander.Header = $"{loadedDataType} {i - 1}";
+                expander.Header = loadedDataType == GameDataType.Maplink && i == ObjectTabPanel.Children.Count - 1 ? "Maplink Header (Advanced)" : $"{loadedDataType} {i - 1}";
             }
         }
 
@@ -142,6 +159,9 @@ namespace TOKElfTool
                 modifiedObjects[i] = true;
             }
 
+            if(loadedDataType == GameDataType.Maplink)
+                UpdateMaplinkHeaderChildCount();
+
             hasUnsavedChanges = true;
 
             FixExpanderIndexes();
@@ -149,8 +169,9 @@ namespace TOKElfTool
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
             Button duplicateButton = (Button)sender;
-            Grid grid = (Grid)duplicateButton.Parent;
-            Expander expander = (Expander)grid.Parent;
+            StackPanel stackPanel = (StackPanel)duplicateButton.Parent;
+            DockPanel dockPanel = (DockPanel)stackPanel.Parent;
+            Expander expander = (Expander)dockPanel.Parent;
             ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
 
             bool? result = MyMessageBox.Show(this, $"Are you sure you want to delete this {loadedDataType}?", "TOK ELF Editor", MessageBoxResult.Yes);
@@ -162,6 +183,9 @@ namespace TOKElfTool
                 hasUnsavedChanges = true;
 
                 FixExpanderIndexes();
+
+                if (loadedDataType == GameDataType.Maplink)
+                    UpdateMaplinkHeaderChildCount();
             }
         }
 
@@ -288,7 +312,11 @@ namespace TOKElfTool
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType == GameDataType.Maplink ? "Maplink Node" : loadedDataType.ToString()));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType switch
+            {
+                GameDataType.Maplink => "Maplink Node",
+                _ => loadedDataType.ToString(),
+            }));
 
             LoadingLabel.Visibility = Visibility.Collapsed;
             ScrollViewer.Visibility = Visibility.Visible;
@@ -352,7 +380,7 @@ namespace TOKElfTool
                 Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
 
                 object newObject = Activator.CreateInstance(loadedStructType);
-                duplicateExpander = new ObjectEditControl(newObject, "", 0);
+                duplicateExpander = new ObjectEditControl(newObject, "", 0, loadedBinary.SymbolTable);
 
                 return await LoadBinary(new BinaryReader(emptyElfStream));
             }
@@ -397,7 +425,12 @@ namespace TOKElfTool
             {
                 SaveFileDialog dialog = new SaveFileDialog
                 {
-                    FileName = $"dispos_{(loadedStructType == typeof(NPC) ? "Npc" : nameof(loadedStructType))}.elf",
+                    FileName = loadedDataType switch
+                    {
+                        GameDataType.Maplink => "maplink.elf",
+                        GameDataType.NPC => "dispos_Npc.elf",
+                        _ => $"dispos_{loadedStructType.Name}.elf",
+                    },
                     DefaultExt = ".elf",
                     Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
                 };
@@ -457,6 +490,9 @@ namespace TOKElfTool
 
                 loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
 
+                if (loadedDataType == GameDataType.Maplink)
+                    loadedBinary.Data[1][0] = loadedBinary.Data[0].PopBack();
+
                 SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -468,14 +504,15 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<object>> CollectObjects(UIElementCollection children)
-        {
-            return children.OfType<UIElement>().Skip(1)
-                .Select((child, i) => modifiedObjects[i] == true
+        private List<Element<object>> CollectObjects(UIElementCollection children) =>
+            children.OfType<UIElement>().Skip(1)
+                .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
+                    ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i + 1]))
+                    : (modifiedObjects[i] == true
                     ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1]))
-                    : loadedBinary.Data[0][i])
+                        : loadedBinary.Data[0][i]))
                 .ToList();
-        }
+
 
         private object CollectObject(ObjectEditControl objectEditControl)
         {
@@ -514,6 +551,44 @@ namespace TOKElfTool
             }
 
             return currentObjects;
+        }
+
+        private object CollectMaplinkHeaderObject(ObjectEditControl objectEditControl)
+        {
+            Grid grid = objectEditControl.Grid;
+
+            // go through all property controls
+            Type headerType = typeof(MaplinkHeader);
+            object currentObject = new MaplinkHeader();
+
+            string propertyName = "";
+            Type propertyType = null;
+
+            for (int j = 0; j < grid.Children.Count; j++)
+            {
+                UIElement child = grid.Children[j];
+
+                // key label
+                if (j % 2 == 0)
+                {
+                    propertyName = ((TextBlock)child).Text;
+                    propertyType = headerType.GetField(propertyName).FieldType;
+
+                    continue;
+                }
+
+                if (propertyType is null)
+                    continue;
+
+                object propertyValue = ReadFromControl(propertyType, child);
+
+                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
+
+                headerType.GetField(propertyName).SetValue(currentObject, propertyValue);
+
+            }
+
+            return currentObject;
         }
 
         private object ReadFromControl(Type propertyType, UIElement child)
@@ -715,26 +790,57 @@ namespace TOKElfTool
             {
                 duplicateExpander = (ObjectEditControl)ObjectTabPanel.Children.Last();
                 RemoveAllObjects();
+
+                if(loadedDataType == GameDataType.Maplink)
+                    UpdateMaplinkHeaderChildCount();
             }
         }
 
-        private async void Button_AddObject_OnClick(object sender, RoutedEventArgs e)
+        private void Button_AddObject_OnClick(object sender, RoutedEventArgs e)
         {
-            ObjectEditControl clone = null;
             e.Handled = true;
-            await Dispatcher.InvokeAsync(() =>
+            UIElementCollection children = ObjectTabPanel.Children;
+
+            ObjectEditControl clone;
+            if (children.Count > 1)
+                clone = (loadedDataType switch
             {
-                clone = ObjectTabPanel.Children.Count > 1
-                    ? ((ObjectEditControl)ObjectTabPanel.Children.Last()).Clone()
-                    : duplicateExpander.Clone();
-            });
+                    GameDataType.Maplink => (ObjectEditControl)children[children.Count - 2],
+                    _ => (ObjectEditControl)children.Last(),
+                }).Clone();
+            else
+                clone = duplicateExpander.Clone();
             clone.IsExpanded = true;
-            clone.Index = ObjectTabPanel.Children.Count;
-            ObjectTabPanel.Children.Add(clone);
+            clone.Index = children.Count;
+
+            if (loadedDataType != GameDataType.Maplink)
+            {
+                children.Add(clone);
+            }
+            else
+            {
+                children.Insert(children.Count - 1, clone);
+                UpdateMaplinkHeaderChildCount();
+                modifiedObjects[modifiedObjects.Count - 1] = true;
+            }
+
             modifiedObjects.Add(true);
+
+            hasUnsavedChanges = true;
             FixExpanderIndexes();
         }
 
+        private void UpdateMaplinkHeaderChildCount()
+        {
+            UIElementCollection children = ObjectTabPanel.Children;
+
+            if (children.Count == 0)
+                return;
+
+            ObjectEditControl control = (ObjectEditControl)children.Last();
+            TextBox textBox = (TextBox)control.Grid.Children[3];
+            textBox.Text = (children.Count - 3).ToString();
+        }
 
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {

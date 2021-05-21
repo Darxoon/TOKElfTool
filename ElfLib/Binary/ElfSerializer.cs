@@ -33,11 +33,11 @@ namespace ElfLib
             // TODO: Serialize symbols
 
             // Serialize .rela.data
-            byte[] relaData = SerializeRelaData(stringRelocTable);
+            byte[] relaData = SerializeRelaData(stringRelocTable, dataType);
             File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname3.bin", relaData);
 
             // Make new section list
-            Section[] updatedSections = UpdateSections(binary, serializedData, stringSectionData, relaData, updateRodataCount);
+            Section[] updatedSections = UpdateSections(binary, serializedData, stringSectionData, relaData, updateRodataCount, dataType);
 
             // Clone and order by offset
             IOrderedEnumerable<Section> offsetSortedSections = (from x in updatedSections orderby x.Offset select x);
@@ -68,7 +68,7 @@ namespace ElfLib
                 }
                 else
                     Trace.WriteLine($"Leaving section {section.Name,16} to pos 0x{outputStream.Position:X4} length 0x{section.Content.Length:X2}");
-                section.Offset = outputStream.Position;
+                section.Offset = section.Type != 0 ? outputStream.Position : 0;
                 writer.Write(section.Content);
             }
 
@@ -100,7 +100,7 @@ namespace ElfLib
             return output;
         }
 
-        private static Section[] UpdateSections<T>(ElfBinary<T> binary, byte[] serializedData, byte[] stringSectionData, byte[] relaData, bool updateRodataCount)
+        private static Section[] UpdateSections<T>(ElfBinary<T> binary, byte[] serializedData, byte[] stringSectionData, byte[] relaData, bool updateRodataCount, GameDataType dataType)
         {
             List<Section> updatedSections = new List<Section>();
 
@@ -120,7 +120,13 @@ namespace ElfLib
                         newContent = relaData;
                         break;
                     case ".rodata":
-                        newContent = updateRodataCount ? BitConverter.GetBytes(binary.Data.Aggregate(0, (amount, dataSection) => amount + dataSection.Count)) : null;
+                        if (dataType != GameDataType.Maplink)
+                            newContent = updateRodataCount
+                                ? BitConverter.GetBytes(binary.Data.Aggregate(0,
+                                    (amount, dataSection) => amount + dataSection.Count))
+                                : null;
+                        else
+                            newContent = BitConverter.GetBytes(1);
                         break;
                     default:
                         break;
@@ -131,20 +137,21 @@ namespace ElfLib
             return updatedSections.ToArray();
         }
 
-        private static byte[] SerializeRelaData(SortedDictionary<long, ElfStringPointer> stringRelocTable)
+        private static byte[] SerializeRelaData(SortedDictionary<long, ElfStringPointer> stringRelocTable, GameDataType dataType)
         {
             MemoryStream stream = new MemoryStream();
             BinaryWriter writer = new BinaryWriter(stream);
 
             Trace.WriteLine("String Reloc table serializing:");
             Trace.Indent();
-            foreach (var relocEntry in stringRelocTable)
+            foreach (KeyValuePair<long, ElfStringPointer> relocEntry in stringRelocTable)
             {
                 if (relocEntry.Value.AsInt != int.MaxValue)
                 {
-                    SectionRela rela = new SectionRela(relocEntry.Key, relocEntry.Value);
+                    SectionRela rela = dataType == GameDataType.Maplink && relocEntry.Key == stringRelocTable.Last().Key 
+                        ? new SectionRela(relocEntry.Key, 0x800000101, relocEntry.Value.AsLong) 
+                        : new SectionRela(relocEntry.Key, relocEntry.Value);
                     rela.ToBinaryWriter(writer);
-                    Trace.WriteLine(rela.ToString());
                 }
             }
             Trace.Unindent();
@@ -231,7 +238,8 @@ namespace ElfLib
             return output;
         }
 
-        private static void ConvertToRawObjects<T>(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, List<object> rawObjects, SortedDictionary<long, ElfStringPointer> stringRelocTable, ref long dataSectionPosition)
+        private static void ConvertToRawObjects<T>(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, 
+            List<object> rawObjects, SortedDictionary<long, ElfStringPointer> stringRelocTable, ref long dataSectionPosition)
         {
             switch (dataType)
             {
@@ -273,8 +281,18 @@ namespace ElfLib
                 case GameDataType.Maplink:
                     foreach (Element<T> element in data)
                     {
-                        rawObjects.Add(RawMaplinkNode.From((MaplinkNode)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkNode));
+                        if (element.value is MaplinkNode node)
+                        {
+                            rawObjects.Add(RawMaplinkNode.From(node, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                            dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkNode));
+                        }
+
+                        if (element.value is MaplinkHeader header)
+                        {
+                            rawObjects.Add(RawMaplinkHeader.From(header, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                            stringRelocTable.Add(dataSectionPosition + typeof(RawMaplinkHeader).GetField("nodes_start_ptr").GetFieldOffset(), new ElfStringPointer(0));
+                            dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkHeader));
+                        }
                     }
                     break;
                 default:
@@ -336,6 +354,29 @@ namespace ElfLib
                         allStrings.Add(npc.level_str);
                         allStrings.Add(npc.shape_str);
                         allStrings.Add(npc.obj_str);
+                    }
+                    break;
+                case GameDataType.Maplink:
+                    foreach (Element<T> element in data)
+                    {
+                        if (element.value is MaplinkNode node)
+                        {
+                            allStrings.Add(node.field_0x0);
+                            allStrings.Add(node.field_0x8);
+                            allStrings.Add(node.field_0x10);
+                            allStrings.Add(node.field_0x18);
+                            allStrings.Add(node.field_0x20);
+                            allStrings.Add(node.field_0x28);
+                            allStrings.Add(node.field_0x50);
+                            allStrings.Add(node.field_0x60);
+                            allStrings.Add(node.field_0x90);
+                            allStrings.Add(node.field_0x98);
+                        }
+
+                        if (element.value is MaplinkHeader header)
+                        {
+                            allStrings.Add(header.level_str);
+                        }
                     }
                     break;
                 case GameDataType.None:

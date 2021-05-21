@@ -37,6 +37,13 @@ namespace TOKElfTool
         private static readonly Regex shortenPathRegex = new Regex(@"[\/\\]");
         private const int MAX_PATH_SEGMENT_AMOUNT = 6;
 
+        public static T PopBack<T>(this IList<T> list)
+        {
+            T last = list.Last();
+            list.RemoveAt(list.Count - 1);
+            return last;
+        }
+
         public static string ShortenPath(string path)
         {
             string[] segments = shortenPathRegex.Split(path);

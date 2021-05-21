@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ElfLib;
+using ElfLib.CustomDataTypes;
 
 namespace TOKElfTool
 {
@@ -54,7 +55,7 @@ namespace TOKElfTool
             InitializeComponent();
         }
 
-        public ObjectEditControl(object currentObject, string header, int index)
+        public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable)
         {
             InitializeComponent();
 
@@ -67,7 +68,13 @@ namespace TOKElfTool
             for (int i = 0; i < fields.Length; i++)
             {
                 Grid.RowDefinitions.Add(new RowDefinition());
-                AddFieldControls(currentObject, fields[i], Grid, i);
+                AddFieldControls(currentObject, fields[i], Grid, i, symbolTable);
+            }
+
+            if (currentObject is MaplinkHeader)
+            {
+                duplicateButton.IsEnabled = false;
+                removeButton.IsEnabled = false;
             }
         }
 
@@ -90,7 +97,7 @@ namespace TOKElfTool
         }
 
 
-        private void AddFieldControls(object currentObject, FieldInfo field, Grid grid, int fieldIndex)
+        private void AddFieldControls(object currentObject, FieldInfo field, Grid grid, int fieldIndex, List<Symbol> symbolTable)
         {
             string name = field.Name;
 
@@ -172,6 +179,18 @@ namespace TOKElfTool
             Grid.SetColumn(textBox, 1);
             Grid.SetRow(textBox, fieldIndex);
             grid.Children.Add(textBox);
+
+            if (field.Name == "nodes_start_ptr")
+            {
+                textBox.Text = symbolTable[8].Name;
+                textBox.IsEnabled = false;
+
+                textBox.BorderBrush = new SolidColorBrush(Color.FromRgb(204, 204, 204));
+                textBox.Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
+                textBox.Foreground = new SolidColorBrush(Color.FromRgb(109, 109, 109));
+                label.Margin = new Thickness(label.Margin.Left, label.Margin.Top, 4, label.Margin.Bottom);
+                return;
+            }
 
             textBox.KeyDown += (sender, args) => ValueChanged?.Invoke(sender, args);
             Trace.WriteLine(fieldType.Name);
@@ -331,7 +350,7 @@ namespace TOKElfTool
         {
             e.Handled = !FloatRegex.IsMatch(e.Text);
         }
-        
+
         #endregion
 
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)

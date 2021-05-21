@@ -58,14 +58,31 @@ namespace TOKElfTool
         }
 
 
-        private void Worker_DoWork(object sender, DoWorkEventArgs e)
+        private void Worker_DoWork(object sender, DoWorkEventArgs ev)
         {
-            byte[] serialized = ElfSerializer.SerializeBinary(binary, dataType, true);
-            File.WriteAllBytes(fileSavePath, fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd") ? compressor.Wrap(serialized) : serialized);
+            try
+            {
+                byte[] serialized = ElfSerializer.SerializeBinary(binary, dataType, true);
+                File.WriteAllBytes(fileSavePath,
+                    fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd")
+                        ? compressor.Wrap(serialized)
+                        : serialized);
+            }
+            catch (Exception e)
+            {
+                worker.ReportProgress(-1, e);
+            }
         }
         private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            progressBar.Value = e.ProgressPercentage * 100;
+            switch (e.ProgressPercentage)
+            {
+                case 0:
+                    progressBar.Value = ((double)e.UserState) * 100;
+                    break;
+                case 1:
+                    throw (Exception)e.UserState;
+            }
         }
 
         private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

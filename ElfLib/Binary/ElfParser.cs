@@ -192,13 +192,14 @@ namespace ElfLib
                 case GameDataType.Mobj:
                     return ParseObjectsOfType<Mobj, RawMobj>(sections, relas, stringSection, symbolTable, GameDataType.RawMobj, Mobj.From);
                 case GameDataType.Aobj:
-                    return ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.Aobj, Aobj.From);
+                    return ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.RawAobj, Aobj.From);
                 case GameDataType.BShape:
-                    return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.BShape, BShape.From);
+                    return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawBShape, BShape.From);
                 case GameDataType.Item:
                     return ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From);
                 case GameDataType.Maplink:
-                    return ParseObjectsOfType<MaplinkNode, RawMaplinkNode>(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From);
+                    // custom overload for Maplink
+                    return ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From, MaplinkHeader.From);
 
                 default:
                     return ParseRawData(sections, relas, dataType, symbolTable);
@@ -248,7 +249,10 @@ namespace ElfLib
                         ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawItem.ReadBinaryData);
                         break;
                     case GameDataType.RawMaplink:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkNode.ReadBinaryData);
+                        if(symbolIndex == 0)
+                            ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkNode.ReadBinaryData);
+                        else
+                            ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkHeader.ReadBinaryData);
                         break;
 
                     default:
@@ -269,6 +273,19 @@ namespace ElfLib
             List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
             List<List<object>> objects = rawObjects
                 .Select((list, i) => i == 0 ? list.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList() : new List<object>(list))
+                .ToList();
+            return objects;
+        }
+
+        // custom overload for maplink
+        private static List<List<object>> ParseObjectsOfType(List<Section> sections, List<SectionRela> relas, Section stringSection,
+            List<Symbol> symbolTable, GameDataType rawType, ObjectConverter<MaplinkNode, RawMaplinkNode> converter, ObjectConverter<MaplinkHeader, RawMaplinkHeader> headerConverter)
+        {
+            List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
+            List<List<object>> objects = rawObjects
+                .Select((list, i) => list.Select(rawObject => (i == 0 
+                    ? (object)converter((RawMaplinkNode)rawObject, stringSection)
+                    : (object)headerConverter((RawMaplinkHeader)rawObject, stringSection))).ToList())
                 .ToList();
             return objects;
         }
