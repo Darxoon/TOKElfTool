@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -43,7 +43,7 @@ namespace TOKElfTool
             {
                 recentlyOpenedFiles = File.ReadAllLines(HistoryPath).ToList();
                 RegenerateRecentlyOpened();
-                EmptyLabel.UpdateList(4, ((IEnumerable<string>) recentlyOpenedFiles).Reverse().ToArray());
+                EmptyLabel.UpdateList(4, ((IEnumerable<string>)recentlyOpenedFiles).Reverse().ToArray());
             }
             else
             {
@@ -159,7 +159,7 @@ namespace TOKElfTool
                 modifiedObjects[i] = true;
             }
 
-            if(loadedDataType == GameDataType.Maplink)
+            if (loadedDataType == GameDataType.Maplink)
                 UpdateMaplinkHeaderChildCount();
 
             hasUnsavedChanges = true;
@@ -251,6 +251,8 @@ namespace TOKElfTool
             {
                 ObjectTabPanel.Children.RemoveAt(i);
             }
+
+            hasUnsavedChanges = true;
         }
 
         private ElfBinary<object> loadedBinary;
@@ -509,7 +511,7 @@ namespace TOKElfTool
                 .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
                     ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i + 1]))
                     : (modifiedObjects[i] == true
-                    ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1]))
+                        ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1]))
                         : loadedBinary.Data[0][i]))
                 .ToList();
 
@@ -804,7 +806,7 @@ namespace TOKElfTool
             ObjectEditControl clone;
             if (children.Count > 1)
                 clone = (loadedDataType switch
-            {
+                {
                     GameDataType.Maplink => (ObjectEditControl)children[children.Count - 2],
                     _ => (ObjectEditControl)children.Last(),
                 }).Clone();
