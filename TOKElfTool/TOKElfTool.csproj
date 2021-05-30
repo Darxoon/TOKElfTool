@@ -80,8 +80,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ProgressReports\ZstdFolderProgressPopupWindow.xaml.cs">
+      <DependentUpon>ZstdFolderProgressPopupWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RecentFileDisplay.xaml.cs" />
-    <Compile Include="SavePopupWindow.xaml.cs">
+    <Compile Include="ProgressReports\SavePopupWindow.xaml.cs">
       <DependentUpon>SavePopupWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util.cs" />
@@ -109,11 +112,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="ProgressReports\ZstdFolderProgressPopupWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="RecentFileDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SavePopupWindow.xaml">
+    <Page Include="ProgressReports\SavePopupWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -155,6 +162,7 @@
       <Name>ElfLib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\ZstdNet.1.4.5\build\ZstdNet.targets" Condition="Exists('..\packages\ZstdNet.1.4.5\build\ZstdNet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

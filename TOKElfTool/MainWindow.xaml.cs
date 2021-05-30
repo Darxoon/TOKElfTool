@@ -14,6 +14,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
+using Ookii.Dialogs.Wpf;
+using TOKElfTool.ProgressReports;
 using ZstdNet;
 using UIElement = System.Windows.UIElement;
 
@@ -375,7 +377,7 @@ namespace TOKElfTool
 
             try
             {
-                binary = await Task.Run(() => ElfParser.ParseFile<object>(reader, loadedDataType));
+                binary = ElfParser.ParseFile<object>(reader, loadedDataType);
             }
             catch (ElfContentNotFoundException)
             {
@@ -675,7 +677,7 @@ namespace TOKElfTool
 
         private void MenuItem_Decrypt_OnClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            VistaOpenFileDialog openFileDialog = new VistaOpenFileDialog
             {
                 FileName = "dispos_Npc.elf.zst",
                 DefaultExt = ".zst",
@@ -784,6 +786,75 @@ namespace TOKElfTool
             }
         }
 
+
+        private void MenuItem_DecryptAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            VistaFolderBrowserDialog openDialog = new VistaFolderBrowserDialog
+            {
+                Description = "Select Folder to Decompress",
+                UseDescriptionForTitle = true,
+            };
+            bool? result = openDialog.ShowDialog(this);
+            if (result != true)
+                return;
+
+            VistaFolderBrowserDialog saveDialog = new VistaFolderBrowserDialog
+            {
+                Description = "Select Output Folder",
+                UseDescriptionForTitle = true,
+            };
+            result = saveDialog.ShowDialog(this);
+            if (result != true)
+                return;
+
+            statusLabel.Text = "Decompressing folder...";
+
+            ZstdFolderProgressPopupWindow window = new ZstdFolderProgressPopupWindow
+            {
+                TargetDir = openDialog.SelectedPath,
+                OutputDir = saveDialog.SelectedPath,
+                Method = ZstdMethod.Decompress,
+            };
+            window.ShowDialog();
+
+            statusLabel.Text = "Done bulk compressing";
+        }
+
+        private void MenuItem_EncryptAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            VistaFolderBrowserDialog openDialog = new VistaFolderBrowserDialog
+            {
+                Description = "Select Folder to Compress",
+                UseDescriptionForTitle = true,
+            };
+            bool? result = openDialog.ShowDialog(this);
+            if (result != true)
+                return;
+
+            VistaFolderBrowserDialog saveDialog = new VistaFolderBrowserDialog
+            {
+                Description = "Select Output Folder",
+                UseDescriptionForTitle = true,
+            };
+            result = saveDialog.ShowDialog(this);
+            if (result != true)
+                return;
+
+            statusLabel.Text = "Compressing folder...";
+
+            ZstdFolderProgressPopupWindow window = new ZstdFolderProgressPopupWindow
+            {
+                TargetDir = openDialog.SelectedPath,
+                OutputDir = saveDialog.SelectedPath,
+                Method = ZstdMethod.Compress,
+            };
+            window.ShowDialog();
+
+            statusLabel.Text = "Done bulk compressing";
+        }
+
+
+
         private void Button_RemoveAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
@@ -796,7 +867,7 @@ namespace TOKElfTool
                 duplicateExpander = (ObjectEditControl)ObjectTabPanel.Children.Last();
                 RemoveAllObjects();
 
-                if(loadedDataType == GameDataType.Maplink)
+                if (loadedDataType == GameDataType.Maplink)
                     UpdateMaplinkHeaderChildCount();
             }
         }

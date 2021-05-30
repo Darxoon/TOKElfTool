@@ -44,6 +44,33 @@ namespace TOKElfTool
             return last;
         }
 
+        public static string GetRelativePath(string sourcePath, string targetPath)
+        {
+            sourcePath = Path.GetFullPath(sourcePath);
+            targetPath = Path.GetFullPath(targetPath);
+
+            string[] sourceParts = sourcePath.Split(Path.DirectorySeparatorChar);
+            string[] targetParts = targetPath.Split(Path.DirectorySeparatorChar);
+
+            int n;
+            for (n = 0; n < Math.Min(sourceParts.Length, targetParts.Length); n++)
+            {
+                if (!string.Equals(sourceParts[n], targetParts[n], StringComparison.CurrentCultureIgnoreCase))
+                {
+                    break;
+                }
+            }
+
+            if (n == 0) throw new ApplicationException("Files must be on the same volume");
+            string relativePath = new string('.', sourceParts.Length - n).Replace(".", ".." + Path.DirectorySeparatorChar);
+            if (n <= targetParts.Length)
+            {
+                relativePath += string.Join(Path.DirectorySeparatorChar.ToString(), targetParts.Skip(n).ToArray());
+            }
+
+            return string.IsNullOrWhiteSpace(relativePath) ? "." : relativePath;
+        }
+
         public static string ShortenPath(string path)
         {
             string[] segments = shortenPathRegex.Split(path);
