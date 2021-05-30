@@ -62,7 +62,7 @@ namespace TOKElfTool
         {
             try
             {
-                byte[] serialized = ElfSerializer.SerializeBinary(binary, dataType, true);
+                byte[] serialized = ElfSerializer<object>.SerializeBinary(binary, dataType);
                 File.WriteAllBytes(fileSavePath,
                     fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd")
                         ? compressor.Wrap(serialized)
