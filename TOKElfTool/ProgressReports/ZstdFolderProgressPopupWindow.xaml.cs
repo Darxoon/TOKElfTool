@@ -54,6 +54,9 @@ namespace TOKElfTool.ProgressReports
                 // Decompress files
                 foreach (string file in Directory.GetFiles(path))
                 {
+                    if (!Path.GetFileName(file).EndsWith(".zst"))
+                        continue;
+
                     worker.ReportProgress(0);
                     Thread thread = new Thread(() =>
                     {
@@ -86,6 +89,8 @@ namespace TOKElfTool.ProgressReports
                             using Compressor compressor = new Compressor();
                             result = compressor.Wrap(input);
                         }
+
+                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                         File.WriteAllBytes(outputPath, result);
                     });
                     thread.Start();
