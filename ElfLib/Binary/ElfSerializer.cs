@@ -372,16 +372,16 @@ namespace ElfLib
                     {
                         if (element.value is MaplinkNode node)
                         {
-                            allStrings.Add(node.field_0x0);
+                            allStrings.Add(node.level_str);
                             allStrings.Add(node.field_0x8);
-                            allStrings.Add(node.field_0x10);
+                            allStrings.Add(node.destination_str);
                             allStrings.Add(node.field_0x18);
-                            allStrings.Add(node.field_0x20);
-                            allStrings.Add(node.field_0x28);
+                            allStrings.Add(node.shape_str);
+                            allStrings.Add(node.target_str);
                             allStrings.Add(node.field_0x50);
-                            allStrings.Add(node.field_0x60);
-                            allStrings.Add(node.field_0x90);
-                            allStrings.Add(node.field_0x98);
+                            allStrings.Add(node.direction_str);
+                            allStrings.Add(node.enter_event_str);
+                            allStrings.Add(node.exit_event_str);
                         }
 
                         if (element.value is MaplinkHeader header)

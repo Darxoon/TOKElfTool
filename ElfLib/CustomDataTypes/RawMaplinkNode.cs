@@ -10,12 +10,12 @@ namespace ElfLib.CustomDataTypes
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawMaplinkNode
     {
-        public ElfStringPointer field_0x0;
+        public ElfStringPointer level_str;
         public ElfStringPointer field_0x8;
-        public ElfStringPointer field_0x10;
+        public ElfStringPointer destination_str;
         public ElfStringPointer field_0x18;
-        public ElfStringPointer field_0x20;
-        public ElfStringPointer field_0x28;
+        public ElfStringPointer shape_str;
+        public ElfStringPointer target_str;
         public float field_0x30;
         public int field_0x34;
         public int field_0x38;
@@ -27,7 +27,7 @@ namespace ElfLib.CustomDataTypes
         public ElfStringPointer field_0x50;
         public int field_0x58;
         public int field_0x5c;
-        public ElfStringPointer field_0x60;
+        public ElfStringPointer direction_str;
         public int field_0x68;
         public int field_0x6c;
         public int field_0x70;
@@ -38,8 +38,8 @@ namespace ElfLib.CustomDataTypes
         public int field_0x84;
         public int field_0x88;
         public int field_0x8c;
-        public ElfStringPointer field_0x90;
-        public ElfStringPointer field_0x98;
+        public ElfStringPointer enter_event_str;
+        public ElfStringPointer exit_event_str;
         public int field_0xa0;
         public int field_0xa4;
         public int field_0xa8;
@@ -51,16 +51,16 @@ namespace ElfLib.CustomDataTypes
         internal static RawMaplinkNode ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
         {
             RawMaplinkNode rawItem = Util.FromBinaryReader<RawMaplinkNode>(binaryReader);
-            rawItem.field_0x0 = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
+            rawItem.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
             rawItem.field_0x8 = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawItem.field_0x10 = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
+            rawItem.destination_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
             rawItem.field_0x18 = ElfStringPointer.ResolveRelocation(relas, 24, baseOffset);
-            rawItem.field_0x20 = ElfStringPointer.ResolveRelocation(relas, 32, baseOffset);
-            rawItem.field_0x28 = ElfStringPointer.ResolveRelocation(relas, 40, baseOffset);
+            rawItem.shape_str = ElfStringPointer.ResolveRelocation(relas, 32, baseOffset);
+            rawItem.target_str = ElfStringPointer.ResolveRelocation(relas, 40, baseOffset);
             rawItem.field_0x50 = ElfStringPointer.ResolveRelocation(relas, 80, baseOffset);
-            rawItem.field_0x60 = ElfStringPointer.ResolveRelocation(relas, 96, baseOffset);
-            rawItem.field_0x90 = ElfStringPointer.ResolveRelocation(relas, 144, baseOffset);
-            rawItem.field_0x98 = ElfStringPointer.ResolveRelocation(relas, 152, baseOffset);
+            rawItem.direction_str = ElfStringPointer.ResolveRelocation(relas, 96, baseOffset);
+            rawItem.enter_event_str = ElfStringPointer.ResolveRelocation(relas, 144, baseOffset);
+            rawItem.exit_event_str = ElfStringPointer.ResolveRelocation(relas, 152, baseOffset);
 
             return rawItem;
         }

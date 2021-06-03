@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using ElfLib.CustomDataTypes.Maplink;
 
 namespace ElfLib.CustomDataTypes
 {
@@ -9,12 +10,12 @@ namespace ElfLib.CustomDataTypes
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct MaplinkNode
     {
-        public string field_0x0;
+        public string level_str;
         public string field_0x8;
-        public string field_0x10;
+        public string destination_str;
         public string field_0x18;
-        public string field_0x20;
-        public string field_0x28;
+        public string shape_str;
+        public string target_str;
         public float field_0x30;
         public int field_0x34;
         public int field_0x38;
@@ -26,7 +27,7 @@ namespace ElfLib.CustomDataTypes
         public string field_0x50;
         public int field_0x58;
         public int field_0x5c;
-        public string field_0x60;
+        public string direction_str;
         public int field_0x68;
         public int field_0x6c;
         public int field_0x70;
@@ -37,8 +38,8 @@ namespace ElfLib.CustomDataTypes
         public int field_0x84;
         public int field_0x88;
         public int field_0x8c;
-        public string field_0x90;
-        public string field_0x98;
+        public string enter_event_str;
+        public string exit_event_str;
         public int field_0xa0;
         public int field_0xa4;
         public int field_0xa8;
