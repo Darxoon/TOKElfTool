@@ -107,10 +107,11 @@ namespace TOKElfTool
                 case MessageBoxResult.No:
                     myMessageBox.NoButton.Focus();
                     break;
+                case MessageBoxResult.OK:
+                    myMessageBox.OkButton.Focus();
+                    break;
                 // Unnecessary because MyMessageBox doesn't have those buttons
                 case MessageBoxResult.None:
-                    break;
-                case MessageBoxResult.OK:
                     break;
                 case MessageBoxResult.Cancel:
                     break;
