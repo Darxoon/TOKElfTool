@@ -376,7 +376,7 @@ namespace ElfLib
                             allStrings.Add(node.field_0x8);
                             allStrings.Add(node.destination_str);
                             allStrings.Add(node.field_0x18);
-                            allStrings.Add(node.shape_str);
+                            allStrings.Add(StringEnumAttribute.GetIdentifier(node.shape_str));
                             allStrings.Add(node.target_str);
                             allStrings.Add(node.field_0x50);
                             allStrings.Add(node.direction_str);

@@ -14,7 +14,7 @@ namespace ElfLib.CustomDataTypes
         public string field_0x8;
         public string destination_str;
         public string field_0x18;
-        public string shape_str;
+        public TransitionType shape_str;
         public string target_str;
         public float field_0x30;
         public int field_0x34;

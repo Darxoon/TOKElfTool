@@ -63,13 +63,13 @@ namespace ElfLib
             {
                 FieldInfo rawNpcField = typeof(TRaw).GetField(npcField.Name);
                 //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
-                if (npcField.FieldType == typeof(string))
+                if (npcField.FieldType == typeof(string) || (npcField.FieldType.BaseType == typeof(Enum) && StringEnumAttribute.IsStringEnum(npcField.FieldType)))
                 {
                     Trace.WriteLine("Peter bghjmnv ");
                     Trace.WriteLine(rawNpcField.Name);
                     Trace.WriteLine(rawNpcField.GetValue(raw));
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(raw));
-                    npcField.SetValue(npc, str);
+                    npcField.SetValue(npc, npcField.FieldType.BaseType == typeof(Enum) ? StringEnumAttribute.GetEnumValueFromString(str, npcField.FieldType) : str);
                 }
                 else if (npcField.FieldType.BaseType == typeof(Enum))
                 {
@@ -106,9 +106,9 @@ namespace ElfLib
                 if (field == null)
                     throw new Exception($"Didn't find field `{rawField.Name}` in type {nameof(TSource)}");
 
-                if (rawField.FieldType == typeof(ElfStringPointer) && field.FieldType == typeof(string))
+                if (rawField.FieldType == typeof(ElfStringPointer) && (field.FieldType == typeof(string) || StringEnumAttribute.IsStringEnum(field.FieldType)))
                 {
-                    string str = (string)field.GetValue(source);
+                    string str = StringEnumAttribute.IsStringEnum(field.FieldType) ? StringEnumAttribute.GetIdentifier(field.GetValue(source), field.FieldType) : (string)field.GetValue(source);
                     ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
                     if (stringRelocTable != null)
                         stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, stringPointer);

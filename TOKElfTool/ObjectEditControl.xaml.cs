@@ -143,6 +143,24 @@ namespace TOKElfTool
                 {
                     Margin = new Thickness(0, 0, 0, 5),
                 };
+                if (StringEnumAttribute.IsStringEnum(fieldType))
+                {
+                    comboBox.IsEditable = true;
+                    comboBox.KeyDown += (sender, e) =>
+                    {
+                        if (e.Key == Key.Enter)
+                        {
+                            // if it contains the ingame value, get the enum value and then the display name
+                            object fromIdentifier = StringEnumAttribute.GetEnumValueFromString(comboBox.Text, fieldType);
+                            if (fromIdentifier != null)
+                            {
+                                string evaluated = StringEnumAttribute.GetDisplayName(fromIdentifier, fieldType);
+                                comboBox.Text = evaluated;
+                            }
+                        }
+                    };
+                }
+
                 IEnumerable<FieldInfo> enumFields = fieldType.GetFields()
                     .Where(value => value.IsStatic);
 

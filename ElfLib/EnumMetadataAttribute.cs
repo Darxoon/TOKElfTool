@@ -8,6 +8,7 @@ namespace ElfLib
     public class EnumMetadataAttribute : Attribute
     {
         public string DisplayName { get; set; }
+        public string Identifier { get; set; } = null;
 
         public EnumMetadataAttribute()
         {
