@@ -8,9 +8,9 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("TOKElfTool")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A tool for editing elf files for Paper Mario: The Origami King")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Darxoon")]
 [assembly: AssemblyProduct("TOKElfTool")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
