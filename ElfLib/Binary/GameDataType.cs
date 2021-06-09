@@ -12,12 +12,17 @@ namespace ElfLib
         Item,
         Maplink,
 
+        DataNpc,
+
         RawNPC,
         RawMobj,
         RawAobj,
         RawBShape,
         RawItem,
         RawMaplink,
+
+        RawDataNpc,
+
         // TODO: Add more
     }
 }

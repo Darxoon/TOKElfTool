@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using ElfLib.CustomDataTypes;
+using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib
 {
@@ -250,24 +251,24 @@ namespace ElfLib
             {
                 int nodeSize = Marshal.SizeOf(typeof(RawMaplinkNode));
                 int headerSize = Marshal.SizeOf(typeof(RawMaplinkHeader));
-                    foreach (Element<T> element in data)
+                foreach (Element<T> element in data)
+                {
+                    if (element.value is MaplinkNode node)
                     {
-                        if (element.value is MaplinkNode node)
-                        {
-                            rawObjects.Add(RawMaplinkNode.From(node, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        rawObjects.Add(RawMaplinkNode.From(node, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         dataSectionPosition += nodeSize;
-                        }
+                    }
 
-                        if (element.value is MaplinkHeader header)
-                        {
-                            rawObjects.Add(RawMaplinkHeader.From(header, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                            stringRelocTable.Add(dataSectionPosition + typeof(RawMaplinkHeader).GetField("nodes_start_ptr").GetFieldOffset(), new ElfStringPointer(0));
+                    if (element.value is MaplinkHeader header)
+                    {
+                        rawObjects.Add(RawMaplinkHeader.From(header, stringDeclarationMap, stringRelocTable, dataSectionPosition));
+                        stringRelocTable.Add(dataSectionPosition + typeof(RawMaplinkHeader).GetField("nodes_start_ptr").GetFieldOffset(), new ElfStringPointer(0));
                         dataSectionPosition += headerSize;
-                        }
+                    }
                 }
 
                 return;
-                    }
+            }
 
             int size = Marshal.SizeOf(dataType switch
             {
@@ -379,6 +380,16 @@ namespace ElfLib
                         if (element.value is MaplinkHeader header)
                         {
                             allStrings.Add(header.level_str);
+                        }
+                    }
+                    break;
+                case GameDataType.DataNpc:
+                    foreach (Element<T> element in data)
+                    {
+                        NpcType npc = (NpcType)(object)element.value;
+                        foreach (FieldInfo field in typeof(NpcType).GetFields().Where(field => field.FieldType == typeof(string)))
+                        {
+                            allStrings.Add((string)field.GetValue(npc));
                         }
                     }
                     break;

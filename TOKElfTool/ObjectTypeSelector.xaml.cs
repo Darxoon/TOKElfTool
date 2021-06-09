@@ -53,6 +53,7 @@ namespace TOKElfTool
                 "dispos_BShape" => Show(parent, GameDataType.BShape),
                 "dispos_Item" => Show(parent, GameDataType.Item),
                 "maplink" => Show(parent, GameDataType.Maplink),
+                "data_npc" => Show(parent, GameDataType.DataNpc),
                 _ => Show(parent),
             };
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
+using ElfLib.CustomDataTypes.Registry;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
 using ZstdNet;
@@ -343,6 +344,7 @@ namespace TOKElfTool
                 GameDataType.BShape => typeof(BShape),
                 GameDataType.Item => typeof(Item),
                 GameDataType.Maplink => typeof(MaplinkNode),
+                GameDataType.DataNpc => typeof(NpcType),
                 GameDataType.None => null,
                 _ => throw new Exception("Data type currently not supported")
             };
@@ -423,6 +425,7 @@ namespace TOKElfTool
                     {
                         GameDataType.Maplink => "maplink.elf",
                         GameDataType.NPC => "dispos_Npc.elf",
+                        GameDataType.DataNpc => "data_npc.elf",
                         _ => $"dispos_{loadedStructType.Name}.elf",
                     },
                     //DefaultExt = ".elf",

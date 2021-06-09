@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
 using System.Reflection;
 using ElfLib.CustomDataTypes;
+using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib
 {
@@ -221,6 +222,9 @@ namespace ElfLib
                             ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkNode.ReadBinaryData);
                         else
                             ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkHeader.ReadBinaryData);
+                        break;
+                    case GameDataType.RawDataNpc:
+                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawNpcType.ReadBinaryData);
                         break;
 
                     default:
