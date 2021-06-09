@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 using System.Text;
+using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib.CustomDataTypes
 {
@@ -99,19 +101,9 @@ namespace ElfLib.CustomDataTypes
 
         internal static RawAobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
         {
-            RawAobj rawMobj = Util.FromBinaryReader<RawAobj>(binaryReader);
-            rawMobj.level_str  = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-            rawMobj.object_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawMobj.shape_str  = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
-            rawMobj.field_0x38 = ElfStringPointer.ResolveRelocation(relas, 56, baseOffset);
-            rawMobj.field_0x40 = ElfStringPointer.ResolveRelocation(relas, 64, baseOffset);
-            rawMobj.field_0x50 = ElfStringPointer.ResolveRelocation(relas, 80, baseOffset);
-            rawMobj.field_0x60 = ElfStringPointer.ResolveRelocation(relas, 96, baseOffset);
-            rawMobj.field_0x70 = ElfStringPointer.ResolveRelocation(relas, 112, baseOffset);
-            rawMobj.field_0x108 = ElfStringPointer.ResolveRelocation(relas, 264, baseOffset);
+            object rawMobj = Util.FromBinaryReader<RawAobj>(binaryReader);
 
-
-            return rawMobj;
+            return (RawAobj)Util.ResolveStringRelocations(rawMobj, typeof(RawAobj), relas, baseOffset);
         }
     }
 }

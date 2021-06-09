@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ElfLib.CustomDataTypes
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    [StructLayout(LayoutKind.Sequential)]
     public struct RawMaplinkNode
     {
         public ElfStringPointer level_str;

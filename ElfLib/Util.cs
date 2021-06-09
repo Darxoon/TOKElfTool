@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -126,6 +126,23 @@ namespace ElfLib
             }
 
             return (TRaw)rawObject;
+        }
+
+        public static object ResolveStringRelocations(object instance, Type type, List<SectionRela> relas, long baseOffset)
+        {
+            FieldInfo[] fields = type.GetFields();
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                FieldInfo field = fields[i];
+
+                if (field.FieldType == typeof(ElfStringPointer))
+                {
+                    field.SetValue(instance, ElfStringPointer.ResolveRelocation(relas, field.GetFieldOffset(), baseOffset));
+                }
+            }
+
+            return instance;
         }
 
         public static long CalculatePadding(long position, long alignment) =>
