@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -335,32 +335,17 @@ namespace TOKElfTool
         private void LoadDataType(GameDataType type)
         {
             loadedDataType = type;
-            switch (type)
+            loadedStructType = type switch
             {
-                case GameDataType.NPC:
-                    loadedStructType = typeof(NPC);
-                    break;
-                case GameDataType.Mobj:
-                    loadedStructType = typeof(Mobj);
-                    break;
-                case GameDataType.Aobj:
-                    loadedStructType = typeof(Aobj);
-                    break;
-                case GameDataType.BShape:
-                    loadedStructType = typeof(BShape);
-                    break;
-                case GameDataType.Item:
-                    loadedStructType = typeof(Item);
-                    break;
-                case GameDataType.Maplink:
-                    loadedStructType = typeof(MaplinkNode);
-                    break;
-                case GameDataType.None:
-                    loadedStructType = null;
-                    break;
-                default:
-                    throw new Exception("Data type currently not supported");
-            }
+                GameDataType.NPC => typeof(NPC),
+                GameDataType.Mobj => typeof(Mobj),
+                GameDataType.Aobj => typeof(Aobj),
+                GameDataType.BShape => typeof(BShape),
+                GameDataType.Item => typeof(Item),
+                GameDataType.Maplink => typeof(MaplinkNode),
+                GameDataType.None => null,
+                _ => throw new Exception("Data type currently not supported")
+            };
         }
 
 

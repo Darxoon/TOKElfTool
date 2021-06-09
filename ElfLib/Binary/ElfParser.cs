@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -158,26 +158,21 @@ namespace ElfLib
 
             Section stringSection = GetSection(sections, ".rodata.str1.1");
 
-            switch (dataType)
+            return dataType switch
             {
-                case GameDataType.NPC:
-                    return ParseObjectsOfType<NPC, RawNPC>(sections, relas, stringSection, symbolTable, GameDataType.RawNPC, NPC.From);
-                case GameDataType.Mobj:
-                    return ParseObjectsOfType<Mobj, RawMobj>(sections, relas, stringSection, symbolTable, GameDataType.RawMobj, Mobj.From);
-                case GameDataType.Aobj:
-                    return ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.RawAobj, Aobj.From);
-                case GameDataType.BShape:
-                    return ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawBShape, BShape.From);
-                case GameDataType.Item:
-                    return ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From);
-                case GameDataType.Maplink:
+                GameDataType.NPC => ParseObjectsOfType<NPC, RawNPC>(sections, relas, stringSection, symbolTable, GameDataType.RawNPC, NPC.From),
+                GameDataType.Mobj => ParseObjectsOfType<Mobj, RawMobj>(sections, relas, stringSection, symbolTable, GameDataType.RawMobj, Mobj.From),
+                GameDataType.Aobj => ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.RawAobj, Aobj.From),
+                GameDataType.BShape => ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawBShape, BShape.From),
+                GameDataType.Item => ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From),
+                GameDataType.Maplink =>
                     // custom overload for Maplink
-                    return ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From, MaplinkHeader.From);
+                    ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink,
+                        MaplinkNode.From, MaplinkHeader.From),
+                GameDataType.DataNpc => ParseObjectsOfType<NpcType, RawNpcType>(sections, relas, stringSection, symbolTable, GameDataType.RawDataNpc, NpcType.From),
 
-                default:
-                    return ParseRawData(sections, relas, dataType, symbolTable);
-            }
-
+                _ => ParseRawData(sections, relas, dataType, symbolTable),
+            };
         }
 
         private static List<List<object>> ParseRawData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)

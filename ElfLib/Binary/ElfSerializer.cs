@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -246,62 +246,54 @@ namespace ElfLib
         private static void ConvertToRawObjects<T>(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, 
             List<object> rawObjects, SortedDictionary<long, ElfStringPointer> stringRelocTable, ref long dataSectionPosition)
         {
-            switch (dataType)
+            if (dataType == GameDataType.Maplink)
             {
-                case GameDataType.NPC:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawNPC.From((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawNPC));
-                    }
-                    break;
-                case GameDataType.Mobj:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawMobj.From((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawMobj));
-                    }
-                    break;
-                case GameDataType.Aobj:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawAobj.From((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawAobj));
-                    }
-                    break;
-                case GameDataType.BShape:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawBShape.From((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawBShape));
-                    }
-                    break;
-                case GameDataType.Item:
-                    foreach (Element<T> element in data)
-                    {
-                        rawObjects.Add(RawItem.From((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                        dataSectionPosition += Marshal.SizeOf(typeof(RawItem));
-                    }
-                    break;
-                case GameDataType.Maplink:
+                int nodeSize = Marshal.SizeOf(typeof(RawMaplinkNode));
+                int headerSize = Marshal.SizeOf(typeof(RawMaplinkHeader));
                     foreach (Element<T> element in data)
                     {
                         if (element.value is MaplinkNode node)
                         {
                             rawObjects.Add(RawMaplinkNode.From(node, stringDeclarationMap, stringRelocTable, dataSectionPosition));
-                            dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkNode));
+                        dataSectionPosition += nodeSize;
                         }
 
                         if (element.value is MaplinkHeader header)
                         {
                             rawObjects.Add(RawMaplinkHeader.From(header, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                             stringRelocTable.Add(dataSectionPosition + typeof(RawMaplinkHeader).GetField("nodes_start_ptr").GetFieldOffset(), new ElfStringPointer(0));
-                            dataSectionPosition += Marshal.SizeOf(typeof(RawMaplinkHeader));
+                        dataSectionPosition += headerSize;
                         }
+                }
+
+                return;
                     }
-                    break;
-                default:
-                    throw new ElfSerializeException("Data Type not supported yet");
+
+            int size = Marshal.SizeOf(dataType switch
+            {
+                GameDataType.NPC => typeof(RawNPC),
+                GameDataType.Mobj => typeof(RawMobj),
+                GameDataType.Aobj => typeof(RawAobj),
+                GameDataType.BShape => typeof(RawBShape),
+                GameDataType.Item => typeof(RawItem),
+                GameDataType.DataNpc => typeof(RawNpcType),
+                _ => throw new ElfSerializeException("Data Type not supported yet"),
+            });
+
+
+            foreach (Element<T> element in data)
+            {
+                rawObjects.Add(dataType switch
+                {
+                    GameDataType.NPC =>     RawNPC.From    ((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Mobj =>    RawMobj.From   ((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Aobj =>    RawAobj.From   ((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.BShape =>  RawBShape.From ((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Item =>    RawItem.From   ((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataNpc => RawNpcType.From((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    _ => throw new ElfSerializeException("Data Type not supported yet"),
+                });
+                dataSectionPosition += size;
             }
         }
 
