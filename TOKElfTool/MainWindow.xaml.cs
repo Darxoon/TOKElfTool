@@ -426,11 +426,13 @@ namespace TOKElfTool
         }
 
 
-        private string ShowOptionalSaveDialog(string savePath)
+        private (string savePath, bool isCompressed) ShowOptionalSaveDialog(string savePath)
         {
+            bool isCompressed = savePath?.EndsWith(".zst") ?? false;
+
             if (savePath == null)
             {
-                SaveFileDialog dialog = new SaveFileDialog
+                VistaSaveFileDialog dialog = new VistaSaveFileDialog()
                 {
                     FileName = loadedDataType switch
                     {
@@ -438,14 +440,15 @@ namespace TOKElfTool
                         GameDataType.NPC => "dispos_Npc.elf",
                         _ => $"dispos_{loadedStructType.Name}.elf",
                     },
-                    DefaultExt = ".elf",
+                    //DefaultExt = ".elf",
                     Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
                 };
                 bool? result = dialog.ShowDialog(this);
+                isCompressed = dialog.AddExtension == 1;
                 if (result == true)
                     savePath = dialog.FileName;
             }
-            return savePath;
+            return (savePath, isCompressed);
         }
 
 
@@ -460,8 +463,7 @@ namespace TOKElfTool
 
         private void CommandBinding_Save_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-
-            fileSavePath = ShowOptionalSaveDialog(fileSavePath);
+            fileSavePath = ShowOptionalSaveDialog(fileSavePath).savePath;
             if (fileSavePath != null)
             {
                 statusLabel.Text = "Saving file...";
@@ -487,9 +489,10 @@ namespace TOKElfTool
 
         private void CommandBinding_SaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            (string savePath, bool isCompressed) = ShowOptionalSaveDialog(null);
+            fileSavePath = savePath;
 
-            fileSavePath = ShowOptionalSaveDialog(null);
-            if (fileSavePath != null)
+            if (savePath != null)
             {
                 statusLabel.Text = "Saving file...";
 
@@ -500,7 +503,12 @@ namespace TOKElfTool
                 if (loadedDataType == GameDataType.Maplink)
                     loadedBinary.Data[1][0] = loadedBinary.Data[0].PopBack();
 
-                SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
+                if (savePath.EndsWith(".elf.zst.elf.zst"))
+                    savePath = savePath.Substring(0, savePath.Length - ".elf.zst".Length);
+                if (isCompressed && !savePath.EndsWith(".zst"))
+                    savePath += ".zst";
+
+                SavePopupWindow popup = new SavePopupWindow(loadedBinary, savePath, loadedDataType)
                 {
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Owner = this,

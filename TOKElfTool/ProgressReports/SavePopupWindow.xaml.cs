@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -80,7 +81,10 @@ namespace TOKElfTool
                 case 0:
                     progressBar.Value = ((double)e.UserState) * 100;
                     break;
-                case 1:
+                case -1:
+                    //MyMessageBox.Show(this, "Couldn't save file:\n" + ((Exception)e.UserState).StackTrace,
+                    //    "TOK Elf Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    Trace.WriteLine(((Exception)e.UserState).StackTrace);
                     throw (Exception)e.UserState;
             }
         }
