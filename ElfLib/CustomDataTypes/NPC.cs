@@ -85,8 +85,6 @@ namespace ElfLib
         internal static NPC From(RawNPC rawNpc, Section stringSection)
         {
             object npc = new NPC();
-            Trace.WriteLine("Loading NPC from RawNPC");
-            Trace.Indent();
             foreach (FieldInfo npcField in typeof(NPC).GetFields())
             {
                 FieldInfo rawNpcField = typeof(RawNPC).GetField(npcField.Name);
@@ -111,8 +109,6 @@ namespace ElfLib
                 else
                     throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
             }
-            Trace.Unindent();
-
             return (NPC)npc;
         }
     }

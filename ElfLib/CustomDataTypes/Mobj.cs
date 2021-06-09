@@ -108,8 +108,6 @@ namespace ElfLib
         internal static Mobj From(RawMobj rawNpc, Section stringSection)
         {
             object npc = new Mobj();
-            Trace.WriteLine("Loading Mobj from RawMobj");
-            Trace.Indent();
             foreach (FieldInfo npcField in typeof(Mobj).GetFields())
             {
                 FieldInfo rawNpcField = typeof(RawMobj).GetField(npcField.Name);
@@ -137,7 +135,6 @@ namespace ElfLib
                 else
                     throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
             }
-            Trace.Unindent();
 
             return (Mobj)npc;
         }

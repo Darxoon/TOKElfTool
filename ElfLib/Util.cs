@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -57,17 +57,12 @@ namespace ElfLib
         public static T RawToNormalObject<T, TRaw>(TRaw raw, Section stringSection) where T : struct where TRaw : struct
         {
             object npc = new T();
-            Trace.WriteLine("Loading Mobj from RawMobj");
-            Trace.Indent();
             foreach (FieldInfo npcField in typeof(T).GetFields())
             {
                 FieldInfo rawNpcField = typeof(TRaw).GetField(npcField.Name);
                 //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
                 if (npcField.FieldType == typeof(string) || (npcField.FieldType.BaseType == typeof(Enum) && StringEnumAttribute.IsStringEnum(npcField.FieldType)))
                 {
-                    Trace.WriteLine("Peter bghjmnv ");
-                    Trace.WriteLine(rawNpcField.Name);
-                    Trace.WriteLine(rawNpcField.GetValue(raw));
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(raw));
                     npcField.SetValue(npc, npcField.FieldType.BaseType == typeof(Enum) ? StringEnumAttribute.GetEnumValueFromString(str, npcField.FieldType) : str);
                 }
@@ -86,7 +81,6 @@ namespace ElfLib
                 else
                     throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
             }
-            Trace.Unindent();
 
             return (T)npc;
         }
