@@ -444,7 +444,6 @@ namespace TOKElfTool
                     Filter = "ELF Files (*.elf)|*.elf|Zstd Compressed ELF Files (*.elf.zst)|*.elf.zst",
                 };
                 bool? result = dialog.ShowDialog(this);
-                isCompressed = dialog.AddExtension == 1;
                 if (result == true)
                     savePath = dialog.FileName;
             }
