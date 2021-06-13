@@ -319,6 +319,7 @@ namespace TOKElfTool
             await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType switch
             {
                 GameDataType.Maplink => "Maplink Node",
+                GameDataType.DataNpc => "NPC Type",
                 _ => loadedDataType.ToString(),
             }));
 
