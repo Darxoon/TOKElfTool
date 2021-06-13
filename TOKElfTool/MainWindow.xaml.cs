@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -346,6 +346,7 @@ namespace TOKElfTool
                 GameDataType.Item => typeof(Item),
                 GameDataType.Maplink => typeof(MaplinkNode),
                 GameDataType.DataNpc => typeof(NpcType),
+                GameDataType.DataItem => typeof(ItemType),
                 GameDataType.None => null,
                 _ => throw new Exception("Data type currently not supported")
             };

@@ -13,6 +13,7 @@ namespace ElfLib
         Maplink,
 
         DataNpc,
+        DataItem,
 
         RawNPC,
         RawMobj,
@@ -22,6 +23,7 @@ namespace ElfLib
         RawMaplink,
 
         RawDataNpc,
+        RawDataItem,
 
         // TODO: Add more
     }
