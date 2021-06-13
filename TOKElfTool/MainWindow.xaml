@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TOKElfTool"
+        xmlns:search="clr-namespace:TOKElfTool.Search"
         mc:Ignorable="d"
         Title="TOK ELF Editor" Height="Auto" Width="600"
         FlowDirection="LeftToRight"
@@ -102,10 +103,11 @@
             <TabControl Margin="10">
                 <TabItem Header="Object Data">
                     <StackPanel x:Name="ObjectTabPanel">
-                        <StackPanel Margin="5" Orientation="Horizontal">
-                            <Button Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
-                            <Button Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
-                        </StackPanel>
+                        <DockPanel Margin="5">
+                            <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
+                            <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
+                            <search:SearchBar OnSearch="SearchBar_OnSearch" StartIndexing="SearchBar_OnStartIndexing"></search:SearchBar>
+                        </DockPanel>
 
 
                         <!--<Expander Header="Object 1">

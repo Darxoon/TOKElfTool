@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -956,6 +956,16 @@ namespace TOKElfTool
                 ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
                 control.IsExpanded = true;
             }
+        }
+
+        private void SearchBar_OnSearch(object sender, string e)
+        {
+            MessageBox.Show(e);
+        }
+
+        private void SearchBar_OnStartIndexing(object sender, EventArgs e)
+        {
+            MessageBox.Show("Indexing started");
         }
     }
 }
