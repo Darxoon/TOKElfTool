@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -168,8 +168,7 @@ namespace ElfLib
                 GameDataType.Item => ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From),
                 GameDataType.Maplink =>
                     // custom overload for Maplink
-                    ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink,
-                        MaplinkNode.From, MaplinkHeader.From),
+                    ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From, MaplinkHeader.From),
                 GameDataType.DataNpc => ParseObjectsOfType<NpcType, RawNpcType>(sections, relas, stringSection, symbolTable, GameDataType.RawDataNpc, NpcType.From),
 
                 _ => ParseRawData(sections, relas, dataType, symbolTable),
