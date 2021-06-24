@@ -115,6 +115,7 @@
     <Compile Include="ProgressReports\SavePopupWindow.xaml.cs">
       <DependentUpon>SavePopupWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Search\MyAnalyzer.cs" />
     <Compile Include="Search\SearchIndex.cs" />
     <Compile Include="Search\SearchBar.xaml.cs">
       <DependentUpon>SearchBar.xaml</DependentUpon>

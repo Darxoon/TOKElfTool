@@ -20,13 +20,15 @@ namespace TOKElfTool.Search
         private IndexWriter writer;
         private IndexReader reader;
 
+        public IndexReader Reader => reader;
+
         public SearchIndex(object[] objs, Type type)
         {
             const LuceneVersion version = LuceneVersion.LUCENE_48;
 
             directory = new RAMDirectory();
 
-            Analyzer analyzer = new StandardAnalyzer(version);
+            Analyzer analyzer = new MyAnalyzer();
 
             IndexWriterConfig indexConfig = new IndexWriterConfig(version, analyzer);
 
