@@ -32,6 +32,9 @@ namespace TOKElfTool
 
         public event EventHandler ValueChanged;
 
+        private object currentObject;
+        private List<Symbol> symbolTable;
+        private bool loaded = false;
 
         private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
         private static readonly NumberFormatInfo Nfi = new NumberFormatInfo
@@ -62,20 +65,8 @@ namespace TOKElfTool
             this.Index = index;
             Expander.Header = header;
 
-            // fields
-            Type objectType = currentObject.GetType();
-            FieldInfo[] fields = objectType.GetFields();
-            for (int i = 0; i < fields.Length; i++)
-            {
-                Grid.RowDefinitions.Add(new RowDefinition());
-                AddFieldControls(currentObject, fields[i], Grid, i, symbolTable);
-            }
-
-            if (currentObject is MaplinkHeader)
-            {
-                duplicateButton.IsEnabled = false;
-                removeButton.IsEnabled = false;
-            }
+            this.currentObject = currentObject;
+            this.symbolTable = symbolTable;
         }
 
         public ObjectEditControl Clone()
@@ -379,6 +370,31 @@ namespace TOKElfTool
         private void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
         {
             DuplicateButtonClick.Invoke(sender, e);
+        }
+
+        private void Expander_OnExpanded(object sender, RoutedEventArgs e)
+        {
+            if (!loaded)
+            {
+                // fields
+                Type objectType = currentObject.GetType();
+                FieldInfo[] fields = objectType.GetFields();
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    Grid.RowDefinitions.Add(new RowDefinition());
+                    AddFieldControls(currentObject, fields[i], Grid, i, symbolTable);
+                }
+
+                if (currentObject is MaplinkHeader)
+                {
+                    duplicateButton.IsEnabled = false;
+                    removeButton.IsEnabled = false;
+                }
+
+                loaded = true;
+                currentObject = null;
+                symbolTable = null;
+            }
         }
     }
 }
