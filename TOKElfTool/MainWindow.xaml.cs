@@ -516,9 +516,9 @@ namespace TOKElfTool
         private List<Element<object>> CollectObjects(UIElementCollection children) =>
             children.OfType<UIElement>().Skip(1)
                 .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
-                    ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i + 1]))
+                    ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i]))
                     : (modifiedObjects[i] == true
-                        ? new Element<object>(CollectObject((ObjectEditControl)children[i + 1]))
+                        ? new Element<object>(CollectObject((ObjectEditControl)children[i]))
                         : loadedBinary.Data[0][i]))
                 .ToList();
 
@@ -967,14 +967,38 @@ namespace TOKElfTool
 
         private void SearchBar_OnStartIndexing(object sender, EventArgs e)
         {
-            MessageBox.Show("Indexing started");
             searchIndex = new SearchIndex(loadedBinary.Data[0].Select(element => (object)element.value).ToArray(), loadedStructType);
         }
 
+        private ObjectEditControl[] searchResultControls = null;
+
         private void SearchBar_OnSearch(object sender, string e)
         {
+            if (searchResultControls != null)
+                UndoSearch();
+
+            if (searchBar.Text != "")
+                Search(searchBar.Text);
+        }
+
+        private void UndoSearch()
+        {
+            for (int i = 0; i < searchResultControls.Length; i++)
+            {
+                ObjectEditControl control = searchResultControls[i];
+                searchResultPanel.Children.Remove(control);
+                ObjectTabPanel.Children.Insert(control.Index, control);
+            }
+
+            searchResultControls = null;
+            ObjectTabPanel.Visibility = Visibility.Visible;
+            searchResultPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void Search(string text)
+        {
             PhraseQuery phraseQuery = new PhraseQuery {
-                new Term("name", searchBar.Text),
+                new Term("name", text),
             };
 
             IndexReader reader = searchIndex.Reader;
@@ -989,12 +1013,14 @@ namespace TOKElfTool
             Array.Sort(orderedIndices);
 
             ObjectEditControl[] controls = new ObjectEditControl[indices.Length];
+            searchResultControls = new ObjectEditControl[indices.Length];
 
             for (int i = orderedIndices.Length - 1; i >= 0; i--)
             {
-                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[orderedIndices[i] + 1];
-                ObjectTabPanel.Children.RemoveAt(orderedIndices[i] + 1);
+                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[orderedIndices[i]];
+                ObjectTabPanel.Children.RemoveAt(orderedIndices[i]);
                 controls[Array.IndexOf(indices, orderedIndices[i])] = control;
+                searchResultControls[i] = control;
             }
 
             ObjectTabPanel.Visibility = Visibility.Collapsed;
