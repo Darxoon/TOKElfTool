@@ -24,6 +24,12 @@ namespace TOKElfTool.Search
 
         public event EventHandler StartIndexing;
 
+        public string Text
+        {
+            get => textBox.Text;
+            set => textBox.Text = value;
+        }
+
         public SearchBar()
         {
             InitializeComponent();

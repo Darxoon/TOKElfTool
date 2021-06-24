@@ -15,10 +15,14 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
 using TOKElfTool.Search;
 using ZstdNet;
+using FieldInfo = System.Reflection.FieldInfo;
 using UIElement = System.Windows.UIElement;
 
 namespace TOKElfTool
@@ -969,7 +973,38 @@ namespace TOKElfTool
 
         private void SearchBar_OnSearch(object sender, string e)
         {
-            MessageBox.Show(e);
+            PhraseQuery phraseQuery = new PhraseQuery {
+                new Term("name", searchBar.Text),
+            };
+
+            IndexReader reader = searchIndex.Reader;
+            IndexSearcher searcher = new IndexSearcher(reader);
+            ScoreDoc[] hits = searcher.Search(phraseQuery, 20).ScoreDocs;
+
+            Document[] documents = hits.Select(hit => searcher.Doc(hit.Doc)).ToArray();
+
+            int[] indices = documents.Select(document => int.Parse(document.Get("index"))).Distinct().ToArray();
+
+            int[] orderedIndices = (int[])indices.Clone();
+            Array.Sort(orderedIndices);
+
+            ObjectEditControl[] controls = new ObjectEditControl[indices.Length];
+
+            for (int i = orderedIndices.Length - 1; i >= 0; i--)
+            {
+                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[orderedIndices[i] + 1];
+                ObjectTabPanel.Children.RemoveAt(orderedIndices[i] + 1);
+                controls[Array.IndexOf(indices, orderedIndices[i])] = control;
+            }
+
+            ObjectTabPanel.Visibility = Visibility.Collapsed;
+            searchResultPanel.Visibility = Visibility.Visible;
+            searchResultPanel.Children.Clear();
+
+            for (int i = 0; i < controls.Length; i++)
+            {
+                searchResultPanel.Children.Add(controls[i]);
+            }
         }
     }
 }
