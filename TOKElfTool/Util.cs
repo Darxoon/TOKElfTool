@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -30,6 +32,20 @@ namespace TOKElfTool
             else
                 return null;
         }
+
+        public static void Deconstruct<TKey, TValue>(
+            this KeyValuePair<TKey, TValue> kvp,
+            out TKey key,
+            out TValue value)
+        {
+            key = kvp.Key;
+            value = kvp.Value;
+        }
+
+        public static long GetFieldOffset(this FieldInfo fi) => GetFieldOffset(fi.FieldHandle);
+
+        public static long GetFieldOffset(RuntimeFieldHandle h) =>
+            Marshal.ReadInt32(h.Value + (4 + IntPtr.Size)) & 0xFFFFFF; // I have no idea what this is
 
         public static T Last<T>(this IList<T> source) => source[source.Count - 1];
         public static object Last(this IList source) => source[source.Count - 1];

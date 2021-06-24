@@ -17,6 +17,7 @@ using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
+using TOKElfTool.Search;
 using ZstdNet;
 using UIElement = System.Windows.UIElement;
 
@@ -958,14 +959,17 @@ namespace TOKElfTool
             }
         }
 
-        private void SearchBar_OnSearch(object sender, string e)
-        {
-            MessageBox.Show(e);
-        }
+        private SearchIndex searchIndex;
 
         private void SearchBar_OnStartIndexing(object sender, EventArgs e)
         {
             MessageBox.Show("Indexing started");
+            searchIndex = new SearchIndex(loadedBinary.Data[0].Select(element => (object)element.value).ToArray(), loadedStructType);
+        }
+
+        private void SearchBar_OnSearch(object sender, string e)
+        {
+            MessageBox.Show(e);
         }
     }
 }
