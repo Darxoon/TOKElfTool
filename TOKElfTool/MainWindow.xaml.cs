@@ -129,11 +129,11 @@ namespace TOKElfTool
 
         private void FixExpanderIndexes()
         {
-            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
             {
                 ObjectEditControl expander = (ObjectEditControl)ObjectTabPanel.Children[i];
-                expander.Index = i - 1;
-                expander.Header = loadedDataType == GameDataType.Maplink && i == ObjectTabPanel.Children.Count - 1 ? "Maplink Header (Advanced)" : $"{loadedDataType} {i - 1}";
+                expander.Index = i;
+                expander.Header = loadedDataType == GameDataType.Maplink && i == ObjectTabPanel.Children.Count - 1 ? "Maplink Header (Advanced)" : $"{GetExpanderTitle()} {i}";
             }
         }
 
@@ -268,7 +268,7 @@ namespace TOKElfTool
         private void RemoveAllObjects()
         {
             // Reverse loop that ignores first element (Add/remove controls)
-            for (int i = ObjectTabPanel.Children.Count - 1; i >= 1; i--)
+            for (int i = ObjectTabPanel.Children.Count - 1; i >= 0; i--)
             {
                 ObjectTabPanel.Children.RemoveAt(i);
             }
@@ -303,6 +303,13 @@ namespace TOKElfTool
             }
         }
 
+        private string GetExpanderTitle() => loadedDataType switch
+        {
+            GameDataType.Maplink => "Maplink Node",
+            GameDataType.DataNpc => "NPC Type",
+            _ => loadedDataType.ToString(),
+        };
+        
         private async Task<ElfBinary<object>> OpenFile(string filename, GameDataType type, bool isCompressed)
         {
             Title = $"{Util.ShortenPath(filename)} - TOK ELF Editor";
@@ -334,12 +341,7 @@ namespace TOKElfTool
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, loadedDataType switch
-            {
-                GameDataType.Maplink => "Maplink Node",
-                GameDataType.DataNpc => "NPC Type",
-                _ => loadedDataType.ToString(),
-            }));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, GetExpanderTitle()));
 
             openContainingItem.IsEnabled = true;
             collapseAllObjectsItem.IsEnabled = true;
@@ -527,7 +529,7 @@ namespace TOKElfTool
         }
 
         private List<Element<object>> CollectObjects(UIElementCollection children) =>
-            children.OfType<UIElement>().Skip(1)
+            children.OfType<UIElement>()
                 .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
                     ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i]))
                     : (modifiedObjects[i] == true
@@ -893,7 +895,7 @@ namespace TOKElfTool
             UIElementCollection children = ObjectTabPanel.Children;
 
             ObjectEditControl clone;
-            if (children.Count > 1)
+            if (children.Count > 0)
                 clone = (loadedDataType switch
                 {
                     GameDataType.Maplink => (ObjectEditControl)children[children.Count - 2],
@@ -930,7 +932,7 @@ namespace TOKElfTool
 
             ObjectEditControl control = (ObjectEditControl)children.Last();
             TextBox textBox = (TextBox)control.Grid.Children[3];
-            textBox.Text = (children.Count - 3).ToString();
+            textBox.Text = (children.Count - 2).ToString();
         }
 
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
@@ -960,7 +962,7 @@ namespace TOKElfTool
 
         private void CollapseAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
             {
                 ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
                 control.IsExpanded = false;
@@ -969,7 +971,7 @@ namespace TOKElfTool
 
         private void ExpandAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            for (int i = 1; i < ObjectTabPanel.Children.Count; i++)
+            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
             {
                 ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
                 control.IsExpanded = true;
