@@ -307,6 +307,7 @@ namespace TOKElfTool
         {
             GameDataType.Maplink => "Maplink Node",
             GameDataType.DataNpc => "NPC Type",
+            GameDataType.DataItem => "Item Type",
             _ => loadedDataType.ToString(),
         };
         
@@ -448,6 +449,7 @@ namespace TOKElfTool
                         GameDataType.Maplink => "maplink.elf",
                         GameDataType.NPC => "dispos_Npc.elf",
                         GameDataType.DataNpc => "data_npc.elf",
+                        GameDataType.DataItem => "data_item.elf",
                         _ => $"dispos_{loadedStructType.Name}.elf",
                     },
                     //DefaultExt = ".elf",
