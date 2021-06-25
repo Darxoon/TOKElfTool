@@ -278,6 +278,7 @@ namespace ElfLib
                 GameDataType.BShape => typeof(RawBShape),
                 GameDataType.Item => typeof(RawItem),
                 GameDataType.DataNpc => typeof(RawNpcType),
+                GameDataType.DataItem => typeof(RawItemType),
                 _ => throw new ElfSerializeException("Data Type not supported yet"),
             });
 
@@ -286,12 +287,13 @@ namespace ElfLib
             {
                 rawObjects.Add(dataType switch
                 {
-                    GameDataType.NPC =>     RawNPC.From    ((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Mobj =>    RawMobj.From   ((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Aobj =>    RawAobj.From   ((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.BShape =>  RawBShape.From ((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Item =>    RawItem.From   ((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.DataNpc => RawNpcType.From((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.NPC =>      RawNPC.From     ((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Mobj =>     RawMobj.From    ((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Aobj =>     RawAobj.From    ((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.BShape =>   RawBShape.From  ((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Item =>     RawItem.From    ((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataNpc =>  RawNpcType.From ((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataItem => RawItemType.From((ItemType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     _ => throw new ElfSerializeException("Data Type not supported yet"),
                 });
                 dataSectionPosition += size;
@@ -388,6 +390,16 @@ namespace ElfLib
                     {
                         NpcType npc = (NpcType)(object)element.value;
                         foreach (FieldInfo field in typeof(NpcType).GetFields().Where(field => field.FieldType == typeof(string)))
+                        {
+                            allStrings.Add((string)field.GetValue(npc));
+                        }
+                    }
+                    break;
+                case GameDataType.DataItem:
+                    foreach (Element<T> element in data)
+                    {
+                        ItemType npc = (ItemType)(object)element.value;
+                        foreach (FieldInfo field in typeof(ItemType).GetFields().Where(field => field.FieldType == typeof(string)))
                         {
                             allStrings.Add((string)field.GetValue(npc));
                         }
