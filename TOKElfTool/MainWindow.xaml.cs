@@ -991,7 +991,7 @@ namespace TOKElfTool
                 UndoSearch();
 
             if (searchBar.Text != "")
-                Search(searchBar.Text);
+                Search(searchBar.Text.ToLower());
         }
 
         private void UndoSearch()
