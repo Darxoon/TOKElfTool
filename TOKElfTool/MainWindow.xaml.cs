@@ -931,6 +931,7 @@ namespace TOKElfTool
                 return;
 
             ObjectEditControl control = (ObjectEditControl)children.Last();
+            control.Generate();
             TextBox textBox = (TextBox)control.Grid.Children[3];
             textBox.Text = (children.Count - 2).ToString();
         }

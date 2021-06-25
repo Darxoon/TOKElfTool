@@ -398,6 +398,11 @@ namespace TOKElfTool
 
         private void Expander_OnExpanded(object sender, RoutedEventArgs e)
         {
+            Generate();
+        }
+
+        public void Generate()
+        {
             if (!loaded)
             {
                 // fields
