@@ -38,7 +38,7 @@ namespace TOKElfTool
             InitializeComponent();
 
             EmptyLabel.Visibility = Visibility.Visible;
-            ScrollViewer.Visibility = Visibility.Collapsed;
+            tabControl.Visibility = Visibility.Collapsed;
 
             // create AppData path
             if (!Directory.Exists(Path.Combine(DataFolderPath, "TOKElfTool")))
@@ -80,7 +80,7 @@ namespace TOKElfTool
         private void InitializeObjectsPanel<T>(List<Element<T>>[] objects, string objectName)
         {
             EmptyLabel.Visibility = Visibility.Collapsed;
-            ScrollViewer.Visibility = Visibility.Visible;
+            tabControl.Visibility = Visibility.Visible;
 
             //for (int j = 0; j < objects.Length; j++)
             //{
@@ -308,7 +308,7 @@ namespace TOKElfTool
             Title = $"{Util.ShortenPath(filename)} - TOK ELF Editor";
             EmptyLabel.Visibility = Visibility.Collapsed;
             LoadingLabel.Visibility = Visibility.Visible;
-            ScrollViewer.Visibility = Visibility.Collapsed;
+            tabControl.Visibility = Visibility.Collapsed;
 
             statusLabel.Text = "Loading ELF file...";
 
@@ -346,7 +346,7 @@ namespace TOKElfTool
             expandAllObjectsItem.IsEnabled = true;
 
             LoadingLabel.Visibility = Visibility.Collapsed;
-            ScrollViewer.Visibility = Visibility.Visible;
+            tabControl.Visibility = Visibility.Visible;
             statusLabel.Text = "Loaded file";
 
             return binary;

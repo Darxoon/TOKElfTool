@@ -99,16 +99,17 @@
             </StatusBarItem>
         </StatusBar>
 
-        <ScrollViewer x:Name="ScrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
-            <TabControl Margin="10">
-                <TabItem Header="Object Data">
-                    <DockPanel>
-                        <DockPanel Margin="5" DockPanel.Dock="Top">
-                            <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
-                            <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
-                            <search:SearchBar x:Name="searchBar" OnSearch="SearchBar_OnSearch" StartIndexing="SearchBar_OnStartIndexing"></search:SearchBar>
-                        </DockPanel>
+        
+        <TabControl x:Name="tabControl" Margin="10,10,10,0" BorderThickness="1,1,1,0" Padding="2,2,2,0">
+            <TabItem Header="Object Data">
+                <DockPanel>
+                    <DockPanel Margin="5" DockPanel.Dock="Top">
+                        <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
+                        <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
+                        <search:SearchBar x:Name="searchBar" OnSearch="SearchBar_OnSearch" StartIndexing="SearchBar_OnStartIndexing"></search:SearchBar>
+                    </DockPanel>
 
+                    <ScrollViewer x:Name="ScrollViewer" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
                         <Grid>
                             <StackPanel x:Name="ObjectTabPanel">
 
@@ -184,13 +185,13 @@
 
                             </StackPanel>
                         </Grid>
-                    </DockPanel>
-                </TabItem>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
 
-                <TabItem x:Name="BinTab" Header="Binary Elf Data">
-                    <Label HorizontalAlignment="Center">WIP</Label>
-                </TabItem>
-            </TabControl>
-        </ScrollViewer>
+            <TabItem x:Name="BinTab" Header="Binary Elf Data">
+                <Label HorizontalAlignment="Center">WIP</Label>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>
