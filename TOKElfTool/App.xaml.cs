@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace TOKElfTool
 {
@@ -13,5 +14,22 @@ namespace TOKElfTool
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            Current.DispatcherUnhandledException += App_OnUnhandledException;
+            
+            base.OnStartup(e);
+        }
+
+        private void App_OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            CrashReportWindow window = new CrashReportWindow(e.Exception)
+            {
+                Owner = MainWindow,
+            };
+            window.ShowDialog();
+
+            e.Handled = true;
+        }
     }
 }

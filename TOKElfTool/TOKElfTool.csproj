@@ -108,6 +108,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CrashReportWindow.xaml.cs">
+      <DependentUpon>CrashReportWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ProgressReports\ZstdFolderProgressPopupWindow.xaml.cs">
       <DependentUpon>ZstdFolderProgressPopupWindow.xaml</DependentUpon>
     </Compile>
@@ -121,6 +124,10 @@
       <DependentUpon>SearchBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util.cs" />
+    <Page Include="CrashReportWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
