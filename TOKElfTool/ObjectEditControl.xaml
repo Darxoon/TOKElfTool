@@ -14,6 +14,7 @@
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10,5,0,5">
                 <Button x:Name="removeButton" Height="21" Width="72" Margin="0,0,10,0" Click="RemoveButton_OnClick" Style="{StaticResource WinButton}">Remove</Button>
                 <Button x:Name="duplicateButton" Height="21" Width="76" Margin="0,0,10,0" Click="DuplicateButton_OnClick" Style="{StaticResource WinButton}">Duplicate</Button>
+                <Button x:Name="viewButton" Height="21" Width="144" Margin="0,0,10,0" Click="ViewButton_OnClick" Style="{StaticResource WinButton}" Visibility="Collapsed">View in Normal View</Button>
             </StackPanel>
             
             <Grid x:Name="Grid" Height="Auto">

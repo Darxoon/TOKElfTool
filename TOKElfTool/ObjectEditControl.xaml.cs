@@ -29,12 +29,36 @@ namespace TOKElfTool
     {
         public event RoutedEventHandler RemoveButtonClick;
         public event RoutedEventHandler DuplicateButtonClick;
-
+        public event RoutedEventHandler ViewButtonClick;
+        
         public event EventHandler ValueChanged;
+        
+        public bool ViewButtonVisible
+        {
+            get => viewButtonVisible;
+            set
+            {
+                viewButtonVisible = value;
+                viewButton.Visibility = value == true ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        
+        public bool ModifyButtonsEnabled
+        {
+            get => modifyButtonsEnabled;
+            set
+            {
+                modifyButtonsEnabled = value;
+                removeButton.IsEnabled = value;
+                duplicateButton.IsEnabled = value;
+            }
+        }
 
         private object currentObject;
         private List<Symbol> symbolTable;
         private bool loaded = false;
+        private bool viewButtonVisible;
+        private bool modifyButtonsEnabled;
 
         private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
         private static readonly NumberFormatInfo Nfi = new NumberFormatInfo
@@ -394,6 +418,14 @@ namespace TOKElfTool
                 loaded = true;
                 currentObject = null;
                 symbolTable = null;
+            }
+        }
+
+        private void ViewButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (ViewButtonVisible)
+            {
+                ViewButtonClick?.Invoke(this, e);
             }
         }
     }

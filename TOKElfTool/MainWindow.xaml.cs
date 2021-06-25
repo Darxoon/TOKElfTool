@@ -93,6 +93,7 @@ namespace TOKElfTool
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
+                control.ViewButtonClick += ViewButton_OnClick;
 
                 int objectIndex = i;
                 control.ValueChanged += (sender, args) =>
@@ -113,6 +114,7 @@ namespace TOKElfTool
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
+                control.ViewButtonClick += ViewButton_OnClick;
 
                 control.ValueChanged += (sender, args) =>
                 {
@@ -196,7 +198,18 @@ namespace TOKElfTool
                     UpdateMaplinkHeaderChildCount();
             }
         }
+        
+        private void ViewButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            ObjectEditControl control = (ObjectEditControl)sender;
 
+            searchBar.Text = "";
+            
+            if (searchResultControls != null)
+                UndoSearch();
+            
+            control.BringIntoView();
+        }
 
         private readonly List<string> recentlyOpenedFiles = new List<string>();
         private void AddRecentlyOpened(string filepath)
@@ -986,6 +999,8 @@ namespace TOKElfTool
             for (int i = 0; i < searchResultControls.Length; i++)
             {
                 ObjectEditControl control = searchResultControls[i];
+                control.ViewButtonVisible = false;
+                control.ModifyButtonsEnabled = true;
                 searchResultPanel.Children.Remove(control);
                 ObjectTabPanel.Children.Insert(control.Index, control);
             }
@@ -1018,6 +1033,8 @@ namespace TOKElfTool
             for (int i = orderedIndices.Length - 1; i >= 0; i--)
             {
                 ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[orderedIndices[i]];
+                control.ViewButtonVisible = true;
+                control.ModifyButtonsEnabled = false;
                 ObjectTabPanel.Children.RemoveAt(orderedIndices[i]);
                 controls[Array.IndexOf(indices, orderedIndices[i])] = control;
                 searchResultControls[i] = control;
