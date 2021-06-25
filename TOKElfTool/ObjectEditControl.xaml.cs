@@ -81,6 +81,13 @@ namespace TOKElfTool
         {
             InitializeComponent();
         }
+        
+        public ObjectEditControl(bool loaded)
+        {
+            InitializeComponent();
+
+            this.loaded = loaded;
+        }
 
         public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable)
         {
@@ -95,7 +102,7 @@ namespace TOKElfTool
 
         public ObjectEditControl Clone()
         {
-            ObjectEditControl clone = new ObjectEditControl
+            ObjectEditControl clone = new ObjectEditControl(true)
             {
                 RemoveButtonClick = RemoveButtonClick,
                 DuplicateButtonClick = DuplicateButtonClick,
