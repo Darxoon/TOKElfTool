@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -39,12 +40,15 @@ namespace TOKElfTool
         public CrashReportWindow()
         {
             InitializeComponent();
+
+            icon.Source = Imaging.CreateBitmapSourceFromHIcon(
+                SystemIcons.Error.Handle,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
         }
 
-        public CrashReportWindow(Exception e)
+        public CrashReportWindow(Exception e) : this()
         {
-            InitializeComponent();
-
             errorString = e.ToString() + "\n" + e.StackTrace;
         }
         

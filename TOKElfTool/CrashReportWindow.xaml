@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TOKElfTool"
         mc:Ignorable="d"
-        Title="Crash Reporter" Height="350" Width="520.924" MinHeight="350" MinWidth="530"
+        Title="Crash Reporter" Height="350" Width="520.924" MinHeight="450" MinWidth="550"
         ShowInTaskbar="False"
         Loaded="CrashReportWindow_OnLoaded">
     <Grid Margin="5">
@@ -15,16 +15,22 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <Label FontSize="16" FontWeight="Bold">The application encountered a problem and had to be stopped.</Label>
-        <TextBlock Grid.Row="1" Margin="0,5,0,0" TextWrapping="Wrap">
+        <Image x:Name="icon" />
+        
+        <Label Grid.Column="1" FontSize="16" FontWeight="Bold">The application encountered a problem and had to be stopped.</Label>
+        <TextBlock Grid.ColumnSpan="2" Grid.Row="1" Margin="0,5,0,0" TextWrapping="Wrap">
             Unfortunately, an unexpected error occured and the current process was canceled.<LineBreak />
             Please report the error to the developer as a 
             <Hyperlink NavigateUri="https://github.com/Darxoon/TOKElfTool/issues" RequestNavigate="Hyperlink_OnRequestNavigate">Github Issue</Hyperlink>
             or through other ways (like Discord).
         </TextBlock>
 
-        <GroupBox Grid.Row="2" Header="Error information" Margin="0,5,0,0">
+        <GroupBox Grid.ColumnSpan="2" Grid.Row="2" Header="Error information" Margin="0,10,0,0">
             <DockPanel Margin="5">
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FlowDirection="RightToLeft" Margin="0,5,0,0">
                     <Button DockPanel.Dock="Bottom" Padding="5,1" Height="23" Style="{StaticResource WinButton}" Click="CopyToClipboard_OnClick">Copy to Clipboard</Button>
@@ -35,7 +41,7 @@
             </DockPanel>
         </GroupBox>
 
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="5,10,5,5" FlowDirection="RightToLeft">
+        <StackPanel Grid.ColumnSpan="2" Grid.Row="3" Orientation="Horizontal" Margin="5,10,5,5" FlowDirection="RightToLeft">
             <Button DockPanel.Dock="Bottom" Padding="5,1" Height="23" MinWidth="72" Style="{StaticResource WinButton}" Margin="0,0,5,0" Click="Quit_OnClick">Quit</Button>
             <Button DockPanel.Dock="Bottom" Padding="5,1" Height="23" MinWidth="72" Style="{StaticResource WinButton}" Margin="0,0,5,0" Click="Restart_OnClick">Restart Application</Button>
             <Button DockPanel.Dock="Bottom" Padding="5,1" Height="23" MinWidth="72" Style="{StaticResource WinButton}" Margin="0,0,5,0" Click="Continue_OnClick" Content="Continue (Unsafe)" Width="123" FlowDirection="LeftToRight"/>
