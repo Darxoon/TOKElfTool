@@ -11,8 +11,8 @@ namespace ElfLib.CustomDataTypes.Registry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawNpcType
     {
-        public ElfStringPointer field_0x0;
-        public ElfStringPointer field_0x8;
+        public ElfStringPointer id;
+        public ElfStringPointer model_id;
         public int field_0x10;
         public int field_0x14;
         public ElfStringPointer texture_subclass;

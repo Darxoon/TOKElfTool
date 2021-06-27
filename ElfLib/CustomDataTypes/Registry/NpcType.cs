@@ -9,8 +9,8 @@ namespace ElfLib.CustomDataTypes.Registry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct NpcType
     {
-        public string field_0x0;
-        public string field_0x8;
+        public string id;
+        public string model_id;
         public int field_0x10;
         public int field_0x14;
         public string texture_subclass;
