@@ -49,8 +49,6 @@ namespace ElfLib
             Marshal.Copy(ptr, arr, 0, size);
             Marshal.FreeHGlobal(ptr);
 
-            Trace.WriteLine($"ToBinaryWriter {typeof(T).Name} {arr.Length:X2}");
-
             writer.Write(arr);
         }
 
@@ -60,7 +58,7 @@ namespace ElfLib
             foreach (FieldInfo npcField in typeof(T).GetFields())
             {
                 FieldInfo rawNpcField = typeof(TRaw).GetField(npcField.Name);
-                //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
+
                 if (npcField.FieldType == typeof(string) || (npcField.FieldType.BaseType == typeof(Enum) && StringEnumAttribute.IsStringEnum(npcField.FieldType)))
                 {
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(raw));

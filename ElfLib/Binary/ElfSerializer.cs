@@ -187,18 +187,6 @@ namespace ElfLib
             stringSectionData = CreateStringSectionData(allStrings,
                 out Dictionary<string, ElfStringPointer> stringDeclarationMap);
 
-            #region Logging
-            Trace.WriteLine("all strings: " + string.Join(", ", allStrings.ToArray()));
-            Trace.WriteLine("all string offsets:");
-            Trace.Indent();
-            foreach (var item in stringDeclarationMap)
-            {
-                Trace.WriteLine($"String \"{item.Key}\" -> {item.Value}");
-            }
-            Trace.Unindent();
-            File.WriteAllBytes("tok_elf_tool_verylongdebugdumpname.bin", stringSectionData);
-            #endregion
-
             List<object> rawObjects = new List<object>();
             stringRelocTable = new SortedDictionary<long, ElfStringPointer>();
 
@@ -210,23 +198,6 @@ namespace ElfLib
             {
                 ConvertToRawObjects(list, dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
             }
-
-            #region Logging
-            Trace.WriteLine("Raw NPC's:");
-            Trace.Indent();
-            foreach (object item in rawObjects)
-            {
-                Trace.WriteLine(item);
-            }
-            Trace.Unindent();
-            Trace.WriteLine("Sting Reloc Table:");
-            Trace.Indent();
-            foreach (var item in stringRelocTable)
-            {
-                Trace.WriteLine($"{item.Key} -> {item.Value}");
-            }
-            Trace.Unindent();
-            #endregion
 
             // Serialize 
             MemoryStream dataStream = new MemoryStream();
