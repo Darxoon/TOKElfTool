@@ -99,6 +99,7 @@ namespace TOKElfTool
                 control.ValueChanged += (sender, args) =>
                 {
                     hasUnsavedChanges = true;
+                    searchBar.HasIndexed = false;
                     modifiedObjects[control.Index] = true;
                 };
 
@@ -119,6 +120,7 @@ namespace TOKElfTool
                 control.ValueChanged += (sender, args) =>
                 {
                     hasUnsavedChanges = true;
+                    searchBar.HasIndexed = false;
                     modifiedObjects[control.Index] = true;
                 };
 
@@ -173,6 +175,7 @@ namespace TOKElfTool
                 UpdateMaplinkHeaderChildCount();
 
             hasUnsavedChanges = true;
+            searchBar.HasIndexed = false;
 
             FixExpanderIndexes();
         }
@@ -191,6 +194,7 @@ namespace TOKElfTool
                 duplicateExpander = objectEditControl;
 
                 hasUnsavedChanges = true;
+                searchBar.HasIndexed = false;
 
                 FixExpanderIndexes();
 
@@ -274,6 +278,7 @@ namespace TOKElfTool
             }
 
             hasUnsavedChanges = true;
+            searchBar.HasIndexed = false;
         }
 
         private ElfBinary<object> loadedBinary;
@@ -337,6 +342,7 @@ namespace TOKElfTool
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             hasUnsavedChanges = false;
+            searchBar.HasIndexed = false;
             modifiedObjects = new List<bool>(new bool[binary.Data.Aggregate(0, (i, list) => i + list.Count)]);
 
             AddRecentlyOpened(filename);
@@ -926,6 +932,8 @@ namespace TOKElfTool
             modifiedObjects.Add(true);
 
             hasUnsavedChanges = true;
+            searchBar.HasIndexed = false;
+
             FixExpanderIndexes();
         }
 

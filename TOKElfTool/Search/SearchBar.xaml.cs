@@ -24,6 +24,8 @@ namespace TOKElfTool.Search
 
         public event EventHandler StartIndexing;
 
+        public bool HasIndexed { get; set; }
+
         public string Text
         {
             get => textBox.Text;
@@ -35,16 +37,14 @@ namespace TOKElfTool.Search
             InitializeComponent();
         }
 
-        private bool hasIndexed = false;
-
         private void TextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             placeholder.Visibility = textBox.Text != "" ? Visibility.Hidden : Visibility.Visible;
 
-            if (!hasIndexed)
+            if (!HasIndexed)
             {
                 StartIndexing?.Invoke(this, EventArgs.Empty);
-                hasIndexed = true;
+                HasIndexed = true;
             }
         }
 
