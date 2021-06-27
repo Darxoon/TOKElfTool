@@ -533,7 +533,9 @@ namespace TOKElfTool
         private List<Element<object>> CollectObjects(UIElementCollection children) =>
             children.OfType<UIElement>()
                 .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
+                    // Maplink header
                     ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i]))
+                    // All other objects
                     : (modifiedObjects[i] == true
                         ? new Element<object>(CollectObject((ObjectEditControl)children[i]))
                         : loadedBinary.Data[0][i]))
@@ -542,6 +544,8 @@ namespace TOKElfTool
 
         private object CollectObject(ObjectEditControl objectEditControl)
         {
+            objectEditControl.Generate();
+
             Grid grid = objectEditControl.Grid;
 
             Trace.WriteLine(objectEditControl);
