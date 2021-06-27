@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Text;
 
 namespace ElfLib.CustomDataTypes.Registry
 {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawNpcType
     {
         public ElfStringPointer field_0x0;
         public ElfStringPointer field_0x8;
         public int field_0x10;
         public int field_0x14;
-        public ElfStringPointer field_0x18;
+        public ElfStringPointer texture_subclass;
         public ElfStringPointer field_0x20;
         public ElfStringPointer instance_script_str;
         public ElfStringPointer field_0x30;

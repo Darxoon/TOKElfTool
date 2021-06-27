@@ -13,7 +13,7 @@ namespace ElfLib.CustomDataTypes.Registry
         public string field_0x8;
         public int field_0x10;
         public int field_0x14;
-        public string field_0x18;
+        public string texture_subclass;
         public string field_0x20;
         public string instance_script_str;
         public string field_0x30;
