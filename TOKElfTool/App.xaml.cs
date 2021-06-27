@@ -16,8 +16,10 @@ namespace TOKElfTool
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+#if !DEBUG
             Current.DispatcherUnhandledException += App_OnUnhandledException;
-            
+#endif
+
             base.OnStartup(e);
         }
 
