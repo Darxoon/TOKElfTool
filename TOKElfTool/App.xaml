@@ -14,6 +14,14 @@
                 <Setter Property="BorderBrush" Value="#adadad"></Setter>
                 <Setter Property="Background" Value="#e1e1e1"></Setter>
             </Style.Setters>
+
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Trigger.Setters>
+                        <Setter Property="BorderBrush" Value="#0078d7" />
+                    </Trigger.Setters>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
     </Application.Resources>

@@ -22,8 +22,8 @@
             <ComboBoxItem>Item Registry (data_item.elf)</ComboBoxItem>
         </ComboBox>
         <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0" HorizontalAlignment="Right">
-            <Button Height="23" Width="68" Click="OkButton_OnClick" Margin="10,0,0,0">OK</Button>
-            <Button Height="23" Width="68" Click="CancelButton_Onclick" Margin="10,0,0,0">Cancel</Button>
+            <Button Height="23" Width="68" Click="OkButton_OnClick" Margin="10,0,0,0" Style="{StaticResource WinButton}">OK</Button>
+            <Button Height="23" Width="68" Click="CancelButton_Onclick" Margin="10,0,0,0" Style="{StaticResource WinButton}">Cancel</Button>
         </StackPanel>
     </StackPanel>
 </Window>
