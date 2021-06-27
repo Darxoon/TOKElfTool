@@ -60,9 +60,9 @@ namespace TOKElfTool.Search
 
         ~SearchIndex()
         {
-            writer.Dispose();
-            reader.Dispose();
-            directory.Dispose();
+            writer?.Dispose();
+            reader?.Dispose();
+            directory?.Dispose();
         }
 
         private static Dictionary<string, string> GetAllStrings(object obj, Type type)
