@@ -64,6 +64,8 @@ namespace TOKElfTool
             try
             {
                 byte[] serialized = ElfSerializer<object>.SerializeBinary(binary, dataType);
+                if (fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd"))
+                    worker.ReportProgress(1);
                 File.WriteAllBytes(fileSavePath,
                     fileSavePath.EndsWith(".zst") || fileSavePath.EndsWith(".zstd")
                         ? compressor.Wrap(serialized)
@@ -80,6 +82,9 @@ namespace TOKElfTool
             {
                 case 0:
                     progressBar.Value = ((double)e.UserState) * 100;
+                    break;
+                case 1:
+                    label.Content = "Compressing...";
                     break;
                 case -1:
                     //MyMessageBox.Show(this, "Couldn't save file:\n" + ((Exception)e.UserState).StackTrace,

@@ -16,7 +16,7 @@
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Label Margin="5">Saving...</Label>
+        <Label x:Name="label" Margin="5">Saving...</Label>
         <ProgressBar x:Name="progressBar"  Grid.Row="1" Minimum="0" Maximum="100" Value="100" Height="18" Margin="8,0,8,8"></ProgressBar>
     </Grid>
 </Window>
