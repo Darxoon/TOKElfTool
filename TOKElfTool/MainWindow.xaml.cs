@@ -536,8 +536,12 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<object>> CollectObjects(UIElementCollection children) =>
-            children.OfType<UIElement>()
+        private List<Element<object>> CollectObjects(UIElementCollection children)
+        {
+            if (searchResultControls != null)
+                UndoSearch();
+
+            return children.OfType<UIElement>()
                 .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
                     // Maplink header
                     ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i]))
@@ -546,6 +550,7 @@ namespace TOKElfTool
                         ? new Element<object>(CollectObject((ObjectEditControl)children[i]))
                         : loadedBinary.Data[0][i]))
                 .ToList();
+        }
 
 
         private object CollectObject(ObjectEditControl objectEditControl)
