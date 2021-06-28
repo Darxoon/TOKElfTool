@@ -8,24 +8,24 @@ namespace ElfLib.CustomDataTypes.Registry
     [StructLayout(LayoutKind.Sequential)]
     public struct ItemType
     {
-        public string id;
-        public string field_0x8;
-        public string field_0x10;
-        public string field_0x18;
+        public string Id;
+        public string Name;
+        public string Type;
+        public string Model_ID;
         public int field_0x20;
         public int field_0x24;
         public int field_0x28;
         public int field_0x2c;
         public int field_0x30;
-        public int field_0x34;
-        public int field_0x38;
+        public int Buy_Price;
+        public int Sell_Price;
         public int field_0x3c;
         public int value;
         public int field_0x44;
         public string model_id;
         public string field_0x50;
-        public string field_0x58;
-        public string field_0x60;
+        public string Description_ID;
+        public string Icon_ID;
         public int field_0x68;
         public int field_0x6c;
         public string field_0x70;
@@ -44,7 +44,7 @@ namespace ElfLib.CustomDataTypes.Registry
         public int field_0xbc;
         public int field_0xc0;
         public int field_0xc4;
-        public string field_0xc8;
+        public string Script_Name;
 
         public static ItemType From(RawItemType itemType, Section stringSection) => Util.RawToNormalObject<ItemType, RawItemType>(itemType, stringSection);
     }
