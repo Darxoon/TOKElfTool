@@ -77,7 +77,7 @@ namespace TOKElfTool
 
         private List<bool> modifiedObjects = new List<bool>();
 
-        private void InitializeObjectsPanel<T>(List<Element<T>>[] objects, string objectName)
+        private void InitializeObjectsPanel<T>(Dictionary<ElfType, List<Element<T>>> objects, string objectName)
         {
             EmptyLabel.Visibility = Visibility.Collapsed;
             tabControl.Visibility = Visibility.Visible;
@@ -85,9 +85,9 @@ namespace TOKElfTool
             //for (int j = 0; j < objects.Length; j++)
             //{
 
-            for (int i = 0; i < objects[0].Count; i++)
+            for (int i = 0; i < objects[ElfType.Main].Count; i++)
             {
-                object currentObject = objects[0][i].value;
+                object currentObject = objects[ElfType.Main][i].value;
 
                 ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i, loadedBinary.SymbolTable);
 
@@ -109,9 +109,9 @@ namespace TOKElfTool
 
             if (loadedDataType == GameDataType.Maplink)
             {
-                object currentObject = objects[1][0].value;
+                object currentObject = objects[ElfType.MaplinkHeader][0].value;
 
-                ObjectEditControl control = new ObjectEditControl(currentObject, "Maplink Header (Advanced)", objects[0].Count, loadedBinary.SymbolTable);
+                ObjectEditControl control = new ObjectEditControl(currentObject, "Maplink Header (Advanced)", objects[ElfType.Main].Count, loadedBinary.SymbolTable);
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
@@ -343,12 +343,12 @@ namespace TOKElfTool
 
             hasUnsavedChanges = false;
             searchBar.HasIndexed = false;
-            modifiedObjects = new List<bool>(new bool[binary.Data.Aggregate(0, (i, list) => i + list.Count)]);
+            modifiedObjects = new List<bool>(new bool[binary.Data.Aggregate(0, (i, kvp) => i + kvp.Value.Count)]);
 
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel<object>(loadedBinary.Data, GetExpanderTitle()));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data, GetExpanderTitle()));
 
             openContainingItem.IsEnabled = true;
             collapseAllObjectsItem.IsEnabled = true;
@@ -518,7 +518,7 @@ namespace TOKElfTool
                 loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
 
                 if (loadedDataType == GameDataType.Maplink)
-                    loadedBinary.Data[1][0] = loadedBinary.Data[0].PopBack();
+                    loadedBinary.Data[ElfType.MaplinkHeader][0] = loadedBinary.Data[0].PopBack();
 
                 if (savePath.EndsWith(".elf.zst.elf.zst"))
                     savePath = savePath.Substring(0, savePath.Length - ".elf.zst".Length);

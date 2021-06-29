@@ -19,11 +19,12 @@ namespace ElfLib
         }
     }
 
-    public enum ElfSymbolType
+    public enum ElfType
     {
         Main,
-        MapLinkNodes,
-        MapLink,
+        MaplinkHeader,
+        Files,
+        State,
     }
 
     /// <summary>
@@ -34,7 +35,7 @@ namespace ElfLib
     {
         public List<Symbol> SymbolTable { get; internal set; }
         public List<Section> Sections { get; internal set; }
-        public List<Element<T>>[] Data { get; internal set; }
+        public Dictionary<ElfType, List<Element<T>>> Data { get; internal set; }
 
         public Section GetSection(string name)
         {

@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
 using System.Reflection;
+using ElfLib.Binary.Parser;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
 
@@ -80,7 +81,7 @@ namespace ElfLib
 
             List<Symbol> symbolTable = ParseSymbolTable(sections, stringTable);
 
-            List<Element<T>>[] data = ParseData<T>(sections, relas, dataType, symbolTable);
+            Dictionary<ElfType, List<Element<T>>> data = ParseData<T>(sections, relas, dataType, symbolTable);
 
 
             input.Dispose();
@@ -143,136 +144,60 @@ namespace ElfLib
         }
 
 
-        private static List<Element<T>>[] ParseData<T>(List<Section> sections, List<SectionRela> relas,
+        private static Dictionary<ElfType, List<Element<T>>> ParseData<T>(List<Section> sections, List<SectionRela> relas,
             GameDataType dataType, List<Symbol> symbolTable)
         {
-            List<List<object>> data = ParseData(sections, relas, dataType, symbolTable);
-            IEnumerable<List<Element<T>>> typedData = data.Select(list => list.Select(value => new Element<T>((T)value)).ToList());
+            Dictionary<ElfType, List<object>> data = ParseData(sections, relas, dataType, symbolTable);
+            Dictionary<ElfType, List<Element<T>>> typedData = new Dictionary<ElfType, List<Element<T>>>();
 
-            return typedData.ToArray();
+            foreach ((ElfType type, List<object> instances) in data)
+            {
+                typedData[type] = instances
+                    .Select(instance => new Element<T>((T)instance))
+                    .ToList();
+            }
+            
+            return typedData;
         }
 
-        private static List<List<object>> ParseData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
+        private static Dictionary<ElfType, List<object>> ParseData(List<Section> sections, List<SectionRela> relas, 
+            GameDataType dataType, List<Symbol> symbolTable)
         {
             if (dataType == GameDataType.None)
                 return null;
 
+            Section dataSection = GetSection(sections, ".data");
             Section stringSection = GetSection(sections, ".rodata.str1.1");
 
-            return dataType switch
+            IDataParser parser = dataType switch
             {
-                GameDataType.NPC => ParseObjectsOfType<NPC, RawNPC>(sections, relas, stringSection, symbolTable, GameDataType.RawNPC, NPC.From),
-                GameDataType.Mobj => ParseObjectsOfType<Mobj, RawMobj>(sections, relas, stringSection, symbolTable, GameDataType.RawMobj, Mobj.From),
-                GameDataType.Aobj => ParseObjectsOfType<Aobj, RawAobj>(sections, relas, stringSection, symbolTable, GameDataType.RawAobj, Aobj.From),
-                GameDataType.BShape => ParseObjectsOfType<BShape, RawBShape>(sections, relas, stringSection, symbolTable, GameDataType.RawBShape, BShape.From),
-                GameDataType.Item => ParseObjectsOfType<Item, RawItem>(sections, relas, stringSection, symbolTable, GameDataType.RawItem, Item.From),
-                GameDataType.Maplink =>
-                    // custom overload for Maplink
-                    ParseObjectsOfType(sections, relas, stringSection, symbolTable, GameDataType.RawMaplink, MaplinkNode.From, MaplinkHeader.From),
-                GameDataType.DataNpc => ParseObjectsOfType<NpcType, RawNpcType>(sections, relas, stringSection, symbolTable, GameDataType.RawDataNpc, NpcType.From),
-                GameDataType.DataItem => ParseObjectsOfType<ItemType, RawItemType>(sections, relas, stringSection, symbolTable, GameDataType.RawDataItem, ItemType.From),
-
-                _ => ParseRawData(sections, relas, dataType, symbolTable),
-            };
-        }
-
-        private static List<List<object>> ParseRawData(List<Section> sections, List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
-        {
-            Section dataSection = GetSection(sections, ".data");
-
-            List<Symbol> symbols = symbolTable.Where((symbol, index) => index > 5 && symbol.Section == dataSection).OrderBy(symbol => symbol.Value).ToList();
-            int symbolIndex = 0;
-
-            List<List<object>> objects = new List<List<object>>
-            {
-                new List<object>()
+                GameDataType.NPC => new StringDataParser<NPC, RawNPC>(NPC.From, stringSection,
+                    new SimpleDataParser<RawNPC>(dataSection, relas, RawNPC.ReadBinaryData)),
+                
+                GameDataType.Mobj => new StringDataParser<Mobj, RawMobj>(Mobj.From, stringSection,
+                    new SimpleDataParser<RawMobj>(dataSection, relas, RawMobj.ReadBinaryData)),
+                
+                GameDataType.Aobj => new StringDataParser<Aobj, RawAobj>(Aobj.From, stringSection,
+                    new SimpleDataParser<RawAobj>(dataSection, relas, RawAobj.ReadBinaryData)),
+                
+                GameDataType.BShape => new StringDataParser<BShape, RawBShape>(BShape.From, stringSection,
+                    new SimpleDataParser<RawBShape>(dataSection, relas, RawBShape.ReadBinaryData)),
+                
+                GameDataType.Item => new StringDataParser<Item, RawItem>(Item.From, stringSection,
+                    new SimpleDataParser<RawItem>(dataSection, relas, RawItem.ReadBinaryData)),
+                
+                GameDataType.Maplink => new MaplinkParser(symbolTable, dataSection, stringSection, relas),
+                
+                GameDataType.DataNpc => new StringDataParser<NpcType, RawNpcType>(NpcType.From, stringSection,
+                    new SimpleDataParser<RawNpcType>(dataSection, relas, RawNpcType.ReadBinaryData)),
+                
+                GameDataType.DataItem => new StringDataParser<ItemType, RawItemType>(ItemType.From, stringSection,
+                    new SimpleDataParser<RawItemType>(dataSection, relas, RawItemType.ReadBinaryData)),
             };
 
-            byte[] data = dataSection.Content;
-            MemoryStream stream = new MemoryStream(data);
-            BinaryReader reader = new BinaryReader(stream);
-
-            while (stream.Position != stream.Length)
-            {
-                if (symbols.Count > symbolIndex + 1 && symbols[symbolIndex + 1].Value <= stream.Position)
-                {
-                    symbolIndex += 1;
-                    objects.Add(new List<object>());
-                }
-
-                switch (dataType)
-                {
-                    case GameDataType.RawNPC:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawNPC.ReadBinaryData);
-                        break;
-                    case GameDataType.RawMobj:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMobj.ReadBinaryData);
-                        break;
-                    case GameDataType.RawAobj:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawAobj.ReadBinaryData);
-                        break;
-                    case GameDataType.RawBShape:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawBShape.ReadBinaryData);
-                        break;
-                    case GameDataType.RawItem:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawItem.ReadBinaryData);
-                        break;
-                    case GameDataType.RawMaplink:
-                        if(symbolIndex == 0)
-                            ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkNode.ReadBinaryData);
-                        else
-                            ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawMaplinkHeader.ReadBinaryData);
-                        break;
-                    case GameDataType.RawDataNpc:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawNpcType.ReadBinaryData);
-                        break;
-                    case GameDataType.RawDataItem:
-                        ParseRawObjectsOfType(stream, objects[symbolIndex], reader, relas, RawItemType.ReadBinaryData);
-                        break;
-
-                    default:
-                        throw new ElfParseException("Data type not implemented");
-                }
-            }
-
-
-
-            return objects;
+            return parser.Parse();
         }
-
-        private delegate T ObjectConverter<out T, in TRaw>(TRaw rawBShape, Section stringSection);
-
-        private static List<List<object>> ParseObjectsOfType<T, TRaw>(List<Section> sections, List<SectionRela> relas, Section stringSection,
-            List<Symbol> symbolTable, GameDataType rawType, ObjectConverter<T, TRaw> converter)
-        {
-            List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
-            List<List<object>> objects = rawObjects
-                .Select((list, i) => i == 0 ? list.Select(rawObject => converter((TRaw)rawObject, stringSection)).Cast<object>().ToList() : new List<object>(list))
-                .ToList();
-            return objects;
-        }
-
-        // custom overload for maplink
-        private static List<List<object>> ParseObjectsOfType(List<Section> sections, List<SectionRela> relas, Section stringSection,
-            List<Symbol> symbolTable, GameDataType rawType, ObjectConverter<MaplinkNode, RawMaplinkNode> converter, ObjectConverter<MaplinkHeader, RawMaplinkHeader> headerConverter)
-        {
-            List<List<object>> rawObjects = ParseRawData(sections, relas, rawType, symbolTable);
-            List<List<object>> objects = rawObjects
-                .Select((list, i) => list.Select(rawObject => (i == 0 
-                    ? (object)converter((RawMaplinkNode)rawObject, stringSection)
-                    : (object)headerConverter((RawMaplinkHeader)rawObject, stringSection))).ToList())
-                .ToList();
-            return objects;
-        }
-
-        private delegate TRaw ReadBinaryData<out TRaw>(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset);
-
-        private static void ParseRawObjectsOfType<TRaw>(MemoryStream stream, List<object> objects, BinaryReader reader, List<SectionRela> relas, ReadBinaryData<TRaw> readBinaryData)
-        {
-            objects.Add(readBinaryData(reader, relas, reader.BaseStream.Position));
-        }
-
+        
     }
-
 
 }
