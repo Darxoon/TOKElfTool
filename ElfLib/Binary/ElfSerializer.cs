@@ -133,7 +133,7 @@ namespace ElfLib
                         break;
                     case ".rodata":
                         newContent = BitConverter.GetBytes(dataType != GameDataType.Maplink 
-                            ? binary.Data.Aggregate(0, (amount, dataSection) => amount + dataSection.Count) 
+                            ? binary.Data.Aggregate(0, (amount, kvp) => amount + kvp.Value.Count) 
                             : 1);
                         break;
                     default:
@@ -172,12 +172,12 @@ namespace ElfLib
             return output;
         }
 
-        private byte[] SerializeData(List<Element<T>>[] data)
+        private byte[] SerializeData(Dictionary<ElfType, List<Element<T>>> data)
         {
             // Prepare list of all strings
             HashSet<string> allStrings = new HashSet<string>();
 
-            foreach (List<Element<T>> list in data)
+            foreach ((ElfType type, List<Element<T>> list) in data)
             {
                 AddAllStrings(list, dataType, allStrings);
             }
@@ -194,11 +194,12 @@ namespace ElfLib
             long dataSectionPosition = 0;
             // TODO: collect new symbol positions
 
-            foreach (List<Element<T>> list in data)
-            {
-                ConvertToRawObjects(list, dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
-            }
+            ConvertToRawObjects(data[ElfType.Main], dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
 
+            if (dataType == GameDataType.Maplink)
+                ConvertToRawObjects(data[ElfType.MaplinkHeader], dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
+                
+            
             // Serialize 
             MemoryStream dataStream = new MemoryStream();
             BinaryWriter binaryWriter = new BinaryWriter(dataStream);

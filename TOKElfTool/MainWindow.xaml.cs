@@ -596,6 +596,8 @@ namespace TOKElfTool
 
         private object CollectMaplinkHeaderObject(ObjectEditControl objectEditControl)
         {
+            objectEditControl.Generate();
+            
             Grid grid = objectEditControl.Grid;
 
             // go through all property controls
