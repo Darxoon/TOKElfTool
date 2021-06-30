@@ -58,7 +58,7 @@ namespace ElfLib.Binary.Parser
             };
         }
 
-        private static T FromBinaryReader(BinaryReader reader)
+        internal static T FromBinaryReader(BinaryReader reader)
         {
             object result = Util.FromBinaryReader<T>(reader);
             FieldInfo[] fields = typeof(T).GetFields();
