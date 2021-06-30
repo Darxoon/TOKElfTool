@@ -8,8 +8,13 @@ This is a modified room in Paper Mario TOK entirely done using this tool.
 https://github.com/Darxoon/TOKElfTool/releases/
 
 You can download the latest release from there. I always make sure that it's up to date. Note that it's still 
-in development. Features are missing, including structs other than NPC's, stuff can break and field names
-are incomplete. However, it's a lot easier than using Ghidra and a Hex Editor!
+in development. Features are missing, stuff can break and field names are incomplete.
+
+Development builds:  
+https://ci.appveyor.com/project/Darxoon/tokelftool/build/artifacts
+
+Here, you can download the lastest development build. Note that it might be really unstable and some things
+might not work at all.
 
 ## Requirements
 This program is Windows-only and requires .NET Framework 4.7.2. If there's enough demand, I can make it cross-platform. 
@@ -31,16 +36,15 @@ to compile a .NET Framework Application.
 
 ## Features
 This program can:
- * Load .elf files from Paper Mario TOK
- * Supports these data types: NPC (more will come later)
- * Modify them and save them again
- * Compress using ZSTD
- * Standalone ZSTD tools
- * Other GUI stuff, such as Open Recent
+ * Load and save .elf files from Paper Mario TOK
+ * Compress and decompress ZSTD files
+ * Change placements of NPC's, blocks, objects and more in Paper Mario TOK
+ * Add new content to Paper Mario TOK
 
 Features that will be coming:
- * Decompressing ZSTD files
- * Hex Editor
+ * Battle Editing
+ * More supported file types
+ * Collision editing at some point?
 
 ## Contact
 To report bugs or give suggestions, you can open an Issue here on GitHub. You can also contact me privately on Discord (my tag is Darxoon#2884).
