@@ -20,7 +20,7 @@ namespace ElfLib.Binary.Parser
             this.relocationTable = relocationTable;
         }
         
-        public Dictionary<ElfType, List<object>> Parse()
+        public IDictionary<ElfType, List<object>> Parse()
         {
             List<Symbol> symbols = symbolTable.Where((symbol, index) => index > 5 && symbol.Section == dataSection).OrderBy(symbol => symbol.Value).ToList();
             int nodeAmount = (int)(symbols[0].Size / Marshal.SizeOf(typeof(RawMaplinkNode)));

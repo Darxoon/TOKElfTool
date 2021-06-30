@@ -26,7 +26,7 @@ namespace ElfLib.Binary.Parser
             this.amount = amount;
         }
 
-        public Dictionary<ElfType, List<object>> Parse()
+        public IDictionary<ElfType, List<object>> Parse()
         {
             List<object> objects = new List<object>();
 

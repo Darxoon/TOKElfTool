@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -147,7 +147,7 @@ namespace ElfLib
         private static Dictionary<ElfType, List<Element<T>>> ParseData<T>(List<Section> sections, List<SectionRela> relas,
             GameDataType dataType, List<Symbol> symbolTable)
         {
-            Dictionary<ElfType, List<object>> data = ParseData(sections, relas, dataType, symbolTable);
+            IDictionary<ElfType, List<object>> data = ParseData(sections, relas, dataType, symbolTable);
             Dictionary<ElfType, List<Element<T>>> typedData = new Dictionary<ElfType, List<Element<T>>>();
 
             foreach ((ElfType type, List<object> instances) in data)
@@ -160,7 +160,7 @@ namespace ElfLib
             return typedData;
         }
 
-        private static Dictionary<ElfType, List<object>> ParseData(List<Section> sections, List<SectionRela> relas, 
+        private static IDictionary<ElfType, List<object>> ParseData(List<Section> sections, List<SectionRela> relas, 
             GameDataType dataType, List<Symbol> symbolTable)
         {
             if (dataType == GameDataType.None)

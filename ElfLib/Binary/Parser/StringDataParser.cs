@@ -21,9 +21,9 @@ namespace ElfLib.Binary.Parser
             this.stringSection = stringSection;
         }
 
-        public Dictionary<ElfType, List<object>> Parse()
+        public IDictionary<ElfType, List<object>> Parse()
         {
-            Dictionary<ElfType, List<object>> dict = innerParser.Parse();
+            IDictionary<ElfType, List<object>> dict = innerParser.Parse();
             Dictionary<ElfType, List<object>> result = new Dictionary<ElfType, List<object>>();
 
             foreach ((ElfType elfType, List<object> instances) in dict)

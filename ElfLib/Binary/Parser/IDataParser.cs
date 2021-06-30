@@ -6,6 +6,6 @@ namespace ElfLib.Binary.Parser
 {
     interface IDataParser
     {
-        public Dictionary<ElfType, List<object>> Parse();
+        public IDictionary<ElfType, List<object>> Parse();
     }
 }
