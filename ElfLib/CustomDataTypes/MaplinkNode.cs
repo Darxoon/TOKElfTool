@@ -44,7 +44,5 @@ namespace ElfLib.CustomDataTypes
         public int field_0xa4;
         public int field_0xa8;
         public int field_0xac;
-
-        public static MaplinkNode From(RawMaplinkNode rawItem, Section stringSection) => Util.RawToNormalObject<MaplinkNode, RawMaplinkNode>(rawItem, stringSection);
     }
 }

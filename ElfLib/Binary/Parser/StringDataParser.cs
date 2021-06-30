@@ -8,19 +8,17 @@ using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib.Binary.Parser
 {
-    internal class StringDataParser<TNew, TSource> : IDataParser
+    internal class StringDataParser<TNew, TSource> : IDataParser where TNew : struct where TSource : struct
     {
         private readonly IDataParser innerParser;
-        private readonly ObjectConverter converter;
         private readonly Section stringSection;
 
         public delegate TNew ObjectConverter(TSource rawBShape, Section stringSection);
 
-        public StringDataParser(ObjectConverter converter, Section stringSection, IDataParser innerParser)
+        public StringDataParser(Section stringSection, IDataParser innerParser)
         {
             this.innerParser = innerParser;
             this.stringSection = stringSection;
-            this.converter = converter;
         }
 
         public Dictionary<ElfType, List<object>> Parse()
@@ -30,8 +28,7 @@ namespace ElfLib.Binary.Parser
 
             foreach ((ElfType elfType, List<object> instances) in dict)
             {
-                // TODO: make everything more generic
-                result[elfType] = instances.Select(instance => (object)converter((TSource)instance, stringSection)).ToList();
+                result[elfType] = instances.Select(instance => (object)Util.RawToNormalObject<TNew, TSource>((TSource)instance, stringSection)).ToList();
             }
 
             return result;

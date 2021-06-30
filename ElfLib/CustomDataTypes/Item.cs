@@ -33,7 +33,5 @@ namespace ElfLib.CustomDataTypes
         public float field_0x74;
         public int field_0x78;
         public int field_0x7c;
-
-        public static Item From(RawItem rawItem, Section stringSection) => Util.RawToNormalObject<Item, RawItem>(rawItem, stringSection);
     }
 }

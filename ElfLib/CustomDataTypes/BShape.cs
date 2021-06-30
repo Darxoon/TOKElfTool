@@ -19,7 +19,5 @@ namespace ElfLib.CustomDataTypes
         public string field_40;
         public int field_48;
         public int field_4C;
-
-        public static BShape From(RawBShape rawBShape, Section stringSection) => Util.RawToNormalObject<BShape, RawBShape>(rawBShape, stringSection);
     }
 }

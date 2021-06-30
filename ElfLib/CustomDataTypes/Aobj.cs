@@ -92,7 +92,5 @@ namespace ElfLib.CustomDataTypes
         public int field_0x16c;
         public int field_0x170;
         public int field_0x174;
-
-        public static Aobj From(RawAobj rawAobj, Section stringSection) => Util.RawToNormalObject<Aobj, RawAobj>(rawAobj, stringSection);
     }
 }

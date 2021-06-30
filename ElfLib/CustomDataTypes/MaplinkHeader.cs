@@ -19,7 +19,5 @@ namespace ElfLib.CustomDataTypes
         public int field_0x24;
         public int field_0x28;
         public int field_0x2c;
-
-        public static MaplinkHeader From(RawMaplinkHeader rawItem, Section stringSection) => Util.RawToNormalObject<MaplinkHeader, RawMaplinkHeader>(rawItem, stringSection);
     };
 }

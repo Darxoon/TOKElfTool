@@ -81,35 +81,5 @@ namespace ElfLib
 
             return $"NPC{{{string.Join(", ", values.Select((key) => $"{key.Key}: {key.Value}").Take(5))} + {Math.Max(values.Count - 5, 0)} more";
         }
-
-        internal static NPC From(RawNPC rawNpc, Section stringSection)
-        {
-            object npc = new NPC();
-            foreach (FieldInfo npcField in typeof(NPC).GetFields())
-            {
-                FieldInfo rawNpcField = typeof(RawNPC).GetField(npcField.Name);
-                //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
-                if (npcField.FieldType == typeof(string))
-                {
-                    string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(rawNpc));
-                    npcField.SetValue(npc, str);
-                }
-                else if (npcField.FieldType.BaseType == typeof(Enum))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc));
-                }
-                else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc) > 0);
-                }
-                else if (npcField.FieldType == rawNpcField.FieldType)
-                {
-                    npcField.SetValue(npc, rawNpcField.GetValue(rawNpc));
-                }
-                else
-                    throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
-            }
-            return (NPC)npc;
-        }
     }
 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -103,41 +100,5 @@ namespace ElfLib
 		public int field_170;
 		public int field_174;
         #endregion
-
-
-
-        internal static Mobj From(RawMobj rawNpc, Section stringSection)
-        {
-            object npc = new Mobj();
-            foreach (FieldInfo npcField in typeof(Mobj).GetFields())
-            {
-                FieldInfo rawNpcField = typeof(RawMobj).GetField(npcField.Name);
-                //Trace.WriteLine($"NPC: {npcField.Name}: {npcField.FieldType.Name}, \tRawNPC: {rawNpcField.Name}: {rawNpcField.FieldType.Name}");
-                if (npcField.FieldType == typeof(string))
-                {
-                    Trace.WriteLine("Peter bghjmnv ");
-                    Trace.WriteLine(rawNpcField.Name);
-                    Trace.WriteLine(rawNpcField.GetValue(rawNpc));
-                    string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(rawNpc));
-                    npcField.SetValue(npc, str);
-                }
-                else if (npcField.FieldType.BaseType == typeof(Enum))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc));
-                }
-                else if (npcField.FieldType == typeof(bool) && rawNpcField.FieldType == typeof(int))
-                {
-                    npcField.SetValue(npc, (int)rawNpcField.GetValue(rawNpc) > 0);
-                }
-                else if (npcField.FieldType == rawNpcField.FieldType)
-                {
-                    npcField.SetValue(npc, rawNpcField.GetValue(rawNpc));
-                }
-                else
-                    throw new Exception($"Internal error: NPC field {npcField} {rawNpcField.FieldType} and RawNPC field {rawNpcField} types don't match");
-            }
-
-            return (Mobj)npc;
-        }
     }
 }

@@ -171,31 +171,33 @@ namespace ElfLib
 
             IDataParser parser = dataType switch
             {
-                GameDataType.NPC => new StringDataParser<NPC, RawNPC>(NPC.From, stringSection,
-                    new SimpleDataParser<RawNPC>(dataSection, relas)),
+                GameDataType.NPC => Parse<NPC, RawNPC>(sections, relas),
                 
-                GameDataType.Mobj => new StringDataParser<Mobj, RawMobj>(Mobj.From, stringSection,
-                    new SimpleDataParser<RawMobj>(dataSection, relas)),
+                GameDataType.Mobj => Parse<Mobj, RawMobj>(sections, relas),
                 
-                GameDataType.Aobj => new StringDataParser<Aobj, RawAobj>(Aobj.From, stringSection,
-                    new SimpleDataParser<RawAobj>(dataSection, relas)),
+                GameDataType.Aobj => Parse<Aobj, RawAobj>(sections, relas),
                 
-                GameDataType.BShape => new StringDataParser<BShape, RawBShape>(BShape.From, stringSection,
-                    new SimpleDataParser<RawBShape>(dataSection, relas)),
+                GameDataType.BShape => Parse<BShape, RawBShape>(sections, relas),
                 
-                GameDataType.Item => new StringDataParser<Item, RawItem>(Item.From, stringSection,
-                    new SimpleDataParser<RawItem>(dataSection, relas)),
+                GameDataType.Item => Parse<Item, RawItem>(sections, relas),
                 
                 GameDataType.Maplink => new MaplinkParser(symbolTable, dataSection, stringSection, relas),
                 
-                GameDataType.DataNpc => new StringDataParser<NpcType, RawNpcType>(NpcType.From, stringSection,
-                    new SimpleDataParser<RawNpcType>(dataSection, relas)),
+                GameDataType.DataNpc => Parse<NpcType, RawNpcType>(sections, relas),
                 
-                GameDataType.DataItem => new StringDataParser<ItemType, RawItemType>(ItemType.From, stringSection,
-                    new SimpleDataParser<RawItemType>(dataSection, relas)),
+                GameDataType.DataItem => Parse<ItemType, RawItemType>(sections, relas),
             };
 
             return parser.Parse();
+        }
+
+        private static StringDataParser<T1, T2> Parse<T1, T2>(List<Section> sections, List<SectionRela> relocationTable) 
+            where T1 : struct where T2 : struct
+        {
+            Section dataSection = GetSection(sections, ".data");
+            Section stringSection = GetSection(sections, ".rodata.str1.1");
+
+            return new StringDataParser<T1, T2>(stringSection, new SimpleDataParser<T2>(dataSection, relocationTable));
         }
         
     }
