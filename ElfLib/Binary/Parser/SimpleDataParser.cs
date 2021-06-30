@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
@@ -12,17 +15,13 @@ namespace ElfLib.Binary.Parser
     {
         private readonly Section dataSection;
         private readonly List<SectionRela> relocationTable;
-        private readonly FromBinaryDataConverter converter;
         private readonly long startOffset;
         private readonly int amount;
 
-        public delegate T FromBinaryDataConverter(BinaryReader binaryReader, List<SectionRela> relocationTable, long baseOffset);
-
-        public SimpleDataParser(Section dataSection, List<SectionRela> relocationTable, FromBinaryDataConverter converter, long startOffset = 0, int amount = -1)
+        public SimpleDataParser(Section dataSection, List<SectionRela> relocationTable, long startOffset = 0, int amount = -1)
         {
             this.dataSection = dataSection;
             this.relocationTable = relocationTable;
-            this.converter = converter;
             this.startOffset = startOffset;
             this.amount = amount;
         }
@@ -40,16 +39,18 @@ namespace ElfLib.Binary.Parser
             {
                 while (stream.Position != stream.Length)
                 {
-                    objects.Add(converter(reader, relocationTable, reader.BaseStream.Position));
+                    objects.Add(FromBinaryReader(reader));
                 }
             }
             else
             {
                 for (int i = 0; i < amount && stream.Position != stream.Length; i++)
                 {
-                    objects.Add(converter(reader, relocationTable, reader.BaseStream.Position));
+                    objects.Add(FromBinaryReader(reader));
                 }
             }
+
+            ResolveRelocations(objects);
 
             return new Dictionary<ElfType, List<object>>
             {
@@ -57,5 +58,46 @@ namespace ElfLib.Binary.Parser
             };
         }
 
+        private static T FromBinaryReader(BinaryReader reader)
+        {
+            object result = Util.FromBinaryReader<T>(reader);
+            FieldInfo[] fields = typeof(T).GetFields();
+            
+            for (int i = 0; i < fields.Length; i++)
+            {
+                if (fields[i].FieldType == typeof(ElfStringPointer))
+                    fields[i].SetValue(result, ElfStringPointer.NULL);
+            }
+
+            return (T)result;
+        }
+        
+        private void ResolveRelocations(List<object> objects)
+        {
+            int size = Marshal.SizeOf(typeof(T));
+
+            foreach (SectionRela relocation in relocationTable)
+            {
+                long offset = relocation.OriginOffset - startOffset;
+                
+                long instanceIndex = offset / size;
+                // instanceIndex is getting floored, which is why instanceIndex * size is the offset of the instance
+                long fieldOffset = relocation.OriginOffset - instanceIndex * size - startOffset;
+                
+                // iterate through all fields and apply the relocation
+                foreach (FieldInfo field in typeof(T).GetFields())
+                {
+                    if (field.GetFieldOffset() == fieldOffset)
+                    {
+                        if (field.FieldType == typeof(ElfStringPointer))
+                            field.SetValue(objects[(int)instanceIndex], new ElfStringPointer(relocation.Addend));
+                        else
+                            Trace.WriteLine($"Possible unidentified string: {field}");
+                        break;
+                    }
+                }
+            }
+        }
+        
     }
 }

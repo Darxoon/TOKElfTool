@@ -13,6 +13,18 @@ namespace ElfLib
         public long Info { get; set; }
         public long Addend { get; set; }
 
+        public long OriginOffset
+        {
+            get => Offset;
+            set => Offset = value;
+        }
+
+        public ElfStringPointer TargetOffsetPointer
+        {
+            get => new ElfStringPointer(Addend);
+            set => Addend = value.AsLong;
+        }
+        
         private SectionRela() { }
 
         internal SectionRela(long originOffset, long targetOffset)

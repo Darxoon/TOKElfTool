@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -9,7 +10,8 @@ using System.Runtime.InteropServices;
 namespace ElfLib
 {
 	[StructLayout(LayoutKind.Sequential)]
-    public struct Mobj
+	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+	public struct Mobj
     {
 		public string level_str;
 		public string obj_str;
@@ -40,8 +42,7 @@ namespace ElfLib
 		public int field_74;
 		public int field_78;
 		public int field_7C;
-		public int field_80;
-		public int field_84;
+		public string field_80;
 		public int field_88;
 		public int field_8C;
 		public int field_90;

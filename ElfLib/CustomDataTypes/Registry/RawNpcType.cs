@@ -55,12 +55,5 @@ namespace ElfLib.CustomDataTypes.Registry
 
         public static RawNpcType From(NpcType npcType, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawNpcType, NpcType>(npcType, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawNpcType ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            object instance = Util.FromBinaryReader<RawNpcType>(binaryReader);
-
-            return (RawNpcType)Util.ResolveStringRelocations(instance, typeof(RawNpcType), relas, baseOffset);
-        }
     }
 }

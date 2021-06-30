@@ -49,22 +49,5 @@ namespace ElfLib.CustomDataTypes
 
         public static RawMaplinkNode From(MaplinkNode item, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawMaplinkNode, MaplinkNode>(item, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawMaplinkNode ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            RawMaplinkNode rawItem = Util.FromBinaryReader<RawMaplinkNode>(binaryReader);
-            rawItem.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-            rawItem.field_0x8 = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawItem.destination_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
-            rawItem.field_0x18 = ElfStringPointer.ResolveRelocation(relas, 24, baseOffset);
-            rawItem.shape_str = ElfStringPointer.ResolveRelocation(relas, 32, baseOffset);
-            rawItem.target_str = ElfStringPointer.ResolveRelocation(relas, 40, baseOffset);
-            rawItem.field_0x50 = ElfStringPointer.ResolveRelocation(relas, 80, baseOffset);
-            rawItem.direction_str = ElfStringPointer.ResolveRelocation(relas, 96, baseOffset);
-            rawItem.enter_event_str = ElfStringPointer.ResolveRelocation(relas, 144, baseOffset);
-            rawItem.exit_event_str = ElfStringPointer.ResolveRelocation(relas, 152, baseOffset);
-
-            return rawItem;
-        }
     }
 }

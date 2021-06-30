@@ -98,12 +98,5 @@ namespace ElfLib.CustomDataTypes
 
         public static RawAobj From(Aobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0) 
             => Util.NormalToRawObject<RawAobj, Aobj>(npc, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawAobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            object rawMobj = Util.FromBinaryReader<RawAobj>(binaryReader);
-
-            return (RawAobj)Util.ResolveStringRelocations(rawMobj, typeof(RawAobj), relas, baseOffset);
-        }
     }
 }

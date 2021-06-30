@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace ElfLib.CustomDataTypes
@@ -22,17 +21,6 @@ namespace ElfLib.CustomDataTypes
         public static RawBShape From(BShape npc, Dictionary<string, ElfStringPointer> stringSectionTable, 
                                    SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0) => 
             Util.NormalToRawObject<RawBShape, BShape>(npc, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawBShape ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            RawBShape rawBShape = Util.FromBinaryReader<RawBShape>(binaryReader);
-            rawBShape.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-            rawBShape.shape_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawBShape.field_40 = ElfStringPointer.ResolveRelocation(relas, 64, baseOffset);
-
-
-            return rawBShape;
-        }
     }
 
 }

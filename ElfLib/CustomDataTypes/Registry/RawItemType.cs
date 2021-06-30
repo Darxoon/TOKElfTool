@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -49,12 +48,5 @@ namespace ElfLib.CustomDataTypes.Registry
 
         public static RawItemType From(ItemType itemType, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawItemType, ItemType>(itemType, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawItemType ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            object instance = Util.FromBinaryReader<RawItemType>(binaryReader);
-
-            return (RawItemType)Util.ResolveStringRelocations(instance, typeof(RawItemType), relas, baseOffset);
-        }
     }
 }

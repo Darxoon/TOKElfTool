@@ -23,13 +23,5 @@ namespace ElfLib.CustomDataTypes
 
         public static RawMaplinkHeader From(MaplinkHeader npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawMaplinkHeader, MaplinkHeader>(npc, stringSectionTable, stringRelocTable, baseOffset);
-
-        internal static RawMaplinkHeader ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            RawMaplinkHeader rawMobj = Util.FromBinaryReader<RawMaplinkHeader>(binaryReader);
-            rawMobj.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-
-            return rawMobj;
-        }
     };
 }

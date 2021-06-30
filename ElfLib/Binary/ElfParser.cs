@@ -172,27 +172,27 @@ namespace ElfLib
             IDataParser parser = dataType switch
             {
                 GameDataType.NPC => new StringDataParser<NPC, RawNPC>(NPC.From, stringSection,
-                    new SimpleDataParser<RawNPC>(dataSection, relas, RawNPC.ReadBinaryData)),
+                    new SimpleDataParser<RawNPC>(dataSection, relas)),
                 
                 GameDataType.Mobj => new StringDataParser<Mobj, RawMobj>(Mobj.From, stringSection,
-                    new SimpleDataParser<RawMobj>(dataSection, relas, RawMobj.ReadBinaryData)),
+                    new SimpleDataParser<RawMobj>(dataSection, relas)),
                 
                 GameDataType.Aobj => new StringDataParser<Aobj, RawAobj>(Aobj.From, stringSection,
-                    new SimpleDataParser<RawAobj>(dataSection, relas, RawAobj.ReadBinaryData)),
+                    new SimpleDataParser<RawAobj>(dataSection, relas)),
                 
                 GameDataType.BShape => new StringDataParser<BShape, RawBShape>(BShape.From, stringSection,
-                    new SimpleDataParser<RawBShape>(dataSection, relas, RawBShape.ReadBinaryData)),
+                    new SimpleDataParser<RawBShape>(dataSection, relas)),
                 
                 GameDataType.Item => new StringDataParser<Item, RawItem>(Item.From, stringSection,
-                    new SimpleDataParser<RawItem>(dataSection, relas, RawItem.ReadBinaryData)),
+                    new SimpleDataParser<RawItem>(dataSection, relas)),
                 
                 GameDataType.Maplink => new MaplinkParser(symbolTable, dataSection, stringSection, relas),
                 
                 GameDataType.DataNpc => new StringDataParser<NpcType, RawNpcType>(NpcType.From, stringSection,
-                    new SimpleDataParser<RawNpcType>(dataSection, relas, RawNpcType.ReadBinaryData)),
+                    new SimpleDataParser<RawNpcType>(dataSection, relas)),
                 
                 GameDataType.DataItem => new StringDataParser<ItemType, RawItemType>(ItemType.From, stringSection,
-                    new SimpleDataParser<RawItemType>(dataSection, relas, RawItemType.ReadBinaryData)),
+                    new SimpleDataParser<RawItemType>(dataSection, relas)),
             };
 
             return parser.Parse();

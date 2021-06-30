@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -8,7 +8,8 @@ using System.Runtime.InteropServices;
 namespace ElfLib
 {
 	[StructLayout(LayoutKind.Sequential)]
-    public struct RawMobj
+	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+	public struct RawMobj
     {
 		public ElfStringPointer level_str;
 		public ElfStringPointer obj_str;
@@ -39,8 +40,7 @@ namespace ElfLib
 		public int field_74;
 		public int field_78;
 		public int field_7C;
-		public int field_80;
-		public int field_84;
+		public ElfStringPointer field_80;
 		public int field_88;
 		public int field_8C;
 		public int field_90;
@@ -102,17 +102,6 @@ namespace ElfLib
 		public int field_174;
         #endregion
 
-
-        internal static RawMobj ReadBinaryData(BinaryReader binaryReader, List<SectionRela> relas, long baseOffset)
-        {
-            RawMobj rawMobj = Util.FromBinaryReader<RawMobj>(binaryReader);
-            rawMobj.level_str = ElfStringPointer.ResolveRelocation(relas, 0, baseOffset);
-            rawMobj.obj_str = ElfStringPointer.ResolveRelocation(relas, 8, baseOffset);
-            rawMobj.shape_str = ElfStringPointer.ResolveRelocation(relas, 16, baseOffset);
-            rawMobj.init_function_str = ElfStringPointer.ResolveRelocation(relas, 248, baseOffset);
-
-			return rawMobj;
-        }
 
         public static RawMobj From(Mobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
         {
