@@ -64,6 +64,10 @@ namespace ElfLib
                     string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(raw));
                     npcField.SetValue(npc, npcField.FieldType.BaseType == typeof(Enum) ? StringEnumAttribute.GetEnumValueFromString(str, npcField.FieldType) : str);
                 }
+                else if (rawNpcField.FieldType == typeof(ElfStringPointer) && npcField.FieldType == typeof(long))
+                {
+                    npcField.SetValue(npc, ((ElfStringPointer)rawNpcField.GetValue(raw)).AsLong);
+                }
                 else if (npcField.FieldType.BaseType == typeof(Enum))
                 {
                     npcField.SetValue(npc, (int)rawNpcField.GetValue(raw));

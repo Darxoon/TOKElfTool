@@ -263,6 +263,13 @@ namespace TOKElfTool
                     label.ToolTip = "byte (8-bit integer or boolean)";
                     textBox.ToolTip = "byte (8-bit integer or boolean)";
                     break;
+                case "Int16":
+                    textBox.Text = ((short)field.GetValue(currentObject)).ToString();
+                    textBox.PreviewTextInput += Int_PreviewTextInput;
+                    textBox.KeyDown += Int_KeyDown;
+                    label.ToolTip = "16-bit integer";
+                    textBox.ToolTip = "16-bit integer";
+                    break;
                 case "Int32":
                     textBox.Text = ((int)field.GetValue(currentObject)).ToString();
                     textBox.PreviewTextInput += Int_PreviewTextInput;
@@ -296,7 +303,7 @@ namespace TOKElfTool
                 case "ElfStringPointer":
                     throw new Exception("ElfStringPointer didn't get replaced with string");
                 default:
-                    throw new NotImplementedException();
+                    throw new Exception("Type not supported");
             }
 
 
