@@ -168,6 +168,8 @@ namespace TOKElfTool
                 if (StringEnumAttribute.IsStringEnum(fieldType))
                 {
                     comboBox.IsEditable = true;
+                    comboBox.Style = (Style)Application.Current.Resources["StringEnumComboBox"];
+                    comboBox.Height = 22;
                     comboBox.KeyDown += (sender, e) =>
                     {
                         if (e.Key == Key.Enter)
@@ -179,7 +181,13 @@ namespace TOKElfTool
                                 string evaluated = StringEnumAttribute.GetDisplayName(fromIdentifier, fieldType);
                                 comboBox.Text = evaluated;
                             }
+
+                            ValueChanged?.Invoke(this, e);
                         }
+                    };
+                    comboBox.SelectionChanged += (sender, e) =>
+                    {
+                        ValueChanged?.Invoke(this, e);
                     };
                 }
 

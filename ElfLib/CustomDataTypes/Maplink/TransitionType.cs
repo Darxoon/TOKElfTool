@@ -7,6 +7,8 @@ namespace ElfLib.CustomDataTypes.Maplink
     [StringEnum]
     public enum TransitionType
     {
+        [EnumMetadata(DisplayName = "null", Identifier = "null")]
+        Null,
         [EnumMetadata(DisplayName = "Normal Transition (\"ベロ\")", Identifier = "ベロ")]
         Bero,
         [EnumMetadata(DisplayName = "Event (\"イベント\")", Identifier = "イベント")]

@@ -24,5 +24,19 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Consolas for string enums with null selected -->
+        <FontFamily x:Key="Consolas">Consolas</FontFamily>
+        
+        <Style x:Key="StringEnumComboBox" TargetType="ComboBox">
+            <Style.Triggers>
+                <Trigger Property="SelectedIndex" Value="0">
+                    <Trigger.Setters>
+                        <Setter Property="FontFamily" Value="{StaticResource Consolas}" />
+                        <Setter Property="Padding" Value="0,3" />
+                    </Trigger.Setters>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </Application.Resources>
 </Application>
