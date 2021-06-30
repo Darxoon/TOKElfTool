@@ -55,6 +55,7 @@ namespace TOKElfTool
                 "maplink" => Show(parent, GameDataType.Maplink),
                 "data_npc" => Show(parent, GameDataType.DataNpc),
                 "data_item" => Show(parent, GameDataType.DataItem),
+                "data_npc_model" => Show(parent, GameDataType.DataNpcModel),
                 _ => Show(parent),
             };
         }

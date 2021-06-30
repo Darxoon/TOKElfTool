@@ -20,6 +20,8 @@
 
             <ComboBoxItem>NPC Registry (data_npc.elf)</ComboBoxItem>
             <ComboBoxItem>Item Registry (data_item.elf)</ComboBoxItem>
+            
+            <ComboBoxItem>NPC Model (data_npc_model.elf)</ComboBoxItem>
         </ComboBox>
         <StackPanel Orientation="Horizontal" Margin="0, 10, 0, 0" HorizontalAlignment="Right">
             <Button Height="23" Width="68" Click="OkButton_OnClick" Margin="10,0,0,0" Style="{StaticResource WinButton}">OK</Button>

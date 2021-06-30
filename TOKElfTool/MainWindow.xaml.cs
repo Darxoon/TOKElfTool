@@ -374,6 +374,7 @@ namespace TOKElfTool
                 GameDataType.Maplink => typeof(MaplinkNode),
                 GameDataType.DataNpc => typeof(NpcType),
                 GameDataType.DataItem => typeof(ItemType),
+                GameDataType.DataNpcModel => typeof(NpcModel),
                 GameDataType.None => null,
                 _ => throw new Exception("Data type currently not supported")
             };

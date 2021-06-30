@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -167,6 +167,7 @@ namespace ElfLib
                 return null;
 
             Section dataSection = GetSection(sections, ".data");
+            Section rodataSection = GetSection(sections, ".rodata");
             Section stringSection = GetSection(sections, ".rodata.str1.1");
 
             IDataParser parser = dataType switch
@@ -186,6 +187,8 @@ namespace ElfLib
                 GameDataType.DataNpc => Parse<NpcType, RawNpcType>(sections, relas),
                 
                 GameDataType.DataItem => Parse<ItemType, RawItemType>(sections, relas),
+                
+                GameDataType.DataNpcModel => new NpcModelParser(stringSection, dataSection, rodataSection, relas),
             };
 
             return parser.Parse();

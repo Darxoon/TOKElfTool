@@ -14,6 +14,8 @@ namespace ElfLib
 
         DataNpc,
         DataItem,
+        
+        DataNpcModel,
 
         RawNPC,
         RawMobj,
@@ -25,6 +27,8 @@ namespace ElfLib
         RawDataNpc,
         RawDataItem,
 
+        RawDataNpcModel,
+        
         // TODO: Add more
     }
 }
