@@ -31,10 +31,10 @@ namespace ElfLib.Binary.Parser
             using MemoryStream stream = new MemoryStream(section.Content);
             using BinaryReader reader = new BinaryReader(stream);
 
-            var filesParser = new StringDataParser<NpcModelFiles, RawNpcModelFiles>(stringSection, 
+            var filesParser = new NpcModelStringPartParser<NpcModelFiles, RawNpcModelFiles>(stringSection, additionalPositionalData,
                 new NpcModelPartParser<RawNpcModelFiles>(additionalPositionalData, section, modelFilesOffsets, relocationTable));
             
-            var stateParser = new StringDataParser<NpcModelState, RawNpcModelState>(stringSection, 
+            var stateParser = new NpcModelStringPartParser<NpcModelState, RawNpcModelState>(stringSection, additionalPositionalData, 
                 new NpcModelPartParser<RawNpcModelState>(additionalPositionalData, section, modelStateOffsets, relocationTable));
 
             return new Dictionary<ElfType, List<object>>

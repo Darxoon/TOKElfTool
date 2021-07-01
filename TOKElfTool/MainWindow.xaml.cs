@@ -77,13 +77,16 @@ namespace TOKElfTool
 
         private List<bool> modifiedObjects = new List<bool>();
 
-        private void InitializeObjectsPanel<T>(Dictionary<ElfType, List<Element<T>>> objects, string objectName)
+        private void InitializeObjectsPanel<T>(ElfBinary<T> binary, string objectName)
         {
+            var objects = binary.Data;
+
+            additionalDataTab.Visibility = loadedDataType == GameDataType.DataNpcModel 
+                ? Visibility.Visible 
+                : Visibility.Collapsed;
+            
             EmptyLabel.Visibility = Visibility.Collapsed;
             tabControl.Visibility = Visibility.Visible;
-
-            //for (int j = 0; j < objects.Length; j++)
-            //{
 
             for (int i = 0; i < objects[ElfType.Main].Count; i++)
             {
@@ -105,7 +108,6 @@ namespace TOKElfTool
 
                 ObjectTabPanel.Children.Add(control);
             }
-            //}
 
             if (loadedDataType == GameDataType.Maplink)
             {
@@ -127,6 +129,35 @@ namespace TOKElfTool
                 ObjectTabPanel.Children.Add(control);
             }
 
+            if (loadedDataType == GameDataType.DataNpcModel)
+            {
+                int i = 0;
+                
+                foreach ((long offset, object instance) in binary.AdditionalPositionalData)
+                {
+                    ObjectEditControl control = new ObjectEditControl(instance, $@"{(instance.GetType().Name switch
+                    {
+                        nameof(NpcModelFiles) => "Files Object ",
+                        nameof(NpcModelState) => "State Object",
+                    })} {i}", i, loadedBinary.SymbolTable);
+
+                    control.RemoveButtonClick += RemoveButton_OnClick;
+                    control.DuplicateButtonClick += DuplicateButton_OnClick;
+                    control.ViewButtonClick += ViewButton_OnClick;
+
+                    control.ValueChanged += (sender, args) =>
+                    {
+                        hasUnsavedChanges = true;
+                        searchBar2.HasIndexed = false;
+                        modifiedObjects[control.Index + ObjectTabPanel.Children.Count] = true;
+                    };
+
+                    objectTabPanel2.Children.Add(control);
+
+                    i += 1;
+                }
+            }
+            
         }
 
         private void FixExpanderIndexes()
@@ -348,7 +379,7 @@ namespace TOKElfTool
             AddRecentlyOpened(filename);
 
             // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary.Data, GetExpanderTitle()));
+            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary, GetExpanderTitle()));
 
             openContainingItem.IsEnabled = true;
             collapseAllObjectsItem.IsEnabled = true;

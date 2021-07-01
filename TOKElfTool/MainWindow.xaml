@@ -188,6 +188,26 @@
                     </ScrollViewer>
                 </DockPanel>
             </TabItem>
+            
+            <TabItem x:Name="additionalDataTab" Header="Additional Internal Data" Visibility="Collapsed">
+                <DockPanel>
+                    <DockPanel Margin="5" DockPanel.Dock="Top">
+                        <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0" Click="Button_AddObject_OnClick" Style="{StaticResource WinButton}">Add Object</Button>
+                        <Button DockPanel.Dock="Left" Padding="4,1,4,1" Margin="0 0 5 0"  Click="Button_RemoveAllObjects_OnClick" Style="{StaticResource WinButton}">Remove All Objects</Button>
+                        <search:SearchBar x:Name="searchBar2" OnSearch="SearchBar_OnSearch" StartIndexing="SearchBar_OnStartIndexing"></search:SearchBar>
+                    </DockPanel>
+
+                    <ScrollViewer x:Name="scrollViewer2" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <StackPanel x:Name="objectTabPanel2" />
+
+                            <StackPanel x:Name="searchResultPanel2" Visibility="Collapsed">
+
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
 
             <TabItem x:Name="BinTab" Header="Binary Elf Data">
                 <Label HorizontalAlignment="Center">WIP</Label>
