@@ -10,21 +10,24 @@ namespace ElfLib.Binary.Parser
         private readonly Section dataSection;
         private readonly Section rodataSection;
         
-        private readonly List<SectionRela> relocationTable;
+        private readonly List<SectionRela> dataRelocationTable;
+        private readonly List<SectionRela> rodataRelocationTable;
 
-        public NpcModelParser(Section stringSection, Section dataSection, Section rodataSection, List<SectionRela> relocationTable)
+        public NpcModelParser(Section stringSection, Section dataSection, Section rodataSection, 
+            List<SectionRela> dataRelocationTable, List<SectionRela> rodataRelocationTable)
         {
             this.stringSection = stringSection;
             this.dataSection = dataSection;
             this.rodataSection = rodataSection;
-            this.relocationTable = relocationTable;
+            this.dataRelocationTable = dataRelocationTable;
+            this.rodataRelocationTable = rodataRelocationTable;
         }
 
         public IDictionary<ElfType, List<object>> Parse()
         {
             // Parse .data section
             var dataParser = new StringDataParser<NpcModel, RawNpcModel>(stringSection, 
-                new SimpleDataParser<RawNpcModel>(dataSection, relocationTable));
+                new SimpleDataParser<RawNpcModel>(dataSection, dataRelocationTable));
 
             List<object> dataModels = dataParser.Parse()[ElfType.Main];
             
@@ -40,7 +43,7 @@ namespace ElfLib.Binary.Parser
             }
             
             // Parse .rodata section
-            var rodataParser = new NpcModelRodataParser(rodataSection, stringSection, modelFilesOffsets, modelStateOffsets, relocationTable);
+            var rodataParser = new NpcModelRodataParser(rodataSection, stringSection, modelFilesOffsets, modelStateOffsets, rodataRelocationTable);
             
             IDictionary<ElfType, List<object>> rodataObjects = rodataParser.Parse();
             

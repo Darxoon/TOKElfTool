@@ -77,7 +77,7 @@ namespace ElfLib
                 throw new ElfContentNotFoundException("Could not find content");
             }
 
-            List<SectionRela> relas = ParseRelocations(sections);
+            List<SectionRela> relas = ParseRelocations(GetSection(sections, ".rela.data"));
 
             List<Symbol> symbolTable = ParseSymbolTable(sections, stringTable);
 
@@ -127,9 +127,8 @@ namespace ElfLib
         private static Section GetSection(List<Section> sections, string name) =>
             sections.Find(section => section.Name == name);
 
-        private static List<SectionRela> ParseRelocations(List<Section> sections)
+        private static List<SectionRela> ParseRelocations(Section relaSection)
         {
-            Section relaSection = GetSection(sections, ".rela.data");
             List<SectionRela> relas = new List<SectionRela>();
 
             BinaryReader reader = relaSection.CreateBinaryReader();
@@ -188,7 +187,8 @@ namespace ElfLib
                 
                 GameDataType.DataItem => Parse<ItemType, RawItemType>(sections, relas),
                 
-                GameDataType.DataNpcModel => new NpcModelParser(stringSection, dataSection, rodataSection, relas),
+                GameDataType.DataNpcModel => new NpcModelParser(stringSection, dataSection, rodataSection, relas, 
+                    ParseRelocations(GetSection(sections, ".rela.rodata"))),
             };
 
             return parser.Parse();

@@ -61,7 +61,7 @@ namespace ElfLib.Binary.Parser
                                 if (field.FieldType == typeof(ElfStringPointer))
                                     field.SetValue(objects[i], new ElfStringPointer(relocation.Addend));
                                 else
-                                    Trace.WriteLine($"Possible unidentified string: {field}");
+                                    Trace.WriteLine($"Possible unidentified string: {typeof(T)} {field}");
                                 break;
                             }
                         }
