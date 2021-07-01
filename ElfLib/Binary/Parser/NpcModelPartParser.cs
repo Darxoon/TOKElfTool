@@ -12,9 +12,13 @@ namespace ElfLib.Binary.Parser
         private readonly Section section;
         private readonly List<long> partOffsets;
         private readonly List<SectionRela> relocationTable;
+        
+        private readonly SortedDictionary<long, object> additionalPositionalData;
 
-        public NpcModelPartParser(Section section, List<long> partOffsets, List<SectionRela> relocationTable)
+        public NpcModelPartParser(SortedDictionary<long, object> additionalPositionalData, Section section,
+            List<long> partOffsets, List<SectionRela> relocationTable)
         {
+            this.additionalPositionalData = additionalPositionalData;
             this.section = section;
             this.partOffsets = partOffsets;
             this.relocationTable = relocationTable;
@@ -31,6 +35,7 @@ namespace ElfLib.Binary.Parser
             {
                 stream.Position = partOffsets[i];
                 instances.Add(SimpleDataParser<T>.FromBinaryReader(reader));
+                additionalPositionalData[partOffsets[i]] = instances[i];
             }
             
             ResolveRelocations(instances);

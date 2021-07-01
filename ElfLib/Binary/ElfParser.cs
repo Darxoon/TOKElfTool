@@ -81,7 +81,8 @@ namespace ElfLib
 
             List<Symbol> symbolTable = ParseSymbolTable(sections, stringTable);
 
-            Dictionary<ElfType, List<Element<T>>> data = ParseData<T>(sections, relas, dataType, symbolTable);
+            (Dictionary<ElfType, List<Element<T>>> data, 
+                IDictionary<long, object> additionalPositionalData) = ParseData<T>(sections, relas, dataType, symbolTable);
 
 
             input.Dispose();
@@ -89,6 +90,7 @@ namespace ElfLib
             return new ElfBinary<T>
             {
                 Data = data,
+                AdditionalPositionalData = additionalPositionalData,
                 Sections = sections,
                 SymbolTable = symbolTable,
             };
@@ -143,32 +145,34 @@ namespace ElfLib
         }
 
 
-        private static Dictionary<ElfType, List<Element<T>>> ParseData<T>(List<Section> sections, List<SectionRela> relas,
-            GameDataType dataType, List<Symbol> symbolTable)
+        private static (Dictionary<ElfType, List<Element<T>>>, IDictionary<long, object>) ParseData<T>(List<Section> sections, 
+            List<SectionRela> relas, GameDataType dataType, List<Symbol> symbolTable)
         {
-            IDictionary<ElfType, List<object>> data = ParseData(sections, relas, dataType, symbolTable);
+            (IDictionary<ElfType, List<object>>, IDictionary<long, object>) data = ParseData(sections, relas, dataType, symbolTable);
             Dictionary<ElfType, List<Element<T>>> typedData = new Dictionary<ElfType, List<Element<T>>>();
 
-            foreach ((ElfType type, List<object> instances) in data)
+            foreach ((ElfType type, List<object> instances) in data.Item1)
             {
                 typedData[type] = instances
                     .Select(instance => new Element<T>((T)instance))
                     .ToList();
             }
             
-            return typedData;
+            return (typedData, data.Item2);
         }
 
-        private static IDictionary<ElfType, List<object>> ParseData(List<Section> sections, List<SectionRela> relas, 
+        private static (IDictionary<ElfType, List<object>>, IDictionary<long, object>) ParseData(List<Section> sections, List<SectionRela> relas, 
             GameDataType dataType, List<Symbol> symbolTable)
         {
             if (dataType == GameDataType.None)
-                return null;
+                return (null, null);
 
             Section dataSection = GetSection(sections, ".data");
             Section rodataSection = GetSection(sections, ".rodata");
             Section stringSection = GetSection(sections, ".rodata.str1.1");
 
+            IDictionary<long, object> additionalPositionalData = null;
+            
             IDataParser parser = dataType switch
             {
                 GameDataType.NPC => Parse<NPC, RawNPC>(sections, relas),
@@ -187,11 +191,11 @@ namespace ElfLib
                 
                 GameDataType.DataItem => Parse<ItemType, RawItemType>(sections, relas),
                 
-                GameDataType.DataNpcModel => new NpcModelParser(stringSection, dataSection, rodataSection, relas, 
-                    ParseRelocations(GetSection(sections, ".rela.rodata"))),
+                GameDataType.DataNpcModel => new NpcModelParser(out additionalPositionalData, stringSection, dataSection, rodataSection, 
+                    relas, ParseRelocations(GetSection(sections, ".rela.rodata"))),
             };
 
-            return parser.Parse();
+            return (parser.Parse(), additionalPositionalData);
         }
 
         private static StringDataParser<T1, T2> Parse<T1, T2>(List<Section> sections, List<SectionRela> relocationTable) 

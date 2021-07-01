@@ -11,14 +11,19 @@ namespace ElfLib.Binary.Parser
         private readonly List<long> modelFilesOffsets;
         private readonly List<long> modelStateOffsets;
         private readonly List<SectionRela> relocationTable;
+        
+        private readonly SortedDictionary<long, object> additionalPositionalData;
 
-        public NpcModelRodataParser(Section section, Section stringSection, List<long> modelFilesOffsets, List<long> modelStateOffsets, List<SectionRela> relocationTable)
+        public NpcModelRodataParser(Section section, Section stringSection, List<long> modelFilesOffsets,
+            List<long> modelStateOffsets, List<SectionRela> relocationTable,
+            SortedDictionary<long, object> additionalPositionalData)
         {
             this.section = section;
+            this.stringSection = stringSection;
             this.modelFilesOffsets = modelFilesOffsets;
             this.modelStateOffsets = modelStateOffsets;
             this.relocationTable = relocationTable;
-            this.stringSection = stringSection;
+            this.additionalPositionalData = additionalPositionalData;
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -27,10 +32,10 @@ namespace ElfLib.Binary.Parser
             using BinaryReader reader = new BinaryReader(stream);
 
             var filesParser = new StringDataParser<NpcModelFiles, RawNpcModelFiles>(stringSection, 
-                new NpcModelPartParser<RawNpcModelFiles>(section, modelFilesOffsets, relocationTable));
+                new NpcModelPartParser<RawNpcModelFiles>(additionalPositionalData, section, modelFilesOffsets, relocationTable));
             
             var stateParser = new StringDataParser<NpcModelState, RawNpcModelState>(stringSection, 
-                new NpcModelPartParser<RawNpcModelState>(section, modelStateOffsets, relocationTable));
+                new NpcModelPartParser<RawNpcModelState>(additionalPositionalData, section, modelStateOffsets, relocationTable));
 
             return new Dictionary<ElfType, List<object>>
             {
