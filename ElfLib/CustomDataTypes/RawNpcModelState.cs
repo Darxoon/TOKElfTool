@@ -11,10 +11,8 @@ namespace ElfLib.CustomDataTypes
         public ElfStringPointer state0_ptr;
         public int field_0x10;
         public int field_0x14;
-        public int field_0x18;
-        public int field_0x1c;
-        public int field_0x20;
-        public int field_0x24;
+        public ElfStringPointer field_0x18;
+        public ElfStringPointer field_0x20;
         public int field_0x28;
         public int field_0x2c;
     }
