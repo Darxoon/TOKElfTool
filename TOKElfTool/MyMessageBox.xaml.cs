@@ -56,6 +56,7 @@ namespace TOKElfTool
 
         private bool? result = false;
 
+        // Different ordering to match with System.Windows.MessageBox.Show
         public static bool? Show(Window owner, string mainText, string title,
             MessageBoxButton buttons, MessageBoxImage icon, MessageBoxResult defaultResult) =>
             Show(owner, mainText, title, defaultResult, buttons, icon);
