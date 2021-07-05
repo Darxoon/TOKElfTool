@@ -15,9 +15,6 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
-using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using Lucene.Net.Search;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
 using TOKElfTool.Search;
@@ -37,6 +34,8 @@ namespace TOKElfTool
         {
             InitializeComponent();
 
+            editors = new List<EditorPanel>();
+            
             EmptyLabel.Visibility = Visibility.Visible;
             tabControl.Visibility = Visibility.Collapsed;
 
@@ -75,176 +74,7 @@ namespace TOKElfTool
 
         private bool hasUnsavedChanges;
 
-        private List<bool> modifiedObjects = new List<bool>();
-
-        private void InitializeObjectsPanel<T>(ElfBinary<T> binary, string objectName)
-        {
-            var objects = binary.Data;
-
-            additionalDataTab.Visibility = loadedDataType == GameDataType.DataNpcModel 
-                ? Visibility.Visible 
-                : Visibility.Collapsed;
-            
-            EmptyLabel.Visibility = Visibility.Collapsed;
-            tabControl.Visibility = Visibility.Visible;
-
-            for (int i = 0; i < objects[ElfType.Main].Count; i++)
-            {
-                object currentObject = objects[ElfType.Main][i].value;
-
-                ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i, loadedBinary.SymbolTable);
-
-                control.RemoveButtonClick += RemoveButton_OnClick;
-                control.DuplicateButtonClick += DuplicateButton_OnClick;
-                control.ViewButtonClick += ViewButton_OnClick;
-
-                int objectIndex = i;
-                control.ValueChanged += (sender, args) =>
-                {
-                    hasUnsavedChanges = true;
-                    searchBar.HasIndexed = false;
-                    modifiedObjects[control.Index] = true;
-                };
-
-                ObjectTabPanel.Children.Add(control);
-            }
-
-            if (loadedDataType == GameDataType.Maplink)
-            {
-                object currentObject = objects[ElfType.MaplinkHeader][0].value;
-
-                ObjectEditControl control = new ObjectEditControl(currentObject, "Maplink Header (Advanced)", objects[ElfType.Main].Count, loadedBinary.SymbolTable);
-
-                control.RemoveButtonClick += RemoveButton_OnClick;
-                control.DuplicateButtonClick += DuplicateButton_OnClick;
-                control.ViewButtonClick += ViewButton_OnClick;
-
-                control.ValueChanged += (sender, args) =>
-                {
-                    hasUnsavedChanges = true;
-                    searchBar.HasIndexed = false;
-                    modifiedObjects[control.Index] = true;
-                };
-
-                ObjectTabPanel.Children.Add(control);
-            }
-
-            if (loadedDataType == GameDataType.DataNpcModel)
-            {
-                int i = 0;
-                
-                foreach ((long offset, object instance) in binary.AdditionalPositionalData)
-                {
-                    ObjectEditControl control = new ObjectEditControl(instance, $@"{(instance.GetType().Name switch
-                    {
-                        nameof(NpcModelFiles) => "Files Object ",
-                        nameof(NpcModelState) => "State Object",
-                    })} {i}", i, loadedBinary.SymbolTable);
-
-                    control.RemoveButtonClick += RemoveButton_OnClick;
-                    control.DuplicateButtonClick += DuplicateButton_OnClick;
-                    control.ViewButtonClick += ViewButton_OnClick;
-
-                    control.ValueChanged += (sender, args) =>
-                    {
-                        hasUnsavedChanges = true;
-                        searchBar2.HasIndexed = false;
-                        modifiedObjects[control.Index + ObjectTabPanel.Children.Count] = true;
-                    };
-
-                    objectTabPanel2.Children.Add(control);
-
-                    i += 1;
-                }
-            }
-            
-        }
-
-        private void FixExpanderIndexes()
-        {
-            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
-            {
-                ObjectEditControl expander = (ObjectEditControl)ObjectTabPanel.Children[i];
-                expander.Index = i;
-                expander.Header = loadedDataType == GameDataType.Maplink && i == ObjectTabPanel.Children.Count - 1 ? "Maplink Header (Advanced)" : $"{GetExpanderTitle()} {i}";
-            }
-        }
-
-        /// <summary>
-        /// This field is for when it wants to add an expander, i.e. duplicate one, but there is no expander left
-        /// </summary>
-        private ObjectEditControl duplicateExpander;
-
-        private async void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            ObjectEditControl sourceControl;
-            // get source control
-            {
-                Button duplicateButton = (Button)sender;
-                StackPanel stackPanel = (StackPanel)duplicateButton.Parent;
-                DockPanel dockPanel = (DockPanel)stackPanel.Parent;
-                Expander expander = (Expander)dockPanel.Parent;
-                sourceControl = (ObjectEditControl)expander.Parent;
-            }
-
-            ObjectEditControl clone = null;
-            await Dispatcher.InvokeAsync(() => clone = sourceControl.Clone());
-
-            clone.IsExpanded = false;
-            int insertIndex = ObjectTabPanel.Children.IndexOf(sourceControl);
-            ObjectTabPanel.Children.Insert(insertIndex, clone);
-
-            // update modified objects (yes, results in slower save times)
-            modifiedObjects.Add(true);
-
-            for (int i = insertIndex; i < modifiedObjects.Count; i++)
-            {
-                modifiedObjects[i] = true;
-            }
-
-            if (loadedDataType == GameDataType.Maplink)
-                UpdateMaplinkHeaderChildCount();
-
-            hasUnsavedChanges = true;
-            searchBar.HasIndexed = false;
-
-            FixExpanderIndexes();
-        }
-        private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            Button duplicateButton = (Button)sender;
-            StackPanel stackPanel = (StackPanel)duplicateButton.Parent;
-            DockPanel dockPanel = (DockPanel)stackPanel.Parent;
-            Expander expander = (Expander)dockPanel.Parent;
-            ObjectEditControl objectEditControl = (ObjectEditControl)expander.Parent;
-
-            bool? result = MyMessageBox.Show(this, $"Are you sure you want to delete this {loadedDataType}?", "TOK ELF Editor", MessageBoxResult.Yes);
-            if (result == true)
-            {
-                ObjectTabPanel.Children.Remove(objectEditControl);
-                duplicateExpander = objectEditControl;
-
-                hasUnsavedChanges = true;
-                searchBar.HasIndexed = false;
-
-                FixExpanderIndexes();
-
-                if (loadedDataType == GameDataType.Maplink)
-                    UpdateMaplinkHeaderChildCount();
-            }
-        }
-        
-        private void ViewButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            ObjectEditControl control = (ObjectEditControl)sender;
-
-            searchBar.Text = "";
-            
-            if (searchResultControls != null)
-                UndoSearch();
-            
-            control.BringIntoView();
-        }
+        private List<EditorPanel> editors;
 
         private readonly List<string> recentlyOpenedFiles = new List<string>();
         private void AddRecentlyOpened(string filepath)
@@ -279,7 +109,7 @@ namespace TOKElfTool
                     if (type is null)
                         return;
 
-                    await OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
+                    OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
                 };
                 OpenRecentItem.Items.Add(menuItem);
             }
@@ -298,18 +128,6 @@ namespace TOKElfTool
         private void CommandBinding_Open_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
-        }
-
-        private void RemoveAllObjects()
-        {
-            // Reverse loop that ignores first element (Add/remove controls)
-            for (int i = ObjectTabPanel.Children.Count - 1; i >= 0; i--)
-            {
-                ObjectTabPanel.Children.RemoveAt(i);
-            }
-
-            hasUnsavedChanges = true;
-            searchBar.HasIndexed = false;
         }
 
         private ElfBinary<object> loadedBinary;
@@ -334,21 +152,14 @@ namespace TOKElfTool
                     return;
 
                 bool isCompressed = dialog.FilterIndex == 3 || dialog.FilterIndex == 1 && dialog.SafeFileName.EndsWith(".elf.zst");
-                await OpenFile(dialog.FileName, (GameDataType)type, isCompressed);
-
+                OpenFile(dialog.FileName, (GameDataType)type, isCompressed);
             }
         }
 
-        private string GetExpanderTitle() => loadedDataType switch
+
+        private void OpenFile(string filename, GameDataType type, bool isCompressed)
         {
-            GameDataType.Maplink => "Maplink Node",
-            GameDataType.DataNpc => "NPC Type",
-            GameDataType.DataItem => "Item Type",
-            _ => loadedDataType.ToString(),
-        };
-        
-        private async Task<ElfBinary<object>> OpenFile(string filename, GameDataType type, bool isCompressed)
-        {
+            // Prepare UI for loading
             Title = $"{Util.ShortenPath(filename)} - TOK ELF Editor";
             EmptyLabel.Visibility = Visibility.Collapsed;
             LoadingLabel.Visibility = Visibility.Visible;
@@ -356,31 +167,25 @@ namespace TOKElfTool
 
             statusLabel.Text = "Loading ELF file...";
 
+            // TODO: force redraw
+            
             LoadDataType(type);
-            RemoveAllObjects();
 
-            ElfBinary<object> binary = await LoadBinary(isCompressed, filename);
-
-            if (binary is null)
-                return null;
-
-            Trace.WriteLine("symbol table:");
-            Trace.WriteLine(string.Join(", ", binary.SymbolTable.Select(x => x.Name)));
+            using BinaryReader reader = CreateFileReader(isCompressed, filename);
+            ElfBinary<object> binary = LoadBinary(reader);
 
             loadedBinary = binary;
-
+            hasUnsavedChanges = false;
             fileSavePath = null;
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            hasUnsavedChanges = false;
-            searchBar.HasIndexed = false;
-            modifiedObjects = new List<bool>(new bool[binary.Data.Aggregate(0, (i, kvp) => i + kvp.Value.Count)]);
+            // TODO: generate editor panel
+            
+            foreach (EditorPanel editor in editors)
+                editor.searchBar.HasIndexed = false;
 
             AddRecentlyOpened(filename);
-
-            // initialize objects panel
-            await Dispatcher.InvokeAsync(() => InitializeObjectsPanel(loadedBinary, GetExpanderTitle()));
-
+            
             openContainingItem.IsEnabled = true;
             collapseAllObjectsItem.IsEnabled = true;
             expandAllObjectsItem.IsEnabled = true;
@@ -388,8 +193,6 @@ namespace TOKElfTool
             LoadingLabel.Visibility = Visibility.Collapsed;
             tabControl.Visibility = Visibility.Visible;
             statusLabel.Text = "Loaded file";
-
-            return binary;
         }
 
         private void LoadDataType(GameDataType type)
@@ -412,14 +215,7 @@ namespace TOKElfTool
         }
 
 
-        private async Task<ElfBinary<object>> LoadBinary(bool isCompressed, string filename)
-        {
-            BinaryReader reader = CreateFileReader(isCompressed, filename);
-
-            return await LoadBinary(reader);
-        }
-
-        private async Task<ElfBinary<object>> LoadBinary(BinaryReader reader)
+        private ElfBinary<object> LoadBinary(BinaryReader reader)
         {
             ElfBinary<object> binary;
 
@@ -434,10 +230,7 @@ namespace TOKElfTool
                 // Load empty.elf
                 Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
 
-                object newObject = Activator.CreateInstance(loadedStructType);
-                duplicateExpander = new ObjectEditControl(newObject, "", 0, loadedBinary.SymbolTable);
-
-                return await LoadBinary(new BinaryReader(emptyElfStream));
+                return LoadBinary(new BinaryReader(emptyElfStream));
             }
             // don't catch this during debug so it can be caught by the debugger
 #if !DEBUG
@@ -519,7 +312,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
+                loadedBinary.Data[0] = CollectObjects(editors[0].objectTabPanel.Children);
 
                 SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
@@ -547,7 +340,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects(ObjectTabPanel.Children);
+                loadedBinary.Data[0] = CollectObjects(editors[0].objectTabPanel.Children);
 
                 if (loadedDataType == GameDataType.Maplink)
                     loadedBinary.Data[ElfType.MaplinkHeader][0] = loadedBinary.Data[0].PopBack();
@@ -573,15 +366,7 @@ namespace TOKElfTool
             if (searchResultControls != null)
                 UndoSearch();
 
-            return children.OfType<UIElement>()
-                .Select((child, i) => loadedDataType == GameDataType.Maplink && i == modifiedObjects.Count - 1
-                    // Maplink header
-                    ? new Element<object>(CollectMaplinkHeaderObject((ObjectEditControl)children[i]))
-                    // All other objects
-                    : (modifiedObjects[i] == true
-                        ? new Element<object>(CollectObject((ObjectEditControl)children[i]))
-                        : loadedBinary.Data[0][i]))
-                .ToList();
+            return null;
         }
 
 
@@ -922,73 +707,6 @@ namespace TOKElfTool
         }
 
 
-
-        private void Button_RemoveAllObjects_OnClick(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-            if (ObjectTabPanel.Children.Count == 0)
-                return;
-            bool? result = MyMessageBox.Show(this, "Are you sure you want to remove all objects?", "TOK ELF Editor",
-                MessageBoxResult.Yes);
-            if (result == true)
-            {
-                duplicateExpander = (ObjectEditControl)ObjectTabPanel.Children.Last();
-                RemoveAllObjects();
-
-                if (loadedDataType == GameDataType.Maplink)
-                    UpdateMaplinkHeaderChildCount();
-            }
-        }
-
-        private void Button_AddObject_OnClick(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-            UIElementCollection children = ObjectTabPanel.Children;
-
-            ObjectEditControl clone;
-            if (children.Count > 0)
-                clone = (loadedDataType switch
-                {
-                    GameDataType.Maplink => (ObjectEditControl)children[children.Count - 2],
-                    _ => (ObjectEditControl)children.Last(),
-                }).Clone();
-            else
-                clone = duplicateExpander.Clone();
-            clone.IsExpanded = true;
-            clone.Index = children.Count;
-
-            if (loadedDataType != GameDataType.Maplink)
-            {
-                children.Add(clone);
-            }
-            else
-            {
-                children.Insert(children.Count - 1, clone);
-                UpdateMaplinkHeaderChildCount();
-                modifiedObjects[modifiedObjects.Count - 1] = true;
-            }
-
-            modifiedObjects.Add(true);
-
-            hasUnsavedChanges = true;
-            searchBar.HasIndexed = false;
-
-            FixExpanderIndexes();
-        }
-
-        private void UpdateMaplinkHeaderChildCount()
-        {
-            UIElementCollection children = ObjectTabPanel.Children;
-
-            if (children.Count == 0)
-                return;
-
-            ObjectEditControl control = (ObjectEditControl)children.Last();
-            control.Generate();
-            TextBox textBox = (TextBox)control.Grid.Children[3];
-            textBox.Text = (children.Count - 2).ToString();
-        }
-
         private void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
             if (hasUnsavedChanges)
@@ -1011,99 +729,26 @@ namespace TOKElfTool
             if (type is null)
                 return;
 
-            await OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
+            OpenFile(path, (GameDataType)type, filename.EndsWith(".zst"));
         }
 
         private void CollapseAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
-            {
-                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
-                control.IsExpanded = false;
-            }
+            
         }
 
         private void ExpandAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < ObjectTabPanel.Children.Count; i++)
-            {
-                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[i];
-                control.IsExpanded = true;
-            }
+            
         }
 
         private SearchIndex searchIndex;
 
-        private void SearchBar_OnStartIndexing(object sender, EventArgs e)
-        {
-            searchIndex = new SearchIndex(loadedBinary.Data[0].Select(element => (object)element.value).ToArray(), loadedStructType);
-        }
-
         private ObjectEditControl[] searchResultControls = null;
-
-        private void SearchBar_OnSearch(object sender, string e)
-        {
-            if (searchResultControls != null)
-                UndoSearch();
-
-            if (searchBar.Text != "")
-                Search(searchBar.Text.ToLower());
-        }
 
         private void UndoSearch()
         {
-            for (int i = 0; i < searchResultControls.Length; i++)
-            {
-                ObjectEditControl control = searchResultControls[i];
-                control.ViewButtonVisible = false;
-                control.ModifyButtonsEnabled = true;
-                searchResultPanel.Children.Remove(control);
-                ObjectTabPanel.Children.Insert(control.Index, control);
-            }
-
-            searchResultControls = null;
-            ObjectTabPanel.Visibility = Visibility.Visible;
-            searchResultPanel.Visibility = Visibility.Collapsed;
-        }
-
-        private void Search(string text)
-        {
-            PhraseQuery phraseQuery = new PhraseQuery {
-                new Term("name", text),
-            };
-
-            IndexReader reader = searchIndex.Reader;
-            IndexSearcher searcher = new IndexSearcher(reader);
-            ScoreDoc[] hits = searcher.Search(phraseQuery, 20).ScoreDocs;
-
-            Document[] documents = hits.Select(hit => searcher.Doc(hit.Doc)).ToArray();
-
-            int[] indices = documents.Select(document => int.Parse(document.Get("index"))).Distinct().ToArray();
-
-            int[] orderedIndices = (int[])indices.Clone();
-            Array.Sort(orderedIndices);
-
-            ObjectEditControl[] controls = new ObjectEditControl[indices.Length];
-            searchResultControls = new ObjectEditControl[indices.Length];
-
-            for (int i = orderedIndices.Length - 1; i >= 0; i--)
-            {
-                ObjectEditControl control = (ObjectEditControl)ObjectTabPanel.Children[orderedIndices[i]];
-                control.ViewButtonVisible = true;
-                control.ModifyButtonsEnabled = false;
-                ObjectTabPanel.Children.RemoveAt(orderedIndices[i]);
-                controls[Array.IndexOf(indices, orderedIndices[i])] = control;
-                searchResultControls[i] = control;
-            }
-
-            ObjectTabPanel.Visibility = Visibility.Collapsed;
-            searchResultPanel.Visibility = Visibility.Visible;
-            searchResultPanel.Children.Clear();
-
-            for (int i = 0; i < controls.Length; i++)
-            {
-                searchResultPanel.Children.Add(controls[i]);
-            }
+            
         }
     }
 }

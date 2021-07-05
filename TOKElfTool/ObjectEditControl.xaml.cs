@@ -153,7 +153,7 @@ namespace TOKElfTool
                 Grid.SetRow(checkBox, fieldIndex);
                 grid.Children.Add(checkBox);
                 label.ToolTip = "boolean";
-                checkBox.Click += (sender, args) => ValueChanged?.Invoke(sender, args);
+                checkBox.Click += (sender, args) => ValueChanged?.Invoke(this, args);
 
                 return;
             }
@@ -410,12 +410,12 @@ namespace TOKElfTool
 
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            RemoveButtonClick.Invoke(sender, e);
+            RemoveButtonClick?.Invoke(this, e);
         }
 
         private void DuplicateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            DuplicateButtonClick.Invoke(sender, e);
+            DuplicateButtonClick?.Invoke(this, e);
         }
 
         private void Expander_OnExpanded(object sender, RoutedEventArgs e)
