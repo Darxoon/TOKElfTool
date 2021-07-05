@@ -195,6 +195,7 @@ namespace TOKElfTool
             EditorPanel panel = new EditorPanel
             {
                 Type = loadedDataType,
+                DefaultType = loadedStructType,
                 Objects = loadedBinary.Data[ElfType.Main],
                 SymbolTable = loadedBinary.SymbolTable,
             };

@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using ElfLib;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
+using TOKElfTool.Search;
 
 namespace TOKElfTool
 {
@@ -26,6 +31,8 @@ namespace TOKElfTool
         };
         
         public GameDataType Type { get; set; }
+        
+        public Type DefaultType { get; set; }
         
         public List<Element<object>> Objects { get; set; }
         
@@ -122,7 +129,9 @@ namespace TOKElfTool
             bool? result = MyMessageBox.Show(Window.GetWindow(this), $"Are you sure you want to delete this {GetTypeName(Objects[control.Index])}?", "TOK ELF Editor", MessageBoxResult.Yes);
             if (result == true)
             {
-                objectTabPanel.Children.Remove(control);
+                objectTabPanel.Children.RemoveAt(control.Index);
+                Objects.RemoveAt(control.Index);
+                modifiedObjects.RemoveAt(control.Index);
                 ApplyInstancePanelChanges(-1);
             }
         }
@@ -135,39 +144,114 @@ namespace TOKElfTool
             
             ObjectEditControl clone = sourceControl.Clone();
             clone.IsExpanded = false;
+            
             objectTabPanel.Children.Insert(objectIndex, clone);
-
-            // update modified objects (yes, results in slower save times)
-            modifiedObjects.Add(true);
-            for (int i = objectIndex; i < modifiedObjects.Count; i++)
-            {
-                modifiedObjects[i] = true;
-            }
+            Objects.Insert(objectIndex, new Element<object>(Activator.CreateInstance(DefaultType)));
+            modifiedObjects.Insert(objectIndex, true);
             
             ApplyInstancePanelChanges(1);
         }
         
         private void Button_RemoveAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            int originalAmount = objectTabPanel.Children.Count;
+            
+            // Reverse loop that removes all objects
+            for (int i = objectTabPanel.Children.Count - 1; i >= 0; i--)
+            {
+                objectTabPanel.Children.RemoveAt(i);
+            }
+
+            modifiedObjects.Clear();
+            ApplyInstancePanelChanges(originalAmount - 1);
         }
         
         private void Button_AddObject_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            e.Handled = true;
+            UIElementCollection children = objectTabPanel.Children;
+
+            object instance = Activator.CreateInstance(DefaultType);
+            ObjectEditControl clone = new ObjectEditControl(instance, "", objectTabPanel.Children.Count, SymbolTable)
+            {
+                IsExpanded = true, 
+                Index = children.Count,
+            };
+
+
+            if (Type != GameDataType.Maplink)
+                children.Add(clone);
+            else
+            {
+                children.Insert(children.Count - 1, clone);
+                modifiedObjects[modifiedObjects.Count - 1] = true;
+            }
+
+            clone.BringIntoView();
+
+            Objects.Add(new Element<object>(instance));
+            modifiedObjects.Add(true);
+            ApplyInstancePanelChanges(1);
         }
         
         // Search
         private ObjectEditControl[] searchResultControls;
         
+        private SearchIndex searchIndex;
+        
         private void SearchBar_OnStartIndexing(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            searchIndex = new SearchIndex(Objects.Select(element => element.value).ToArray());
         }
         
         private void SearchBar_OnOnSearch(object sender, string e)
         {
-            throw new NotImplementedException();
+            if (searchResultControls != null)
+                UndoSearch();
+
+            if (searchBar.Text != "")
+                Search(searchBar.Text.ToLower());
+        }
+        
+        private void Search(string text)
+        {
+            PhraseQuery phraseQuery = new PhraseQuery {
+                new Term("name", text),
+            };
+
+            // TODO: Move into SearchIndex
+            IndexReader reader = searchIndex.Reader;
+            IndexSearcher searcher = new IndexSearcher(reader);
+            ScoreDoc[] hits = searcher.Search(phraseQuery, 20).ScoreDocs;
+
+            Document[] documents = hits.Select(hit => searcher.Doc(hit.Doc)).ToArray();
+
+            int[] indices = documents.Select(document => int.Parse(document.Get("index"))).Distinct().ToArray();
+
+            int[] orderedIndices = (int[])indices.Clone();
+            Array.Sort(orderedIndices);
+
+            ObjectEditControl[] controls = new ObjectEditControl[indices.Length];
+            searchResultControls = new ObjectEditControl[indices.Length];
+
+            for (int i = orderedIndices.Length - 1; i >= 0; i--)
+            {
+                ObjectEditControl control = (ObjectEditControl)objectTabPanel.Children[orderedIndices[i]];
+                control.ViewButtonVisible = true;
+                control.ModifyButtonsEnabled = false;
+                objectTabPanel.Children.RemoveAt(orderedIndices[i]);
+                controls[Array.IndexOf(indices, orderedIndices[i])] = control;
+                searchResultControls[i] = control;
+            }
+
+            objectTabPanel.Visibility = Visibility.Collapsed;
+            searchResultPanel.Visibility = Visibility.Visible;
+            searchResultPanel.Children.Clear();
+
+            for (int i = 0; i < controls.Length; i++)
+            {
+                searchResultPanel.Children.Add(controls[i]);
+            }
         }
 
         private void UndoSearch()

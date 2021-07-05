@@ -22,7 +22,7 @@ namespace TOKElfTool.Search
 
         public IndexReader Reader => reader;
 
-        public SearchIndex(object[] objs, Type type)
+        public SearchIndex(object[] objs)
         {
             const LuceneVersion version = LuceneVersion.LUCENE_48;
 
@@ -36,7 +36,7 @@ namespace TOKElfTool.Search
 
             for (int i = 0; i < objs.Length; i++)
             {
-                foreach ((string key, string value) in GetAllStrings(objs[i], type))
+                foreach ((string key, string value) in GetAllStrings(objs[i], objs[i].GetType()))
                 {
                     if (value != null)
                     {
