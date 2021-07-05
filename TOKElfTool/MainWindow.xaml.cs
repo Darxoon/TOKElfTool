@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -204,6 +204,9 @@ namespace TOKElfTool
                 Objects = loadedBinary.Data[ElfType.Main],
                 SymbolTable = loadedBinary.SymbolTable,
             };
+            
+            if (loadedDataType == GameDataType.Maplink)
+                panel.Objects.Add(loadedBinary.Data[ElfType.MaplinkHeader][0]);
             
             panel.OnUnsavedChanges += (sender, e) => hasUnsavedChanges = true;
             ((TabItem)tabControl.Items[0]).Content = panel;

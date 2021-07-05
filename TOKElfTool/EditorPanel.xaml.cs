@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ElfLib;
 using ElfLib.CustomDataTypes;
+using ElfLib.CustomDataTypes.Registry;
 
 namespace TOKElfTool
 {
@@ -22,12 +23,16 @@ namespace TOKElfTool
     /// </summary>
     public partial class EditorPanel : UserControl
     {
-        private static string GetTypeName(GameDataType type) => type switch
+        private static string GetTypeName(Element<object> instance) => instance.value switch
         {
-            GameDataType.Maplink => "Maplink Node",
-            GameDataType.DataNpc => "NPC Type",
-            GameDataType.DataItem => "Item Type",
-            _ => type.ToString(),
+            MaplinkNode _ => "Maplink Node",
+            NpcType _ => "NPC Type",
+            ItemType _ => "Item Type",
+            NpcModel _ => "NPC Model",
+            NpcModelFiles _ => "Files Object",
+            NpcModelState _ => "State Object",
+            
+            _ => instance.value.GetType().Name,
         };
         
         public GameDataType Type { get; set; }
@@ -50,17 +55,18 @@ namespace TOKElfTool
         private void EditorPanel_OnLoaded(object sender, RoutedEventArgs e)
         {
             modifiedObjects = new List<bool>(new bool[Objects.Count]);
-            InitializeObjectsPanel(GetTypeName(Type));
+            InitializeObjectsPanel();
         }
 
-        private void InitializeObjectsPanel(string objectName)
+        private void InitializeObjectsPanel()
         {
             
             for (int i = 0; i < Objects.Count; i++)
             {
-                object currentObject = Objects[i].value;
+                Element<object> currentElement = Objects[i];
 
-                ObjectEditControl control = new ObjectEditControl(currentObject, $"{objectName} {i}", i, SymbolTable);
+                string title = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(currentElement)} {i}";
+                ObjectEditControl control = new ObjectEditControl(currentElement.value, title, i, SymbolTable);
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
@@ -87,7 +93,7 @@ namespace TOKElfTool
             {
                 ObjectEditControl expander = (ObjectEditControl)objectTabPanel.Children[i];
                 expander.Index = i;
-                expander.Header = Type == GameDataType.Maplink && i == objectTabPanel.Children.Count - 1 ? "Maplink Header (Advanced)" : $"{GetTypeName(Type)} {i}";
+                expander.Header = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(Objects[i])} {i}";
             }
         }
         
@@ -121,12 +127,12 @@ namespace TOKElfTool
         
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            ObjectEditControl objectEditControl = (ObjectEditControl)sender;
+            ObjectEditControl control = (ObjectEditControl)sender;
 
-            bool? result = MyMessageBox.Show(Window.GetWindow(this), $"Are you sure you want to delete this {GetTypeName(Type)}?", "TOK ELF Editor", MessageBoxResult.Yes);
+            bool? result = MyMessageBox.Show(Window.GetWindow(this), $"Are you sure you want to delete this {GetTypeName(Objects[control.Index])}?", "TOK ELF Editor", MessageBoxResult.Yes);
             if (result == true)
             {
-                objectTabPanel.Children.Remove(objectEditControl);
+                objectTabPanel.Children.Remove(control);
                 ApplyInstancePanelChanges(-1);
             }
         }
