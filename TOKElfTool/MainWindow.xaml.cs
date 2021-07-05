@@ -317,7 +317,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects();
+                CollectObjects();
 
                 SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
@@ -345,7 +345,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects();
+                CollectObjects();
 
                 if (loadedDataType == GameDataType.Maplink)
                     loadedBinary.Data[ElfType.MaplinkHeader][0] = loadedBinary.Data[0].PopBack();
@@ -366,9 +366,10 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<object>> CollectObjects()
+        private void CollectObjects()
         {
-            return null;
+            // TODO: Include other tabs (when they exist)
+            editors[0].CollectObjects(loadedBinary);
         }
 
 

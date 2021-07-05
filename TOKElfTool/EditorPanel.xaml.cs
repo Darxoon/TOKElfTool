@@ -84,6 +84,12 @@ namespace TOKElfTool
 
         }
 
+        public void CollectObjects(ElfBinary<object> binary)
+        {
+            ObjectCollector<object> collector = new ObjectCollector<object>(binary, modifiedObjects);
+            collector.CollectObjects(objectTabPanel.Children);
+        }
+
         private void FixExpanderIndexes()
         {
             for (int i = 0; i < objectTabPanel.Children.Count; i++)
@@ -254,8 +260,11 @@ namespace TOKElfTool
             }
         }
 
-        private void UndoSearch()
+        public void UndoSearch()
         {
+            if (searchResultControls == null)
+                return;
+            
             for (int i = 0; i < searchResultControls.Length; i++)
             {
                 ObjectEditControl control = searchResultControls[i];

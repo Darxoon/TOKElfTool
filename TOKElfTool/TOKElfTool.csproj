@@ -116,6 +116,7 @@
     <Compile Include="EditorPanel.xaml.cs">
       <DependentUpon>EditorPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ObjectCollector.cs" />
     <Compile Include="ProgressReports\ZstdFolderProgressPopupWindow.xaml.cs">
       <DependentUpon>ZstdFolderProgressPopupWindow.xaml</DependentUpon>
     </Compile>
