@@ -47,7 +47,7 @@ namespace TOKElfTool
         
         private List<bool> modifiedObjects = new List<bool>();
 
-        private void EditorPanel_OnInitialized(object sender, EventArgs e)
+        private void EditorPanel_OnLoaded(object sender, RoutedEventArgs e)
         {
             modifiedObjects = new List<bool>(new bool[Objects.Count]);
             InitializeObjectsPanel(GetTypeName(Type));

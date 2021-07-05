@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:TOKElfTool"
              xmlns:search="clr-namespace:TOKElfTool.Search"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800" Initialized="EditorPanel_OnInitialized">
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="EditorPanel_OnLoaded">
 
     <DockPanel>
         <DockPanel Margin="5" DockPanel.Dock="Top">

@@ -180,6 +180,7 @@ namespace TOKElfTool
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             // TODO: generate editor panel
+            GenerateEditorPanel();
             
             foreach (EditorPanel editor in editors)
                 editor.searchBar.HasIndexed = false;
@@ -193,6 +194,20 @@ namespace TOKElfTool
             LoadingLabel.Visibility = Visibility.Collapsed;
             tabControl.Visibility = Visibility.Visible;
             statusLabel.Text = "Loaded file";
+        }
+
+        private void GenerateEditorPanel()
+        {
+            EditorPanel panel = new EditorPanel
+            {
+                Type = loadedDataType,
+                Objects = loadedBinary.Data[ElfType.Main],
+                SymbolTable = loadedBinary.SymbolTable,
+            };
+            
+            panel.OnUnsavedChanges += (sender, e) => hasUnsavedChanges = true;
+            ((TabItem)tabControl.Items[0]).Content = panel;
+            editors.Add(panel);
         }
 
         private void LoadDataType(GameDataType type)
