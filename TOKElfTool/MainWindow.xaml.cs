@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -11,16 +11,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
-using TOKElfTool.Search;
 using ZstdNet;
-using FieldInfo = System.Reflection.FieldInfo;
-using UIElement = System.Windows.UIElement;
 
 namespace TOKElfTool
 {
@@ -40,15 +35,15 @@ namespace TOKElfTool
             tabControl.Visibility = Visibility.Collapsed;
 
             // create AppData path
-            if (!Directory.Exists(Path.Combine(DataFolderPath, "TOKElfTool")))
+            if (!Directory.Exists(Path.Combine(dataFolderPath, "TOKElfTool")))
             {
-                Directory.CreateDirectory(Path.Combine(DataFolderPath, "TOKElfTool"));
+                Directory.CreateDirectory(Path.Combine(dataFolderPath, "TOKElfTool"));
             }
 
             // Read recently opened files
-            if (File.Exists(HistoryPath))
+            if (File.Exists(historyPath))
             {
-                recentlyOpenedFiles = File.ReadAllLines(HistoryPath).ToList();
+                recentlyOpenedFiles = File.ReadAllLines(historyPath).ToList();
                 RegenerateRecentlyOpened();
                 EmptyLabel.UpdateList(4, ((IEnumerable<string>)recentlyOpenedFiles).Reverse().ToArray());
             }
@@ -64,17 +59,17 @@ namespace TOKElfTool
             decompressor.Dispose();
         }
 
-        private static readonly string DataFolderPath = Environment.GetFolderPath(
+        private static readonly string dataFolderPath = Environment.GetFolderPath(
             Environment.SpecialFolder.ApplicationData,
             Environment.SpecialFolderOption.Create);
-        private static readonly string HistoryPath = Path.Combine(DataFolderPath, "TOKElfTool/file_history.txt");
+        private static readonly string historyPath = Path.Combine(dataFolderPath, "TOKElfTool/file_history.txt");
 
         private GameDataType loadedDataType;
         private Type loadedStructType;
 
         private bool hasUnsavedChanges;
 
-        private List<EditorPanel> editors;
+        private readonly List<EditorPanel> editors;
 
         private readonly List<string> recentlyOpenedFiles = new List<string>();
         private void AddRecentlyOpened(string filepath)
@@ -83,7 +78,7 @@ namespace TOKElfTool
             recentlyOpenedFiles.Add(filepath);
 
             // Save to file
-            File.WriteAllText(HistoryPath, string.Join("\n", recentlyOpenedFiles));
+            File.WriteAllText(historyPath, string.Join("\n", recentlyOpenedFiles));
 
             RegenerateRecentlyOpened();
         }
@@ -100,7 +95,7 @@ namespace TOKElfTool
                 {
                     Header = Util.ShortenPath(path),
                 };
-                menuItem.Click += async (sender, args) =>
+                menuItem.Click += (sender, args) =>
                 {
                     string filename = Path.GetFileName(path);
 
@@ -134,7 +129,7 @@ namespace TOKElfTool
 
         private string containingFolderPath = "";
 
-        private async void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void CommandBinding_Open_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog
             {
@@ -179,7 +174,6 @@ namespace TOKElfTool
             fileSavePath = null;
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            // TODO: generate editor panel
             GenerateEditorPanel();
             
             foreach (EditorPanel editor in editors)
@@ -248,17 +242,9 @@ namespace TOKElfTool
                 // Load empty.elf
                 Stream emptyElfStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOKElfTool.empty.elf");
 
-                return LoadBinary(new BinaryReader(emptyElfStream));
+                return LoadBinary(new BinaryReader(emptyElfStream!));
             }
-            // don't catch this during debug so it can be caught by the debugger
-#if !DEBUG
-            catch (ElfParseException elfException)
-            {
-                MyMessageBox.Show(this, $"An error occurred: \"{elfException}\"\n{elfException.StackTrace}", 
-                    "TOK ELF Editor", MessageBoxResult.OK, MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
-#endif
+            
             return binary;
         }
 
@@ -330,7 +316,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects(editors[0].objectTabPanel.Children);
+                loadedBinary.Data[0] = CollectObjects();
 
                 SavePopupWindow popup = new SavePopupWindow(loadedBinary, fileSavePath, loadedDataType)
                 {
@@ -358,7 +344,7 @@ namespace TOKElfTool
 
                 hasUnsavedChanges = false;
 
-                loadedBinary.Data[0] = CollectObjects(editors[0].objectTabPanel.Children);
+                loadedBinary.Data[0] = CollectObjects();
 
                 if (loadedDataType == GameDataType.Maplink)
                     loadedBinary.Data[ElfType.MaplinkHeader][0] = loadedBinary.Data[0].PopBack();
@@ -379,153 +365,11 @@ namespace TOKElfTool
             }
         }
 
-        private List<Element<object>> CollectObjects(UIElementCollection children)
+        private List<Element<object>> CollectObjects()
         {
-            if (searchResultControls != null)
-                UndoSearch();
-
             return null;
         }
 
-
-        private object CollectObject(ObjectEditControl objectEditControl)
-        {
-            objectEditControl.Generate();
-
-            Grid grid = objectEditControl.Grid;
-
-            Trace.WriteLine(objectEditControl);
-
-            // go through all property controls
-            object currentObjects = Activator.CreateInstance(loadedStructType);
-
-            string propertyName = "";
-            Type propertyType = null;
-
-            for (int j = 0; j < grid.Children.Count; j++)
-            {
-                UIElement child = grid.Children[j];
-
-                // key label
-                if (j % 2 == 0)
-                {
-                    propertyName = ((TextBlock)child).Text;
-                    propertyType = loadedStructType.GetField(propertyName).FieldType;
-
-                    continue;
-                }
-
-                if (propertyType is null)
-                    continue;
-
-                object propertyValue = ReadFromControl(propertyType, child);
-
-                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
-
-                loadedStructType.GetField(propertyName).SetValue(currentObjects, propertyValue);
-
-            }
-
-            return currentObjects;
-        }
-
-        private object CollectMaplinkHeaderObject(ObjectEditControl objectEditControl)
-        {
-            objectEditControl.Generate();
-            
-            Grid grid = objectEditControl.Grid;
-
-            // go through all property controls
-            Type headerType = typeof(MaplinkHeader);
-            object currentObject = new MaplinkHeader();
-
-            string propertyName = "";
-            Type propertyType = null;
-
-            for (int j = 0; j < grid.Children.Count; j++)
-            {
-                UIElement child = grid.Children[j];
-
-                // key label
-                if (j % 2 == 0)
-                {
-                    propertyName = ((TextBlock)child).Text;
-                    propertyType = headerType.GetField(propertyName).FieldType;
-
-                    continue;
-                }
-
-                if (propertyType is null)
-                    continue;
-
-                object propertyValue = ReadFromControl(propertyType, child);
-
-                Trace.WriteLine($"{propertyName}: {propertyType?.Name} = {propertyValue}");
-
-                headerType.GetField(propertyName).SetValue(currentObject, propertyValue);
-
-            }
-
-            return currentObject;
-        }
-
-        private object ReadFromControl(Type propertyType, UIElement child)
-        {
-            // checkbox
-            if (propertyType == typeof(bool))
-            {
-                CheckBox checkBox = (CheckBox)child;
-                //Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
-
-                return checkBox.IsChecked;
-            }
-
-            // dropdown
-            if (propertyType.BaseType == typeof(Enum))
-            {
-                ComboBox comboBox = (ComboBox)child;
-                FieldInfo[] enumFields = propertyType.GetFields()
-                    .Where(value => value.IsStatic)
-                    .ToArray();
-
-                FieldInfo selectedField = enumFields[comboBox.SelectedIndex];
-                int selectedFieldValue = (int)selectedField.GetValue(null);
-
-                //Trace.WriteLine($"~~~~~~~~~~ {propertyValue}");
-                return selectedFieldValue;
-            }
-
-            // TextBox
-            TextBox textBox = (TextBox)child;
-            string text = textBox.Text;
-            switch (propertyType.Name)
-            {
-                case "String":
-                    return text.StartsWith("\"") && text.EndsWith("\"")
-                        ? text.Substring(1, text.Length - 2)
-                        : null;
-                case "Vector3":
-                    return Vector3.FromString(text);
-                case "Byte":
-                    _ = byte.TryParse(text, out byte propertyValueByte);
-                    return propertyValueByte;
-                case "Int32":
-                    _ = int.TryParse(text, out int propertyValueInt);
-                    return propertyValueInt;
-                case "Int64":
-                    long.TryParse(text, out long propertyValueLong);
-                    return propertyValueLong;
-                case "Single":
-                    string floatString = text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text;
-                    float.TryParse(floatString, out float propertyValueFloat);
-                    return propertyValueFloat;
-                case "Double":
-                    double.TryParse(text, out double propertyValueDouble);
-                    return propertyValueDouble;
-            }
-
-            throw new Exception("Couldn't read the property value");
-        }
 
         private void MenuItem_About_Click(object sender, RoutedEventArgs e)
         {
@@ -737,7 +581,7 @@ namespace TOKElfTool
             }
         }
 
-        private async void EmptyLabel_OnEntryClick(object sender, MouseButtonEventArgs e)
+        private void EmptyLabel_OnEntryClick(object sender, MouseButtonEventArgs e)
         {
             string path = recentlyOpenedFiles[recentlyOpenedFiles.Count - 1 - (int)sender];
             string filename = Path.GetFileName(path);
@@ -756,15 +600,6 @@ namespace TOKElfTool
         }
 
         private void ExpandAllObjects_OnClick(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-        private SearchIndex searchIndex;
-
-        private ObjectEditControl[] searchResultControls = null;
-
-        private void UndoSearch()
         {
             
         }
