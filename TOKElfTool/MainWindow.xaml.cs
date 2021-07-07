@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -174,6 +174,7 @@ namespace TOKElfTool
             fileSavePath = null;
             containingFolderPath = Path.GetDirectoryName(filename) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
+            editors.Clear();
             GenerateEditorPanel();
             
             foreach (EditorPanel editor in editors)
