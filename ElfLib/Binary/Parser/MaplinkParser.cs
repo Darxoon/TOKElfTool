@@ -26,7 +26,7 @@ namespace ElfLib.Binary.Parser
             int nodeAmount = (int)(symbols[0].Size / Marshal.SizeOf(typeof(RawMaplinkNode)));
 
             var nodeParser = new StringDataParser<MaplinkNode, RawMaplinkNode>(stringSection,
-                new SimpleDataParser<RawMaplinkNode>(dataSection, relocationTable.Take(relocationTable.Count - 2).ToList()));
+                new SimpleDataParser<RawMaplinkNode>(dataSection, relocationTable.Take(relocationTable.Count - 2).ToList(), 0, nodeAmount));
 
             List<SectionRela> x = relocationTable.Skip(relocationTable.Count - 2).ToList();
             var headerParser = new StringDataParser<MaplinkHeader, RawMaplinkHeader>(stringSection,

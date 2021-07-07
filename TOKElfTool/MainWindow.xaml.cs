@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -197,7 +197,7 @@ namespace TOKElfTool
             {
                 Type = loadedDataType,
                 DefaultType = loadedStructType,
-                Objects = loadedBinary.Data[ElfType.Main],
+                Objects = new List<Element<object>>(loadedBinary.Data[ElfType.Main]),
                 SymbolTable = loadedBinary.SymbolTable,
             };
             
@@ -348,9 +348,6 @@ namespace TOKElfTool
 
                 CollectObjects();
 
-                if (loadedDataType == GameDataType.Maplink)
-                    loadedBinary.Data[ElfType.MaplinkHeader][0] = loadedBinary.Data[0].PopBack();
-
                 if (savePath.EndsWith(".elf.zst.elf.zst"))
                     savePath = savePath.Substring(0, savePath.Length - ".elf.zst".Length);
                 if (isCompressed && !savePath.EndsWith(".zst"))
@@ -369,6 +366,14 @@ namespace TOKElfTool
 
         private void CollectObjects()
         {
+            if (loadedDataType != GameDataType.Maplink)
+                loadedBinary.Data[ElfType.Main] = editors[0].Objects;
+            else
+            {
+                loadedBinary.Data[ElfType.Main] = new List<Element<object>>(editors[0].Objects);
+                loadedBinary.Data[ElfType.Main].PopBack();
+            }
+            
             // TODO: Include other tabs (when they exist)
             editors[0].CollectObjects(loadedBinary);
         }

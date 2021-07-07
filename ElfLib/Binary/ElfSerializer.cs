@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using ElfLib.CustomDataTypes;
+using ElfLib.CustomDataTypes.Maplink;
 using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib
@@ -63,6 +64,7 @@ namespace ElfLib
             using (BinaryReader reader = new BinaryReader(headerBinStream))
             {
                 byte[] header = reader.ReadBytes((int)headerBinStream.Length);
+                header[0x3C] = (byte)updatedSections.Length;
                 writer.Write(header);
                 Trace.WriteLine(Encoding.ASCII.GetString(header), header.ToString());
             }
@@ -216,22 +218,26 @@ namespace ElfLib
             return output;
         }
 
-        private static void ConvertToRawObjects<T>(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, 
+        private static void ConvertToRawObjects(List<Element<T>> data, GameDataType dataType, Dictionary<string, ElfStringPointer> stringDeclarationMap, 
             List<object> rawObjects, SortedDictionary<long, ElfStringPointer> stringRelocTable, ref long dataSectionPosition)
         {
             if (dataType == GameDataType.Maplink)
             {
                 int nodeSize = Marshal.SizeOf(typeof(RawMaplinkNode));
                 int headerSize = Marshal.SizeOf(typeof(RawMaplinkHeader));
-                foreach (Element<T> element in data)
+
+                for (int j = 0; j < data.Count; j++)
                 {
-                    if (element.value is MaplinkNode node)
+                    Trace.WriteLine($"{j}/{data.Count} {data[j]}");
+                    
+                    if (data[j].value is MaplinkNode node)
                     {
+                        Trace.WriteLine($"{j}/{data.Count} raw object!!");
                         rawObjects.Add(RawMaplinkNode.From(node, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         dataSectionPosition += nodeSize;
                     }
 
-                    if (element.value is MaplinkHeader header)
+                    if (data[j].value is MaplinkHeader header)
                     {
                         rawObjects.Add(RawMaplinkHeader.From(header, stringDeclarationMap, stringRelocTable, dataSectionPosition));
                         stringRelocTable.Add(dataSectionPosition + typeof(RawMaplinkHeader).GetField("nodes_start_ptr").GetFieldOffset(), new ElfStringPointer(0));
@@ -343,7 +349,8 @@ namespace ElfLib
                             allStrings.Add(node.field_0x8);
                             allStrings.Add(node.destination_str);
                             allStrings.Add(node.field_0x18);
-                            allStrings.Add(StringEnumAttribute.GetIdentifier(node.shape_str));
+                            if (node.shape_str != TransitionType.Null)
+                                allStrings.Add(StringEnumAttribute.GetIdentifier(node.shape_str));
                             allStrings.Add(node.target_str);
                             allStrings.Add(node.field_0x50);
                             allStrings.Add(node.direction_str);
