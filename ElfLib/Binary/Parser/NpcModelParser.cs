@@ -12,9 +12,8 @@ namespace ElfLib.Binary.Parser
         
         private readonly List<SectionRela> dataRelocationTable;
         private readonly List<SectionRela> rodataRelocationTable;
-        private readonly SortedDictionary<long, object> additionalPositionalData;
 
-        public NpcModelParser(out IDictionary<long, object> additionalPositionalData, Section stringSection, Section dataSection, Section rodataSection, 
+        public NpcModelParser(Section stringSection, Section dataSection, Section rodataSection, 
             List<SectionRela> dataRelocationTable, List<SectionRela> rodataRelocationTable)
         {
             this.stringSection = stringSection;
@@ -22,9 +21,6 @@ namespace ElfLib.Binary.Parser
             this.rodataSection = rodataSection;
             this.dataRelocationTable = dataRelocationTable;
             this.rodataRelocationTable = rodataRelocationTable;
-
-            this.additionalPositionalData = new SortedDictionary<long, object>();
-            additionalPositionalData = this.additionalPositionalData;
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -47,7 +43,7 @@ namespace ElfLib.Binary.Parser
             }
             
             // Parse .rodata section
-            var rodataParser = new NpcModelRodataParser(rodataSection, stringSection, modelFilesOffsets, modelStateOffsets, rodataRelocationTable, additionalPositionalData);
+            var rodataParser = new NpcModelRodataParser(rodataSection, stringSection, modelFilesOffsets, modelStateOffsets, rodataRelocationTable);
             
             IDictionary<ElfType, List<object>> rodataObjects = rodataParser.Parse();
             

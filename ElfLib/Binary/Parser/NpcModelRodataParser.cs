@@ -11,19 +11,15 @@ namespace ElfLib.Binary.Parser
         private readonly List<long> modelFilesOffsets;
         private readonly List<long> modelStateOffsets;
         private readonly List<SectionRela> relocationTable;
-        
-        private readonly SortedDictionary<long, object> additionalPositionalData;
 
         public NpcModelRodataParser(Section section, Section stringSection, List<long> modelFilesOffsets,
-            List<long> modelStateOffsets, List<SectionRela> relocationTable,
-            SortedDictionary<long, object> additionalPositionalData)
+            List<long> modelStateOffsets, List<SectionRela> relocationTable)
         {
             this.section = section;
             this.stringSection = stringSection;
             this.modelFilesOffsets = modelFilesOffsets;
             this.modelStateOffsets = modelStateOffsets;
             this.relocationTable = relocationTable;
-            this.additionalPositionalData = additionalPositionalData;
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -31,11 +27,11 @@ namespace ElfLib.Binary.Parser
             using MemoryStream stream = new MemoryStream(section.Content);
             using BinaryReader reader = new BinaryReader(stream);
 
-            var filesParser = new NpcModelStringPartParser<NpcModelFiles, RawNpcModelFiles>(stringSection, additionalPositionalData,
-                new NpcModelPartParser<RawNpcModelFiles>(additionalPositionalData, section, modelFilesOffsets, relocationTable));
+            var filesParser = new StringDataParser<NpcModelFiles, RawNpcModelFiles>(stringSection,
+                new NpcModelPartParser<RawNpcModelFiles>(section, modelFilesOffsets, relocationTable));
             
-            var stateParser = new NpcModelStringPartParser<NpcModelState, RawNpcModelState>(stringSection, additionalPositionalData, 
-                new NpcModelPartParser<RawNpcModelState>(additionalPositionalData, section, modelStateOffsets, relocationTable));
+            var stateParser = new StringDataParser<NpcModelState, RawNpcModelState>(stringSection, 
+                new NpcModelPartParser<RawNpcModelState>(section, modelStateOffsets, relocationTable));
 
             return new Dictionary<ElfType, List<object>>
             {

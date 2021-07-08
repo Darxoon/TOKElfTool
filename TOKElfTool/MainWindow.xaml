@@ -102,6 +102,8 @@
         
         <TabControl x:Name="tabControl" Margin="10,10,10,0" BorderThickness="1,1,1,0" Padding="2,2,2,0">
             <TabItem Header="Object Data" />
+            <TabItem Header="Files Data" />
+            <TabItem Header="State Data" />
         </TabControl>
     </DockPanel>
 </Window>

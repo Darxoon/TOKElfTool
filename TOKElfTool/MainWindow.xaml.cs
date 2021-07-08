@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -176,7 +176,13 @@ namespace TOKElfTool
 
             editors.Clear();
             GenerateEditorPanel();
-            
+
+            if (loadedDataType == GameDataType.DataNpcModel)
+            {
+                GenerateEditorPanel(ElfType.Files, 1);
+                GenerateEditorPanel(ElfType.State, 2);
+            }
+
             foreach (EditorPanel editor in editors)
                 editor.searchBar.HasIndexed = false;
 
@@ -191,13 +197,13 @@ namespace TOKElfTool
             statusLabel.Text = "Loaded file";
         }
 
-        private void GenerateEditorPanel()
+        private void GenerateEditorPanel(ElfType type = ElfType.Main, int tabIndex = 0)
         {
             EditorPanel panel = new EditorPanel
             {
                 Type = loadedDataType,
                 DefaultType = loadedStructType,
-                Objects = new List<Element<object>>(loadedBinary.Data[ElfType.Main]),
+                Objects = new List<Element<object>>(loadedBinary.Data[type]),
                 SymbolTable = loadedBinary.SymbolTable,
             };
             
@@ -205,7 +211,7 @@ namespace TOKElfTool
                 panel.Objects.Add(loadedBinary.Data[ElfType.MaplinkHeader][0]);
             
             panel.OnUnsavedChanges += (sender, e) => hasUnsavedChanges = true;
-            ((TabItem)tabControl.Items[0]).Content = panel;
+            ((TabItem)tabControl.Items[tabIndex]).Content = panel;
             editors.Add(panel);
         }
 
