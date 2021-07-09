@@ -18,12 +18,16 @@ namespace ElfLib.Binary.Parser
         private readonly long startOffset;
         private readonly int amount;
 
-        public SimpleDataParser(Section dataSection, List<SectionRela> relocationTable, long startOffset = 0, int amount = -1)
+        private Dictionary<ElfType, List<long>> dataOffsets;
+
+        public SimpleDataParser(Section dataSection, List<SectionRela> relocationTable, out Dictionary<ElfType, List<long>> dataOffsets, long startOffset = 0, int amount = -1)
         {
             this.dataSection = dataSection;
             this.relocationTable = relocationTable;
             this.startOffset = startOffset;
             this.amount = amount;
+
+            this.dataOffsets = dataOffsets = new Dictionary<ElfType, List<long>>();
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -35,10 +39,13 @@ namespace ElfLib.Binary.Parser
             
             BinaryReader reader = new BinaryReader(stream);
 
+            dataOffsets[ElfType.Main] = new List<long>();
+            
             if (amount == -1)
             {
                 while (stream.Position != stream.Length)
                 {
+                    dataOffsets[ElfType.Main].Add(stream.Position);
                     objects.Add(FromBinaryReader(reader));
                 }
             }
@@ -46,6 +53,7 @@ namespace ElfLib.Binary.Parser
             {
                 for (int i = 0; i < amount && stream.Position != stream.Length; i++)
                 {
+                    dataOffsets[ElfType.Main].Add(stream.Position);
                     objects.Add(FromBinaryReader(reader));
                 }
             }

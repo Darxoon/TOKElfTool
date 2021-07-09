@@ -36,6 +36,7 @@ namespace ElfLib
         public List<Symbol> SymbolTable { get; internal set; }
         public List<Section> Sections { get; internal set; }
         public Dictionary<ElfType, List<Element<T>>> Data { get; internal set; }
+        public Dictionary<ElfType, List<long>> DataOffsets { get; internal set; }
 
         public Section GetSection(string name)
         {

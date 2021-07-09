@@ -12,13 +12,15 @@ namespace ElfLib.Binary.Parser
         private readonly Section section;
         private readonly List<long> partOffsets;
         private readonly List<SectionRela> relocationTable;
+        private readonly Dictionary<ElfType,List<long>> dataOffsets;
 
-        public NpcModelPartParser(Section section,
-            List<long> partOffsets, List<SectionRela> relocationTable)
+        public NpcModelPartParser(Section section, List<long> partOffsets, List<SectionRela> relocationTable, out Dictionary<ElfType,List<long>> dataOffsets)
         {
             this.section = section;
             this.partOffsets = partOffsets;
             this.relocationTable = relocationTable;
+
+            this.dataOffsets = dataOffsets = new Dictionary<ElfType,List<long>>();
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -28,9 +30,12 @@ namespace ElfLib.Binary.Parser
 
             List<object> instances = new List<object>();
 
+            dataOffsets[ElfType.Main] = new List<long>();
+            
             for (int i = 0; i < partOffsets.Count; i++)
             {
                 stream.Position = partOffsets[i];
+                dataOffsets[ElfType.Main].Add(partOffsets[i]);
                 instances.Add(SimpleDataParser<T>.FromBinaryReader(reader));
             }
             
