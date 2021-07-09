@@ -311,5 +311,21 @@ namespace TOKElfTool
             
             control.BringIntoView();
         }
+
+        public void CollapseAllObjects()
+        {
+            foreach (ObjectEditControl control in objectTabPanel.Children)
+            {
+                control.IsExpanded = false;
+            }
+        }
+        
+        public void ExpandAllObjects()
+        {
+            foreach (ObjectEditControl control in objectTabPanel.Children)
+            {
+                control.IsExpanded = true;
+            }
+        }
     }
 }

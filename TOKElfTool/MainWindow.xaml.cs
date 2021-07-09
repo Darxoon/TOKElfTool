@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Threading;
 using ElfLib.CustomDataTypes;
 using ElfLib.CustomDataTypes.Registry;
 using Ookii.Dialogs.Wpf;
@@ -161,8 +162,9 @@ namespace TOKElfTool
             tabControl.Visibility = Visibility.Collapsed;
 
             statusLabel.Text = "Loading ELF file...";
-
-            // TODO: force redraw
+            Cursor = Cursors.Wait;
+            
+            AllowUIToUpdate();
             
             LoadDataType(type);
 
@@ -195,6 +197,8 @@ namespace TOKElfTool
             LoadingLabel.Visibility = Visibility.Collapsed;
             tabControl.Visibility = Visibility.Visible;
             statusLabel.Text = "Loaded file";
+            
+            Cursor = Cursors.Arrow;
         }
 
         private void GenerateEditorPanel(ElfType type = ElfType.Main, int tabIndex = 0)
@@ -222,6 +226,20 @@ namespace TOKElfTool
             editors.Add(panel);
         }
 
+        private void AllowUIToUpdate()
+        {
+            DispatcherFrame frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Render, new DispatcherOperationCallback(delegate
+            {
+                frame.Continue = false;
+                return null;
+            }), null);
+
+            Dispatcher.PushFrame(frame);
+            Application.Current.Dispatcher.Invoke(DispatcherPriority.Background,
+                new Action(delegate { }));
+        }
+        
         private void LoadDataType(GameDataType type)
         {
             loadedDataType = type;
@@ -330,6 +348,8 @@ namespace TOKElfTool
                 statusLabel.Text = "Saving file...";
 
                 hasUnsavedChanges = false;
+                for (int i = 0; i < editors.Count; i++)
+                    editors[i].HasUnsavedChanges = false;
 
                 CollectObjects();
 
@@ -358,6 +378,8 @@ namespace TOKElfTool
                 statusLabel.Text = "Saving file...";
 
                 hasUnsavedChanges = false;
+                for (int i = 0; i < editors.Count; i++)
+                    editors[i].HasUnsavedChanges = false;
 
                 CollectObjects();
 
@@ -617,12 +639,12 @@ namespace TOKElfTool
 
         private void CollapseAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            editors[tabControl.SelectedIndex].CollapseAllObjects();
         }
 
         private void ExpandAllObjects_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            editors[tabControl.SelectedIndex].ExpandAllObjects();
         }
     }
 }
