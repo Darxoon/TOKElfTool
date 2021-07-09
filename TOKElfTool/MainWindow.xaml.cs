@@ -204,7 +204,14 @@ namespace TOKElfTool
                 Type = loadedDataType,
                 DefaultType = loadedStructType,
                 Objects = new List<Element<object>>(loadedBinary.Data[type]),
+                DataOffsets = loadedBinary.DataOffsets,
                 SymbolTable = loadedBinary.SymbolTable,
+            };
+
+            panel.HyperlinkClick += (sender, e) =>
+            {
+                tabControl.SelectedIndex = (int)e.type - 1;
+                editors[(int)e.type - 1].FocusObject(e.index);
             };
             
             if (loadedDataType == GameDataType.Maplink)

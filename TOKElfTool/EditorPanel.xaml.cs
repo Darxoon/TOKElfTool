@@ -30,11 +30,15 @@ namespace TOKElfTool
             _ => instance.value.GetType().Name,
         };
         
+        public event EventHandler<(ElfType type, int index)> HyperlinkClick;
+        
         public GameDataType Type { get; set; }
         
         public Type DefaultType { get; set; }
         
         public List<Element<object>> Objects { get; set; }
+        
+        public Dictionary<ElfType, List<long>> DataOffsets { get; set; }
         
         public List<Symbol> SymbolTable { get; set; }
 
@@ -55,6 +59,13 @@ namespace TOKElfTool
             InitializeObjectsPanel();
         }
 
+        public void FocusObject(int index)
+        {
+            ObjectEditControl control = (ObjectEditControl)objectTabPanel.Children[index];
+            control.BringIntoView();
+            control.IsExpanded = true;
+        }
+
         private void InitializeObjectsPanel()
         {
             
@@ -63,11 +74,16 @@ namespace TOKElfTool
                 Element<object> currentElement = Objects[i];
 
                 string title = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(currentElement)} {i}";
-                ObjectEditControl control = new ObjectEditControl(currentElement.value, title, i, SymbolTable);
+                ObjectEditControl control = new ObjectEditControl(currentElement.value, title, i, SymbolTable, DataOffsets);
 
                 control.RemoveButtonClick += RemoveButton_OnClick;
                 control.DuplicateButtonClick += DuplicateButton_OnClick;
                 control.ViewButtonClick += ViewButton_OnClick;
+
+                control.HyperlinkClick += (sender, e) =>
+                {
+                    HyperlinkClick?.Invoke(sender, e);
+                };
 
                 control.ValueChanged += (sender, args) =>
                 {
@@ -178,10 +194,15 @@ namespace TOKElfTool
             UIElementCollection children = objectTabPanel.Children;
 
             object instance = Activator.CreateInstance(DefaultType);
-            ObjectEditControl clone = new ObjectEditControl(instance, "", objectTabPanel.Children.Count, SymbolTable)
+            ObjectEditControl clone = new ObjectEditControl(instance, "", objectTabPanel.Children.Count, SymbolTable, DataOffsets)
             {
                 IsExpanded = true, 
                 Index = children.Count,
+            };
+            
+            clone.HyperlinkClick += (_, e2) =>
+            {
+                HyperlinkClick?.Invoke(this, e2);
             };
 
 

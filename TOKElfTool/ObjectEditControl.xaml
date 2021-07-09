@@ -8,6 +8,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="LinkColor">#FF3762D3</SolidColorBrush>
+        <TextDecorationCollection x:Key="Underline">Underline</TextDecorationCollection>
+    </UserControl.Resources>
 
     <Expander x:Name="Expander" Expanded="Expander_OnExpanded">
         <DockPanel>

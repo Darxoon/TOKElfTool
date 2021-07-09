@@ -31,6 +31,8 @@ namespace TOKElfTool
         public event RoutedEventHandler DuplicateButtonClick;
         public event RoutedEventHandler ViewButtonClick;
         
+        public event EventHandler<(ElfType type, int index)> HyperlinkClick;
+        
         public event EventHandler ValueChanged;
         
         public bool ViewButtonVisible
@@ -56,6 +58,7 @@ namespace TOKElfTool
 
         private object currentObject;
         private List<Symbol> symbolTable;
+        private readonly Dictionary<ElfType, List<long>> dataOffsets;
         private bool loaded = false;
         private bool viewButtonVisible;
         private bool modifyButtonsEnabled;
@@ -89,7 +92,7 @@ namespace TOKElfTool
             this.loaded = loaded;
         }
 
-        public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable)
+        public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable, Dictionary<ElfType, List<long>> dataOffsets)
         {
             InitializeComponent();
 
@@ -98,6 +101,7 @@ namespace TOKElfTool
 
             this.currentObject = currentObject;
             this.symbolTable = symbolTable;
+            this.dataOffsets = dataOffsets;
         }
 
         public ObjectEditControl Clone()
@@ -237,6 +241,58 @@ namespace TOKElfTool
                 textBox.Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
                 textBox.Foreground = new SolidColorBrush(Color.FromRgb(109, 109, 109));
                 label.Margin = new Thickness(label.Margin.Left, label.Margin.Top, 4, label.Margin.Bottom);
+                return;
+            }
+
+            if (field.Name == "model_files_ptr")
+            {
+                textBox.IsReadOnly = true;
+                textBox.TextDecorations = (TextDecorationCollection)FindResource("Underline");
+                textBox.Foreground = (SolidColorBrush)FindResource("LinkColor");
+
+                int targetIndex = dataOffsets[ElfType.Files].IndexOf((long)field.GetValue(currentObject));
+                textBox.Text = $"Files Object {targetIndex} in Files Data";
+
+                textBox.ToolTip = "Click to Go to Target";
+                textBox.Cursor = Cursors.Hand;
+                
+                bool isTextBoxClicked = false;
+                textBox.PreviewMouseDown += (sender, e) =>
+                    isTextBoxClicked = true;
+                textBox.PreviewMouseUp += (sender, e) =>
+                {
+                    if (isTextBoxClicked)
+                        HyperlinkClick?.Invoke(this, (ElfType.Files, targetIndex));
+                };
+                Window.GetWindow(this)!.MouseUp += (sender, e) =>
+                    isTextBoxClicked = false;
+                
+                return;
+            }
+            
+            if (field.Name == "state_ptr")
+            {
+                textBox.IsReadOnly = true;
+                textBox.TextDecorations = (TextDecorationCollection)FindResource("Underline");
+                textBox.Foreground = (SolidColorBrush)FindResource("LinkColor");
+
+                int targetIndex = dataOffsets[ElfType.State].IndexOf((long)field.GetValue(currentObject));
+                textBox.Text = $"State Object {targetIndex} in State Data";
+
+                textBox.ToolTip = "Click to Go to Target";
+                textBox.Cursor = Cursors.Hand;
+                
+                bool isTextBoxClicked = false;
+                textBox.PreviewMouseDown += (sender, e) =>
+                    isTextBoxClicked = true;
+                textBox.PreviewMouseUp += (sender, e) =>
+                {
+                    if (isTextBoxClicked)
+                        HyperlinkClick?.Invoke(this, (ElfType.State, targetIndex));
+                };
+                Window.GetWindow(this)!.MouseUp += (sender, e) =>
+                    isTextBoxClicked = false;
+                
                 return;
             }
 
