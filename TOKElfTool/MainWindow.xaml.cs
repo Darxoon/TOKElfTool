@@ -318,6 +318,7 @@ namespace TOKElfTool
                         GameDataType.NPC => "dispos_Npc.elf",
                         GameDataType.DataNpc => "data_npc.elf",
                         GameDataType.DataItem => "data_item.elf",
+                        GameDataType.DataNpcModel => "data_npc_model.elf",
                         _ => $"dispos_{loadedStructType.Name}.elf",
                     },
                     //DefaultExt = ".elf",

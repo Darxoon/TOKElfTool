@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -257,6 +257,7 @@ namespace ElfLib
                 GameDataType.Item => typeof(RawItem),
                 GameDataType.DataNpc => typeof(RawNpcType),
                 GameDataType.DataItem => typeof(RawItemType),
+                GameDataType.DataNpcModel => typeof(RawNpcModel),
                 _ => throw new ElfSerializeException("Data Type not supported yet"),
             });
 
@@ -272,6 +273,7 @@ namespace ElfLib
                     GameDataType.Item =>     RawItem.From    ((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.DataNpc =>  RawNpcType.From ((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.DataItem => RawItemType.From((ItemType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataNpcModel => Util.NormalToRawObject<RawNpcModel, NpcModel>((NpcModel)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     _ => throw new ElfSerializeException("Data Type not supported yet"),
                 });
                 dataSectionPosition += size;
@@ -381,6 +383,30 @@ namespace ElfLib
                         foreach (FieldInfo field in typeof(ItemType).GetFields().Where(field => field.FieldType == typeof(string)))
                         {
                             allStrings.Add((string)field.GetValue(npc));
+                        }
+                    }
+                    break;
+                case GameDataType.DataNpcModel:
+                    foreach (Element<T> element in data)
+                    {
+                        switch (element.value)
+                        {
+                            case NpcModel model:
+                                allStrings.Add(model.model_id);
+                                break;
+                            case NpcModelFiles files:
+                                allStrings.Add(files.model_folder);
+                                allStrings.Add(files.model_name);
+                                allStrings.Add(files.field_0x10);
+                                allStrings.Add(files.field_0x18);
+                                allStrings.Add(files.field_0x28);
+                                allStrings.Add(files.field_0x30);
+                                allStrings.Add(files.field_0x38);
+                                break;
+                            case NpcModelState state:
+                                allStrings.Add(state.field_0x0);
+                                allStrings.Add(state.field_0x18);
+                                break;
                         }
                     }
                     break;

@@ -111,6 +111,13 @@ namespace ElfLib
                     else
                         rawField.SetValue(rawObject, stringPointer);
                 }
+                else if (rawField.FieldType == typeof(ElfStringPointer) && field.FieldType == typeof(long))
+                {
+                    if (stringRelocTable != null)
+                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, new ElfStringPointer((long)field.GetValue(source)));
+                    else
+                        rawField.SetValue(rawObject, field.GetValue(source));
+                }
                 else if (field.FieldType.BaseType == typeof(Enum))
                 {
                     rawField.SetValue(rawObject, field.GetValue(source));
