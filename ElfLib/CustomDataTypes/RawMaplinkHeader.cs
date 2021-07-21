@@ -21,7 +21,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0x28;
         public int field_0x2c;
 
-        public static RawMaplinkHeader From(MaplinkHeader npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawMaplinkHeader From(MaplinkHeader npc, Dictionary<string, SectionPointer> stringSectionTable, SortedDictionary<long, SectionPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawMaplinkHeader, MaplinkHeader>(npc, stringSectionTable, stringRelocTable, baseOffset);
     };
 }

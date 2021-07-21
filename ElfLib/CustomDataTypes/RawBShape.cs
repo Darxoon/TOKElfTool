@@ -17,10 +17,6 @@ namespace ElfLib.CustomDataTypes
         public ElfStringPointer field_40;
         public int field_48;
         public int field_4C;
-
-        public static RawBShape From(BShape npc, Dictionary<string, ElfStringPointer> stringSectionTable, 
-                                   SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0) => 
-            Util.NormalToRawObject<RawBShape, BShape>(npc, stringSectionTable, stringRelocTable, baseOffset);
     }
 
 }

@@ -47,7 +47,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0xa8;
         public int field_0xac;
 
-        public static RawMaplinkNode From(MaplinkNode item, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawMaplinkNode From(MaplinkNode item, Dictionary<string, SectionPointer> stringSectionTable, SortedDictionary<long, SectionPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawMaplinkNode, MaplinkNode>(item, stringSectionTable, stringRelocTable, baseOffset);
     }
 }

@@ -45,8 +45,5 @@ namespace ElfLib.CustomDataTypes.Registry
         public int field_0xc0;
         public int field_0xc4;
         public ElfStringPointer script_id;
-
-        public static RawItemType From(ItemType itemType, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
-            => Util.NormalToRawObject<RawItemType, ItemType>(itemType, stringSectionTable, stringRelocTable, baseOffset);
     }
 }

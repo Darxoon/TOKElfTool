@@ -88,8 +88,8 @@ namespace ElfLib
         }
 
         public static TRaw NormalToRawObject<TRaw, TSource>(TSource source,
-            Dictionary<string, ElfStringPointer> stringSectionTable,
-            SortedDictionary<long, ElfStringPointer> stringRelocTable = null,
+            Dictionary<string, SectionPointer> stringSectionTable,
+            SortedDictionary<long, SectionPointer> stringRelocTable = null,
             long baseOffset = 0)
 
             where TRaw : struct where TSource : struct
@@ -105,7 +105,7 @@ namespace ElfLib
                 if (rawField.FieldType == typeof(ElfStringPointer) && (field.FieldType == typeof(string) || StringEnumAttribute.IsStringEnum(field.FieldType)))
                 {
                     string str = StringEnumAttribute.IsStringEnum(field.FieldType) ? StringEnumAttribute.GetIdentifier(field.GetValue(source), field.FieldType) : (string)field.GetValue(source);
-                    ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
+                    SectionPointer stringPointer = str != null ? stringSectionTable[str] : SectionPointer.NULL;
                     if (stringRelocTable != null)
                         stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, stringPointer);
                     else
@@ -113,10 +113,13 @@ namespace ElfLib
                 }
                 else if (rawField.FieldType == typeof(ElfStringPointer) && field.FieldType == typeof(long))
                 {
+                    ElfStringPointer pointer = new ElfStringPointer((long)field.GetValue(source));
                     if (stringRelocTable != null)
-                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, new ElfStringPointer((long)field.GetValue(source)));
+                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, pointer != ElfStringPointer.NULL 
+                            ? new SectionPointer(pointer, 0x700000101)
+                            : SectionPointer.NULL); 
                     else
-                        rawField.SetValue(rawObject, field.GetValue(source));
+                        rawField.SetValue(rawObject, pointer.AsLong);
                 }
                 else if (field.FieldType.BaseType == typeof(Enum))
                 {

@@ -52,8 +52,5 @@ namespace ElfLib.CustomDataTypes.Registry
         public ElfStringPointer field_0xf8;
         public ElfStringPointer field_0x100;
         public ElfStringPointer field_0x108;
-
-        public static RawNpcType From(NpcType npcType, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
-            => Util.NormalToRawObject<RawNpcType, NpcType>(npcType, stringSectionTable, stringRelocTable, baseOffset);
     }
 }

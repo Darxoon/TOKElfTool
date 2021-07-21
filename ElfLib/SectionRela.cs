@@ -26,20 +26,14 @@ namespace ElfLib
         }
         
         private SectionRela() { }
-
-        internal SectionRela(long originOffset, long targetOffset)
+        
+        internal SectionRela(long originOffset, long info, ElfStringPointer targetOffsetPointer)
         {
             Offset = originOffset;
-            Info = DEFAULT_INFO;
-            Addend = targetOffset;
-        }
-        internal SectionRela(long originOffset, ElfStringPointer targetOffsetPointer)
-        {
-            Offset = originOffset;
-            Info = DEFAULT_INFO;
+            Info = info;
             Addend = targetOffsetPointer.AsLong;
         }
-        internal SectionRela(long offset, long info, long addend)
+        private SectionRela(long offset, long info, long addend)
         {
             Offset = offset;
             Info = info;

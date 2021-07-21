@@ -33,8 +33,5 @@ namespace ElfLib.CustomDataTypes
         public float field_0x74;
         public int field_0x78;
         public int field_0x7c;
-
-        public static RawItem From(Item item, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
-            => Util.NormalToRawObject<RawItem, Item>(item, stringSectionTable, stringRelocTable, baseOffset);
     }
 }
