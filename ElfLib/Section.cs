@@ -8,7 +8,7 @@ namespace ElfLib
 {
     public sealed class Section
     {
-        internal ElfStringPointer namePointer;
+        internal Pointer namePointer;
 
         public string Name { get; internal set; }
         public int Type { get; set; }
@@ -77,7 +77,7 @@ namespace ElfLib
             writer.Write(EntSize);
         }
 
-        public string GetString(ElfStringPointer pointer)
+        public string GetString(Pointer pointer)
         {
             return GetString(pointer.AsInt);
         }
@@ -93,7 +93,7 @@ namespace ElfLib
         }
         internal Section(BinaryReader reader)
         {
-            namePointer = new ElfStringPointer(reader.ReadInt32());
+            namePointer = new Pointer(reader.ReadInt32());
             Name = $"_UNAVAILABLE_{namePointer.AsLong:X4}";
             Type = reader.ReadInt32();
             Flags = reader.ReadInt64();

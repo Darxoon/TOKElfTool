@@ -10,7 +10,7 @@ namespace ElfLib.CustomDataTypes
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawMaplinkHeader
     {
-        public ElfStringPointer level_str;
+        public Pointer level_str;
         public int last_element_index;
         public int field_0xc;
         public long nodes_start_ptr;
@@ -21,7 +21,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0x28;
         public int field_0x2c;
 
-        public static RawMaplinkHeader From(MaplinkHeader npc, Dictionary<string, SectionPointer> stringSectionTable, SortedDictionary<long, SectionPointer> stringRelocTable = null, long baseOffset = 0)
+        internal static RawMaplinkHeader From(MaplinkHeader npc, Dictionary<string, SectionPointer> stringSectionTable, SortedDictionary<long, SectionPointer> stringRelocTable = null, long baseOffset = 0)
             => Util.NormalToRawObject<RawMaplinkHeader, MaplinkHeader>(npc, stringSectionTable, stringRelocTable, baseOffset);
     };
 }

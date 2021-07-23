@@ -43,8 +43,8 @@ namespace ElfLib.Binary.Parser
             for (int i = 0; i < dataModels.Count; i++)
             {
                 NpcModel model = (NpcModel)dataModels[i];
-                modelFilesOffsets.Add(model.model_files_ptr);
-                modelStateOffsets.Add(model.state_ptr);
+                modelFilesOffsets.Add(model.model_files_ptr.AsLong);
+                modelStateOffsets.Add(model.state_ptr.AsLong);
             }
             
             // Parse .rodata section

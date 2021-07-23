@@ -11,14 +11,14 @@ namespace ElfLib.CustomDataTypes.Registry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawNpcType
     {
-        public ElfStringPointer id;
-        public ElfStringPointer model_id;
+        public Pointer id;
+        public Pointer model_id;
         public int field_0x10;
         public int field_0x14;
-        public ElfStringPointer texture_subclass;
-        public ElfStringPointer field_0x20;
-        public ElfStringPointer instance_script_str;
-        public ElfStringPointer field_0x30;
+        public Pointer texture_subclass;
+        public Pointer field_0x20;
+        public Pointer instance_script_str;
+        public Pointer field_0x30;
         public int field_0x38;
         public float field_0x3c;
         public float field_0x40;
@@ -31,26 +31,26 @@ namespace ElfLib.CustomDataTypes.Registry
         public int field_0x5c;
         public int field_0x60;
         public int field_0x64;
-        public ElfStringPointer field_0x68;
-        public ElfStringPointer field_0x70;
-        public ElfStringPointer field_0x78;
-        public ElfStringPointer field_0x80;
-        public ElfStringPointer field_0x88;
-        public ElfStringPointer field_0x90;
-        public ElfStringPointer field_0x98;
-        public ElfStringPointer field_0xa0;
-        public ElfStringPointer field_0xa8;
-        public ElfStringPointer field_0xb0;
-        public ElfStringPointer field_0xb8;
-        public ElfStringPointer field_0xc0;
-        public ElfStringPointer field_0xc8;
-        public ElfStringPointer field_0xd0;
-        public ElfStringPointer field_0xd8;
-        public ElfStringPointer field_0xe0;
-        public ElfStringPointer field_0xe8;
-        public ElfStringPointer field_0xf0;
-        public ElfStringPointer field_0xf8;
-        public ElfStringPointer field_0x100;
-        public ElfStringPointer field_0x108;
+        public Pointer field_0x68;
+        public Pointer field_0x70;
+        public Pointer field_0x78;
+        public Pointer field_0x80;
+        public Pointer field_0x88;
+        public Pointer field_0x90;
+        public Pointer field_0x98;
+        public Pointer field_0xa0;
+        public Pointer field_0xa8;
+        public Pointer field_0xb0;
+        public Pointer field_0xb8;
+        public Pointer field_0xc0;
+        public Pointer field_0xc8;
+        public Pointer field_0xd0;
+        public Pointer field_0xd8;
+        public Pointer field_0xe0;
+        public Pointer field_0xe8;
+        public Pointer field_0xf0;
+        public Pointer field_0xf8;
+        public Pointer field_0x100;
+        public Pointer field_0x108;
     }
 }

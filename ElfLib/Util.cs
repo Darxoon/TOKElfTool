@@ -61,12 +61,8 @@ namespace ElfLib
 
                 if (npcField.FieldType == typeof(string) || (npcField.FieldType.BaseType == typeof(Enum) && StringEnumAttribute.IsStringEnum(npcField.FieldType)))
                 {
-                    string str = stringSection.GetString((ElfStringPointer)rawNpcField.GetValue(raw));
+                    string str = stringSection.GetString((Pointer)rawNpcField.GetValue(raw));
                     npcField.SetValue(npc, npcField.FieldType.BaseType == typeof(Enum) ? StringEnumAttribute.GetEnumValueFromString(str, npcField.FieldType) : str);
-                }
-                else if (rawNpcField.FieldType == typeof(ElfStringPointer) && npcField.FieldType == typeof(long))
-                {
-                    npcField.SetValue(npc, ((ElfStringPointer)rawNpcField.GetValue(raw)).AsLong);
                 }
                 else if (npcField.FieldType.BaseType == typeof(Enum))
                 {
@@ -102,7 +98,7 @@ namespace ElfLib
                 if (field == null)
                     throw new Exception($"Didn't find field `{rawField.Name}` in type {nameof(TSource)}");
 
-                if (rawField.FieldType == typeof(ElfStringPointer) && (field.FieldType == typeof(string) || StringEnumAttribute.IsStringEnum(field.FieldType)))
+                if (rawField.FieldType == typeof(Pointer) && (field.FieldType == typeof(string) || StringEnumAttribute.IsStringEnum(field.FieldType)))
                 {
                     string str = StringEnumAttribute.IsStringEnum(field.FieldType) ? StringEnumAttribute.GetIdentifier(field.GetValue(source), field.FieldType) : (string)field.GetValue(source);
                     SectionPointer stringPointer = str != null ? stringSectionTable[str] : SectionPointer.NULL;
@@ -111,11 +107,11 @@ namespace ElfLib
                     else
                         rawField.SetValue(rawObject, stringPointer);
                 }
-                else if (rawField.FieldType == typeof(ElfStringPointer) && field.FieldType == typeof(long))
+                else if (rawField.FieldType == typeof(Pointer) && field.FieldType == typeof(Pointer))
                 {
-                    ElfStringPointer pointer = new ElfStringPointer((long)field.GetValue(source));
+                    Pointer pointer = (Pointer)field.GetValue(source);
                     if (stringRelocTable != null)
-                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, pointer != ElfStringPointer.NULL 
+                        stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, pointer != Pointer.NULL 
                             ? new SectionPointer(pointer, 0x700000101)
                             : SectionPointer.NULL); 
                     else

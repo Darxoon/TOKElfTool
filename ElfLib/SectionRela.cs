@@ -19,15 +19,15 @@ namespace ElfLib
             set => Offset = value;
         }
 
-        public ElfStringPointer TargetOffsetPointer
+        public Pointer TargetOffsetPointer
         {
-            get => new ElfStringPointer(Addend);
+            get => new Pointer(Addend);
             set => Addend = value.AsLong;
         }
         
         private SectionRela() { }
         
-        internal SectionRela(long originOffset, long info, ElfStringPointer targetOffsetPointer)
+        internal SectionRela(long originOffset, long info, Pointer targetOffsetPointer)
         {
             Offset = originOffset;
             Info = info;

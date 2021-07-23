@@ -12,26 +12,26 @@ namespace ElfLib.CustomDataTypes
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct RawAobj
     {
-        public ElfStringPointer level_str;
-        public ElfStringPointer object_str;
-        public ElfStringPointer shape_str;
+        public Pointer level_str;
+        public Pointer object_str;
+        public Pointer shape_str;
         public Vector3 position;
         public float field_0x24;
         public float field_0x28;
         public float field_0x2c;
         public int field_0x30;
         public int field_0x34;
-        public ElfStringPointer field_0x38;
-        public ElfStringPointer field_0x40;
+        public Pointer field_0x38;
+        public Pointer field_0x40;
         public int field_0x48;
         public int field_0x4c;
-        public ElfStringPointer field_0x50;
+        public Pointer field_0x50;
         public int field_0x58;
         public int field_0x5c;
-        public ElfStringPointer field_0x60;
+        public Pointer field_0x60;
         public int field_0x68;
         public int field_0x6c;
-        public ElfStringPointer field_0x70;
+        public Pointer field_0x70;
         public int field_0x78;
         public int field_0x7c;
         public int field_0x80;
@@ -68,7 +68,7 @@ namespace ElfLib.CustomDataTypes
         public int field_0xfc;
         public int field_0x100;
         public int field_0x104;
-        public ElfStringPointer field_0x108;
+        public Pointer field_0x108;
         public int field_0x110;
         public int field_0x114;
         public int field_0x118;

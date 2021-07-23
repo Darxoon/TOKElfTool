@@ -35,10 +35,10 @@ namespace ElfLib.CustomDataTypes.Registry
         public float field_0x64;
         public int field_0x68;
         public int field_0x6c;
-        public long model_files_ptr;
+        public Pointer model_files_ptr;
         public int field_0x78;
         public int field_0x7c;
-        public long state_ptr;
+        public Pointer state_ptr;
         public int field_0x88;
         public int field_0x8c;
     }

@@ -11,9 +11,5 @@ namespace ElfLib.CustomDataTypes.Registry
         public Pointer state0_ptr;
         public int field_0x10;
         public int field_0x14;
-        public Pointer field_0x18;
-        public Pointer field_0x20;
-        public int field_0x28;
-        public int field_0x2c;
     }
 }

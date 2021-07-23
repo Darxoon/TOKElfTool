@@ -4,39 +4,39 @@ using System.Text;
 
 namespace ElfLib
 {
-    public readonly struct ElfStringPointer
+    public readonly struct Pointer
     {
         private readonly long pointer;
 
         public long AsLong => pointer;
         public int AsInt => (int)pointer;
 
-        public ElfStringPointer(long pointer)
+        public Pointer(long pointer)
         {
             this.pointer = pointer;
         }
         public override string ToString()
         {
-            return $"str->0x{pointer:X2}";
+            return $"ptr->0x{pointer:X2}";
         }
 
         #region things that should be implemented by default because this is a struct and not a class, if I needed something different than memberwise comparison I would use a class
-        public static bool operator ==(ElfStringPointer x, ElfStringPointer y)
+        public static bool operator ==(Pointer x, Pointer y)
         {
             return x.pointer == y.pointer;
         }
 
-        public static bool operator !=(ElfStringPointer x, ElfStringPointer y)
+        public static bool operator !=(Pointer x, Pointer y)
         {
             return !(x == y);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ElfStringPointer other && this == other;
+            return obj is Pointer other && this == other;
         }
         
-        public bool Equals(ElfStringPointer other)
+        public bool Equals(Pointer other)
         {
             return pointer == other.pointer;
         }
@@ -47,30 +47,31 @@ namespace ElfLib
         }
         #endregion
 
-        public static readonly ElfStringPointer NULL = new ElfStringPointer(int.MaxValue);
-        public static readonly ElfStringPointer ZERO = new ElfStringPointer(0);
+        public static readonly Pointer NULL = new Pointer(int.MaxValue);
+        public static readonly Pointer ZERO = new Pointer(0);
     }
     
-    public readonly struct SectionPointer
+    
+    internal readonly struct SectionPointer
     {
         private const long DEFAULT_METADATA = long.MaxValue - 2;
-        public static readonly SectionPointer NULL = new SectionPointer(ElfStringPointer.NULL, DEFAULT_METADATA);
+        public static readonly SectionPointer NULL = new SectionPointer(ElfLib.Pointer.NULL, DEFAULT_METADATA);
         
         
-        private readonly ElfStringPointer pointer;
+        private readonly Pointer pointer;
 
-        public ElfStringPointer Pointer => pointer;
+        public Pointer Pointer => pointer;
         public long AsLong => pointer.AsLong;
         public int AsInt => pointer.AsInt;
         public long Metadata { get; }
 
-        public SectionPointer(ElfStringPointer pointer, long sectionMetadata)
+        public SectionPointer(Pointer pointer, long sectionMetadata)
         {
             this.pointer = pointer;
             Metadata = sectionMetadata;
         }
         
-        public SectionPointer(ElfStringPointer pointer)
+        public SectionPointer(Pointer pointer)
         {
             this.pointer = pointer;
             Metadata = DEFAULT_METADATA;
@@ -78,13 +79,13 @@ namespace ElfLib
         
         public SectionPointer(long pointer, long sectionMetadata)
         {
-            this.pointer = new ElfStringPointer(pointer);
+            this.pointer = new Pointer(pointer);
             Metadata = sectionMetadata;
         }
         
         public SectionPointer(long pointer)
         {
-            this.pointer = new ElfStringPointer(pointer);
+            this.pointer = new Pointer(pointer);
             Metadata = DEFAULT_METADATA;
         }
         

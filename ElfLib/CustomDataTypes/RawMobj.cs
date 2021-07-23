@@ -11,9 +11,9 @@ namespace ElfLib
 	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
 	public struct RawMobj
     {
-		public ElfStringPointer level_str;
-		public ElfStringPointer obj_str;
-		public ElfStringPointer shape_str;
+		public Pointer level_str;
+		public Pointer obj_str;
+		public Pointer shape_str;
 		public Vector3 position;
 		public Vector3 rotation;
         #region Misc and unknown fields
@@ -40,7 +40,7 @@ namespace ElfLib
 		public int field_74;
 		public int field_78;
 		public int field_7C;
-		public ElfStringPointer field_80;
+		public Pointer field_80;
 		public int field_88;
 		public int field_8C;
 		public int field_90;
@@ -69,7 +69,7 @@ namespace ElfLib
 		public int field_EC;
 		public int field_F0;
 		public int field_F4;
-		public ElfStringPointer init_function_str;
+		public Pointer init_function_str;
 		public int field_100;
 		public int field_104;
 		public int field_108;
@@ -103,7 +103,7 @@ namespace ElfLib
         #endregion
 
 
-        public static RawMobj From(Mobj npc, Dictionary<string, ElfStringPointer> stringSectionTable, SortedDictionary<long, ElfStringPointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawMobj From(Mobj npc, Dictionary<string, Pointer> stringSectionTable, SortedDictionary<long, Pointer> stringRelocTable = null, long baseOffset = 0)
         {
             object rawMobj = new RawMobj();
 
@@ -113,10 +113,10 @@ namespace ElfLib
                 if (npcField == null)
                     throw new Exception($"Didn't find field `{rawNpcField.Name}` in type NPC");
 
-                if (rawNpcField.FieldType == typeof(ElfStringPointer) && npcField.FieldType == typeof(string))
+                if (rawNpcField.FieldType == typeof(Pointer) && npcField.FieldType == typeof(string))
                 {
                     string str = (string)npcField.GetValue(npc);
-                    ElfStringPointer stringPointer = str != null ? stringSectionTable[str] : ElfStringPointer.NULL;
+                    Pointer stringPointer = str != null ? stringSectionTable[str] : Pointer.NULL;
                     if (stringRelocTable != null)
                         stringRelocTable.Add(rawNpcField.GetFieldOffset() + baseOffset, stringPointer);
                     else

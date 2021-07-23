@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ElfLib.CustomDataTypes.Registry
 {
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     [StructLayout(LayoutKind.Sequential)]
     public struct RawItemType
     {
-        public ElfStringPointer id;
-        public ElfStringPointer name;
-        public ElfStringPointer type;
-        public ElfStringPointer model_internal_id;
+        public Pointer id;
+        public Pointer name;
+        public Pointer type;
+        public Pointer model_internal_id;
         public int field_0x20;
         public int field_0x24;
         public int field_0x28;
@@ -22,20 +25,20 @@ namespace ElfLib.CustomDataTypes.Registry
         public int field_0x3c;
         public int value;
         public int field_0x44;
-        public ElfStringPointer model_base_path;
-        public ElfStringPointer field_0x50;
-        public ElfStringPointer description_id;
-        public ElfStringPointer icon_id;
+        public Pointer model_base_path;
+        public Pointer field_0x50;
+        public Pointer description_id;
+        public Pointer icon_id;
         public int field_0x68;
         public int field_0x6c;
-        public ElfStringPointer field_0x70;
-        public ElfStringPointer field_0x78;
+        public Pointer field_0x70;
+        public Pointer field_0x78;
         public int field_0x80;
         public int field_0x84;
-        public ElfStringPointer field_0x88;
-        public ElfStringPointer field_0x90;
-        public ElfStringPointer field_0x98;
-        public ElfStringPointer field_0xa0;
+        public Pointer field_0x88;
+        public Pointer field_0x90;
+        public Pointer field_0x98;
+        public Pointer field_0xa0;
         public int field_0xa8;
         public int field_0xac;
         public int field_0xb0;
@@ -44,6 +47,6 @@ namespace ElfLib.CustomDataTypes.Registry
         public int field_0xbc;
         public int field_0xc0;
         public int field_0xc4;
-        public ElfStringPointer script_id;
+        public Pointer script_id;
     }
 }

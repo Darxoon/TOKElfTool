@@ -6,9 +6,9 @@ namespace ElfLib.CustomDataTypes
 {
     public struct RawItem
     {
-        public ElfStringPointer level_str;
-        public ElfStringPointer obj_str;
-        public ElfStringPointer shape_str;
+        public Pointer level_str;
+        public Pointer obj_str;
+        public Pointer shape_str;
         public Vector3 field_0x18;
         public int field_0x24;
         public int field_0x28;

@@ -16,7 +16,7 @@ namespace ElfLib
     public class Symbol
     {
 
-        internal ElfStringPointer internalName;
+        internal Pointer internalName;
 
         public string Name { get; }
 
@@ -38,7 +38,7 @@ namespace ElfLib
 
         internal Symbol(BinaryReader reader, Section stringTable, List<Section> sections)
         {
-            internalName = new ElfStringPointer(reader.ReadInt32());
+            internalName = new Pointer(reader.ReadInt32());
             Name = stringTable.GetString(internalName);
             Info = reader.ReadByte();
             Visibility = reader.ReadByte();

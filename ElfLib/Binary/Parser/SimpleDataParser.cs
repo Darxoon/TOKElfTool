@@ -73,8 +73,8 @@ namespace ElfLib.Binary.Parser
             
             for (int i = 0; i < fields.Length; i++)
             {
-                if (fields[i].FieldType == typeof(ElfStringPointer))
-                    fields[i].SetValue(result, ElfStringPointer.NULL);
+                if (fields[i].FieldType == typeof(Pointer))
+                    fields[i].SetValue(result, Pointer.NULL);
             }
 
             return (T)result;
@@ -97,8 +97,8 @@ namespace ElfLib.Binary.Parser
                 {
                     if (field.GetFieldOffset() == fieldOffset)
                     {
-                        if (field.FieldType == typeof(ElfStringPointer))
-                            field.SetValue(objects[(int)instanceIndex], new ElfStringPointer(relocation.Addend));
+                        if (field.FieldType == typeof(Pointer))
+                            field.SetValue(objects[(int)instanceIndex], new Pointer(relocation.Addend));
                         else
                             Trace.WriteLine($"Possible unidentified string: {field}");
                         break;

@@ -15,12 +15,5 @@ namespace ElfLib.CustomDataTypes.Registry
         public string field_0x18;
         public int field_0x20;
         public int field_0x24;
-        public string field_0x28;
-        public string field_0x30;
-        public string field_0x38;
-        public int field_0x40;
-        public int field_0x44;
-        public int field_0x48;
-        public int field_0x4c;
     }
 }
