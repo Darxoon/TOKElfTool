@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using ElfLib.CustomDataTypes.NPC;
 
-namespace ElfLib
+namespace ElfLib.Types.Disposition
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct NPC
+    public struct Npc
     { /* An interactable character */
         public string level_str;
         public string obj_str;
@@ -69,7 +65,7 @@ namespace ElfLib
             Type type = GetType();
             FieldInfo[] fields = type.GetFields();
             PropertyInfo[] properties = type.GetProperties();
-            NPC rawNpc = this;
+            Npc rawNpc = this;
 
             Dictionary<string, object> values = new Dictionary<string, object>();
             Array.ForEach(fields, (field) => values.Add(field.Name, field.GetValue(rawNpc)));

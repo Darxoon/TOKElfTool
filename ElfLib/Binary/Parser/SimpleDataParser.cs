@@ -6,8 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib.Binary.Parser
 {

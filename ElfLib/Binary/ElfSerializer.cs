@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Maplink;
-using ElfLib.CustomDataTypes.Registry;
+using ElfLib.Types.Disposition;
+using ElfLib.Types.Disposition.Maplink;
+using ElfLib.Types.Registry;
 
 namespace ElfLib
 {
@@ -267,7 +267,7 @@ namespace ElfLib
 
             int size = Marshal.SizeOf(dataType switch
             {
-                GameDataType.NPC => typeof(RawNPC),
+                GameDataType.NPC => typeof(RawNpc),
                 GameDataType.Mobj => typeof(RawMobj),
                 GameDataType.Aobj => typeof(RawAobj),
                 GameDataType.BShape => typeof(RawBShape),
@@ -283,7 +283,7 @@ namespace ElfLib
             {
                 rawObjects.Add(dataType switch
                 {
-                    GameDataType.NPC      => Util.NormalToRawObject<RawNPC,NPC>((NPC)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.NPC      => Util.NormalToRawObject<RawNpc,Npc>((Npc)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.Mobj     => Util.NormalToRawObject<RawMobj,Mobj>((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.Aobj     => Util.NormalToRawObject<RawAobj,Aobj>((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.Item     => Util.NormalToRawObject<RawItem,Item>((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
@@ -304,7 +304,7 @@ namespace ElfLib
                 case GameDataType.NPC:
                     foreach (Element<T> element in data)
                     {
-                        NPC npc = (NPC)(object)element.value;
+                        Npc npc = (Npc)(object)element.value;
                         allStrings.Add(npc.level_str);
                         allStrings.Add(npc.obj_str);
                         allStrings.Add(npc.shape_str);

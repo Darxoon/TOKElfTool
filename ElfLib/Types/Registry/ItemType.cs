@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace ElfLib.CustomDataTypes.Registry
+namespace ElfLib.Types.Registry
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct ItemType

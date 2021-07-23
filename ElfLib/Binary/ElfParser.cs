@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.IO;
-using System.Diagnostics;
-using System.Diagnostics.SymbolStore;
-using System.Reflection;
+using System.Linq;
 using ElfLib.Binary.Parser;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Registry;
+using ElfLib.Types.Disposition;
+using ElfLib.Types.Registry;
 
 namespace ElfLib
 {
@@ -177,7 +173,7 @@ namespace ElfLib
 
             IDataParser parser = dataType switch
             {
-                GameDataType.NPC => Parse<NPC, RawNPC>(sections, relas, out dataOffsets),
+                GameDataType.NPC => Parse<Npc, RawNpc>(sections, relas, out dataOffsets),
                 
                 GameDataType.Mobj => Parse<Mobj, RawMobj>(sections, relas, out dataOffsets),
                 

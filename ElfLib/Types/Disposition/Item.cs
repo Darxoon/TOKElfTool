@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ElfLib.CustomDataTypes
+﻿namespace ElfLib.Types.Disposition
 {
     public struct Item
     {

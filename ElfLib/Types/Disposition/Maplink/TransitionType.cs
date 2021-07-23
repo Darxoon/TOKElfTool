@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ElfLib.CustomDataTypes.Maplink
+﻿namespace ElfLib.Types.Disposition.Maplink
 {
     [StringEnum]
     public enum TransitionType

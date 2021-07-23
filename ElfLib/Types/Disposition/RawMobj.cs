@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Text;
 using System.Runtime.InteropServices;
 
-namespace ElfLib
+namespace ElfLib.Types.Disposition
 {
 	[StructLayout(LayoutKind.Sequential)]
 	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]

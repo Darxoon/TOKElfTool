@@ -12,8 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Threading;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Registry;
+using ElfLib.Binary;
+using ElfLib.Types.Disposition;
+using ElfLib.Types.Registry;
 using Ookii.Dialogs.Wpf;
 using TOKElfTool.ProgressReports;
 using ZstdNet;
@@ -245,7 +246,7 @@ namespace TOKElfTool
             loadedDataType = type;
             loadedStructType = type switch
             {
-                GameDataType.NPC => typeof(NPC),
+                GameDataType.NPC => typeof(Npc),
                 GameDataType.Mobj => typeof(Mobj),
                 GameDataType.Aobj => typeof(Aobj),
                 GameDataType.BShape => typeof(BShape),

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using ElfLib.CustomDataTypes.Registry;
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace ElfLib.CustomDataTypes
+namespace ElfLib.Types.Disposition
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]

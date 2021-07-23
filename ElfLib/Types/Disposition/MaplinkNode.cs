@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using ElfLib.CustomDataTypes.Maplink;
+﻿using System.Diagnostics.CodeAnalysis;
+using ElfLib.Types.Disposition.Maplink;
 
-namespace ElfLib.CustomDataTypes
+namespace ElfLib.Types.Disposition
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]

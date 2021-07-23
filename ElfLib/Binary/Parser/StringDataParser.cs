@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Registry;
 
 namespace ElfLib.Binary.Parser
 {

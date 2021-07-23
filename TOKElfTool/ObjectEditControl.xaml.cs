@@ -18,7 +18,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ElfLib;
-using ElfLib.CustomDataTypes;
+using ElfLib.Binary;
+using ElfLib.Types.Disposition;
 
 namespace TOKElfTool
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ElfLib.CustomDataTypes.NPC
+﻿namespace ElfLib.Types.Disposition.NPC
 {
     public enum IsEnemyFlags : int
     {

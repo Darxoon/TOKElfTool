@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using ElfLib;
+using ElfLib.Binary;
 
 namespace TOKElfTool
 {

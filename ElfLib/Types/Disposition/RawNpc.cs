@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace ElfLib
+namespace ElfLib.Types.Disposition
 {
 #pragma warning disable IDE0051, IDE0044
     [StructLayout(LayoutKind.Sequential)]
-    public struct RawNPC
+    public struct RawNpc
     {
         public Pointer level_str;
         public Pointer obj_str;
@@ -67,7 +66,7 @@ namespace ElfLib
             Type type = GetType();
             FieldInfo[] fields = type.GetFields();
             PropertyInfo[] properties = type.GetProperties();
-            RawNPC rawNpc = this;
+            RawNpc rawNpc = this;
 
             Dictionary<string, object> values = new Dictionary<string, object>();
             Array.ForEach(fields, (field) => values.Add(field.Name, field.GetValue(rawNpc)));
@@ -92,13 +91,13 @@ namespace ElfLib
         /// <param name="stringSectionTable">The table where the string pointers are stored</param>
         /// <param name="stringRelocTable">The table it adds the string pointer references to, for relocation. Can be left as null</param>
         /// <returns>The output RawNPC</returns>
-        public static RawNPC From(NPC npc, Dictionary<string, Pointer> stringSectionTable, SortedDictionary<long, Pointer> stringRelocTable = null, long baseOffset = 0)
+        public static RawNpc From(Npc npc, Dictionary<string, Pointer> stringSectionTable, SortedDictionary<long, Pointer> stringRelocTable = null, long baseOffset = 0)
         {
-            object rawNPC = new RawNPC();
+            object rawNPC = new RawNpc();
 
-            foreach (FieldInfo rawNpcField in typeof(RawNPC).GetFields())
+            foreach (FieldInfo rawNpcField in typeof(RawNpc).GetFields())
             {
-                FieldInfo npcField = typeof(NPC).GetField(rawNpcField.Name);
+                FieldInfo npcField = typeof(Npc).GetField(rawNpcField.Name);
                 if (npcField == null)
                     throw new Exception($"Didn't find field `{rawNpcField.Name}` in type NPC");
 
@@ -127,7 +126,7 @@ namespace ElfLib
                     throw new Exception($"Types `{npcField.FieldType}` and `{rawNpcField.FieldType}` didn't match on field `{npcField.Name}`");
             }
 
-            return (RawNPC)rawNPC;
+            return (RawNpc)rawNPC;
         }
 
     }

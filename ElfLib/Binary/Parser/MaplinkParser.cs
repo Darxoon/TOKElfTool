@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using ElfLib.CustomDataTypes;
+using ElfLib.Types.Disposition;
 
 namespace ElfLib.Binary.Parser
 {

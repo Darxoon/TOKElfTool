@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ElfLib.CustomDataTypes;
-using ElfLib.CustomDataTypes.Registry;
+using ElfLib.Types.Registry;
 
 namespace ElfLib.Binary.Parser
 {
