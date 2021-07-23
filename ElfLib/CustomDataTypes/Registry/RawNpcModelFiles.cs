@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace ElfLib.CustomDataTypes
+namespace ElfLib.CustomDataTypes.Registry
 {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -9,15 +9,15 @@ namespace ElfLib.CustomDataTypes
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [StructLayout(LayoutKind.Sequential)]
     public struct RawNpcModelFiles {
-        public ElfStringPointer model_folder;
-        public ElfStringPointer model_name;
-        public ElfStringPointer field_0x10;
-        public ElfStringPointer field_0x18;
+        public Pointer model_folder;
+        public Pointer model_name;
+        public Pointer field_0x10;
+        public Pointer field_0x18;
         public int field_0x20;
         public int field_0x24;
-        public ElfStringPointer field_0x28;
-        public ElfStringPointer field_0x30;
-        public ElfStringPointer field_0x38;
+        public Pointer field_0x28;
+        public Pointer field_0x30;
+        public Pointer field_0x38;
         public int field_0x40;
         public int field_0x44;
         public int field_0x48;
