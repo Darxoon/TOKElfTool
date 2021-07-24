@@ -26,7 +26,9 @@ namespace ElfLib.Binary.Parser
 
             foreach ((ElfType elfType, List<object> instances) in dict)
             {
-                result[elfType] = instances.Select(instance => (object)Util.RawToNormalObject<TNew, TSource>((TSource)instance, stringSection)).ToList();
+                result[elfType] = instances.Select(instance => instance is object[] source
+                    ? source.Select(instance => (object)Util.RawToNormalObject<TNew, TSource>((TSource)instance, stringSection)).ToList()
+                    : (object)Util.RawToNormalObject<TNew, TSource>((TSource)instance, stringSection)).ToList();
             }
 
             return result;

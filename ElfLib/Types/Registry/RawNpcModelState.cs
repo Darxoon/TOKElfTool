@@ -7,9 +7,9 @@ namespace ElfLib.Types.Registry
     [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public struct RawNpcModelState {
-        public Pointer field_0x0;
-        public Pointer state0_ptr;
-        public int field_0x10;
+        public Pointer description;
+        public Pointer substate_arr;
+        public int substate_count;
         public int field_0x14;
     }
 }

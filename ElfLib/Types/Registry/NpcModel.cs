@@ -36,10 +36,10 @@ namespace ElfLib.Types.Registry
         public int field_0x68;
         public int field_0x6c;
         public Pointer model_files_ptr;
-        public int field_0x78;
+        public int model_files_count;
         public int field_0x7c;
         public Pointer state_ptr;
-        public int field_0x88;
+        public int state_count;
         public int field_0x8c;
     }
 }

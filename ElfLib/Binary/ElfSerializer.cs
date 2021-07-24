@@ -418,7 +418,7 @@ namespace ElfLib
                                 allStrings.Add(files.field_0x18);
                                 break;
                             case NpcModelState state:
-                                allStrings.Add(state.field_0x0);
+                                allStrings.Add(state.description);
                                 break;
                         }
                     }

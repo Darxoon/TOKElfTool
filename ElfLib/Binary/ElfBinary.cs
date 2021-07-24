@@ -23,6 +23,7 @@ namespace ElfLib
         MaplinkHeader,
         Files,
         State,
+        SubStates,
     }
 
     /// <summary>

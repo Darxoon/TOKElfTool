@@ -1,25 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace ElfLib.Binary.Parser
 {
-    internal class NpcModelPartParser<T> : IDataParser
+    internal class NpcModelPartParser<T> : IDataParser where T : struct
     {
         private readonly Section section;
         private readonly List<long> partOffsets;
+        private readonly List<int> partCounts;
         private readonly List<SectionRela> relocationTable;
-        private readonly Dictionary<ElfType,List<long>> dataOffsets;
 
-        public NpcModelPartParser(Section section, List<long> partOffsets, List<SectionRela> relocationTable, out Dictionary<ElfType,List<long>> dataOffsets)
+        public NpcModelPartParser(
+            Section section, List<long> partOffsets, List<int> partCounts, 
+            List<SectionRela> relocationTable)
         {
             this.section = section;
             this.partOffsets = partOffsets;
+            this.partCounts = partCounts;
             this.relocationTable = relocationTable;
-
-            this.dataOffsets = dataOffsets = new Dictionary<ElfType,List<long>>();
         }
 
         public IDictionary<ElfType, List<object>> Parse()
@@ -27,26 +29,31 @@ namespace ElfLib.Binary.Parser
             using MemoryStream stream = new MemoryStream(section.Content);
             using BinaryReader reader = new BinaryReader(stream);
 
-            List<object> instances = new List<object>();
-
-            dataOffsets[ElfType.Main] = new List<long>();
+            List<T[]> instances = new List<T[]>();
             
             for (int i = 0; i < partOffsets.Count; i++)
             {
                 stream.Position = partOffsets[i];
-                dataOffsets[ElfType.Main].Add(partOffsets[i]);
-                instances.Add(SimpleDataParser<T>.FromBinaryReader(reader));
+                
+                T[] partInstances = new T[partCounts[i]];
+                for (int j = 0; j < partCounts[i]; j++)
+                    partInstances[j] = SimpleDataParser<T>.FromBinaryReader(reader);
+                
+                instances.Add(partInstances);
             }
             
-            ResolveRelocations(instances);
+            List<object[]> boxedInstances = instances.Select(arr => arr.Cast<object>().ToArray()).ToList();
+
+            Trace.WriteLine("Resolving relocations");
+            ResolveRelocations(boxedInstances);
 
             return new Dictionary<ElfType, List<object>>
             {
-                {ElfType.Main, instances},
+                {ElfType.Main, boxedInstances.Cast<object>().ToList()},
             };
         }
         
-        private void ResolveRelocations(List<object> objects)
+        private void ResolveRelocations(List<object[]> objects)
         {
             int size = Marshal.SizeOf(typeof(T));
 
@@ -54,7 +61,7 @@ namespace ElfLib.Binary.Parser
             {
                 for (int i = 0; i < partOffsets.Count; i++)
                 {
-                    if (relocation.OriginOffset < partOffsets[i] + size)
+                    if (relocation.OriginOffset < partOffsets[i] + size * partCounts[i])
                     {
                         long fieldOffset = relocation.OriginOffset - partOffsets[i];
                         
@@ -64,7 +71,7 @@ namespace ElfLib.Binary.Parser
                             if (field.GetFieldOffset() == fieldOffset)
                             {
                                 if (field.FieldType == typeof(Pointer))
-                                    field.SetValue(objects[i], new Pointer(relocation.Addend));
+                                    field.SetValue(objects[i][(relocation.OriginOffset - partOffsets[i]) / size], new Pointer(relocation.Addend));
                                 else
                                     Trace.WriteLine($"Possible unidentified string: {typeof(T)} {field}");
                                 break;
@@ -72,7 +79,6 @@ namespace ElfLib.Binary.Parser
                         }
                     }
                 }
-                
             }
         }
     }
