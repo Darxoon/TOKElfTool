@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -56,17 +57,20 @@ namespace ElfLib.Binary.Parser
         private void ResolveRelocations(List<object[]> objects)
         {
             int size = Marshal.SizeOf(typeof(T));
+            FieldInfo[] fields = typeof(T).GetFields();
 
+            // TODO: refactor for better performance by iterating through the parts and using manual iterators
             foreach (SectionRela relocation in relocationTable)
             {
                 for (int i = 0; i < partOffsets.Count; i++)
                 {
-                    if (relocation.OriginOffset < partOffsets[i] + size * partCounts[i])
+                    if (relocation.OriginOffset < partOffsets[i] + size * partCounts[i] && relocation.OriginOffset >= partOffsets[i])
                     {
-                        long fieldOffset = relocation.OriginOffset - partOffsets[i];
+                        long fieldOffset = (relocation.OriginOffset - partOffsets[i]) % size;
                         
                         // iterate through all fields and apply the relocation
-                        foreach (FieldInfo field in typeof(T).GetFields())
+                        bool found = false;
+                        foreach (FieldInfo field in fields)
                         {
                             if (field.GetFieldOffset() == fieldOffset)
                             {
@@ -74,9 +78,13 @@ namespace ElfLib.Binary.Parser
                                     field.SetValue(objects[i][(relocation.OriginOffset - partOffsets[i]) / size], new Pointer(relocation.Addend));
                                 else
                                     Trace.WriteLine($"Possible unidentified string: {typeof(T)} {field}");
+                                found = true;
                                 break;
                             }
                         }
+                        
+                        if (!found)
+                            throw new Exception("Invalid field offset");
                     }
                 }
             }

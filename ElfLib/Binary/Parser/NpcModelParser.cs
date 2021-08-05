@@ -33,7 +33,7 @@ namespace ElfLib.Binary.Parser
             // Parse .data section
 
             Trace.WriteLine("Parsing .data");
-            var dataParser = new StringDataParser<NpcModel, RawNpcModel>(stringSection, 
+            var dataParser = new StringArrayParser<NpcModel, RawNpcModel>(stringSection, 
                 new SimpleDataParser<RawNpcModel>(dataSection, dataRelocationTable, out var mainDataOffsets));
 
             List<object> dataModels = dataParser.Parse()[ElfType.Main];
@@ -59,10 +59,10 @@ namespace ElfLib.Binary.Parser
             // Parse .rodata section
 
             Trace.WriteLine("Parsing .rodata");
-            var filesParser = new StringDataParser<NpcModelFiles,RawNpcModelFiles>(stringSection,
+            var filesParser = new StringArrayParser<NpcModelFiles,RawNpcModelFiles>(stringSection,
                 new NpcModelPartParser<RawNpcModelFiles>(rodataSection, modelFilesOffsets, modelFilesLengths, rodataRelocationTable));
             
-            var stateParser = new StringDataParser<NpcModelState,RawNpcModelState>(stringSection, 
+            var stateParser = new StringArrayParser<NpcModelState,RawNpcModelState>(stringSection, 
                 new NpcModelPartParser<RawNpcModelState>(rodataSection, stateOffsets, stateLengths, rodataRelocationTable));
 
             var filesData = filesParser.Parse()[ElfType.Main];
@@ -90,12 +90,64 @@ namespace ElfLib.Binary.Parser
             // Parse substate
             
             Trace.WriteLine("Parsing substate objects");
-            var substateParser = new StringDataParser<NpcModelSubState,RawNpcModelSubState>(stringSection,
+            var substateParser = new StringArrayParser<NpcModelSubState,RawNpcModelSubState>(stringSection,
                 new NpcModelPartParser<RawNpcModelSubState>(rodataSection, substateOffsets, substateCounts, rodataRelocationTable));
 
             var substateData = substateParser.Parse()[ElfType.Main];
             
             dataOffsets[ElfType.SubStates] = substateOffsets;
+            
+            // Collect references to face objects
+            
+            Trace.WriteLine("Collecting references to face objects");
+            List<long> faceOffsets = new List<long>();
+            List<int> faceCounts = new List<int>();
+            for (int i = 0; i < substateData.Count; i++)
+            {
+                List<object> substateArr = (List<object>)substateData[i];
+                for (int j = 0; j < substateArr.Count; j++)
+                {
+                    NpcModelSubState state = (NpcModelSubState)substateArr[j];
+                    faceOffsets.Add(state.face_arr.AsLong);
+                    faceCounts.Add(state.face_count);
+                }
+            }
+            
+            // Parse faces
+            
+            Trace.WriteLine("Parsing face objects");
+            var faceParser = new StringArrayParser<NpcModelFace,RawNpcModelFace>(stringSection,
+                new NpcModelPartParser<RawNpcModelFace>(rodataSection, faceOffsets, faceCounts, rodataRelocationTable));
+
+            List<object> faceData = faceParser.Parse()[ElfType.Main];
+
+            dataOffsets[ElfType.Face] = faceOffsets;
+            
+            // Collect references to anime objects (anime is likely a bad translation for animation)
+            
+            Trace.WriteLine("Collecting references to anime objects");
+            List<long> animeOffsets = new List<long>();
+            List<int> animeCounts = new List<int>();
+            for (int i = 0; i < faceData.Count; i++)
+            {
+                List<object> substateArr = (List<object>)faceData[i];
+                for (int j = 0; j < substateArr.Count; j++)
+                {
+                    NpcModelFace face = (NpcModelFace)substateArr[j];
+                    animeOffsets.Add(face.anime_arr.AsLong);
+                    animeCounts.Add(face.anime_count);
+                }
+            }
+            
+            // Parse anime objects
+            
+            Trace.WriteLine("Parsing anime objects");
+            var animeParser = new StringArrayParser<NpcModelAnime,RawNpcModelAnime>(stringSection,
+                new NpcModelPartParser<RawNpcModelAnime>(rodataSection, animeOffsets, animeCounts, rodataRelocationTable));
+
+            List<object> animeData = animeParser.Parse()[ElfType.Main];
+
+            dataOffsets[ElfType.Anime] = animeOffsets;
             
             return new SortedDictionary<ElfType, List<object>>
             {
@@ -103,6 +155,8 @@ namespace ElfLib.Binary.Parser
                 {ElfType.Files, filesData},
                 {ElfType.State, stateData},
                 {ElfType.SubStates, substateData},
+                {ElfType.Face, faceData},
+                {ElfType.Anime, animeData},
             };
         }
     }

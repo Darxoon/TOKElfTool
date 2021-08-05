@@ -24,6 +24,8 @@ namespace ElfLib
         Files,
         State,
         SubStates,
+        Face,
+        Anime,
     }
 
     /// <summary>
