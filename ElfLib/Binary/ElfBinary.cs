@@ -19,8 +19,11 @@ namespace ElfLib
 
     public enum ElfType
     {
+        // general
         Main,
+        // maplink.elf header
         MaplinkHeader,
+        // data_npc_model.elf .rodata types 
         Files,
         State,
         SubStates,

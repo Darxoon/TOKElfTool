@@ -98,15 +98,21 @@ namespace ElfLib
                 if (field == null)
                     throw new Exception($"Didn't find field `{rawField.Name}` in type {nameof(TSource)}");
 
+                // string
                 if (rawField.FieldType == typeof(Pointer) && (field.FieldType == typeof(string) || StringEnumAttribute.IsStringEnum(field.FieldType)))
                 {
-                    string str = StringEnumAttribute.IsStringEnum(field.FieldType) ? StringEnumAttribute.GetIdentifier(field.GetValue(source), field.FieldType) : (string)field.GetValue(source);
+                    string str = StringEnumAttribute.IsStringEnum(field.FieldType) 
+                        ? StringEnumAttribute.GetIdentifier(field.GetValue(source), field.FieldType) 
+                        : (string)field.GetValue(source);
+                    
                     SectionPointer stringPointer = str != null ? stringSectionTable[str] : SectionPointer.NULL;
+                    
                     if (stringRelocTable != null)
                         stringRelocTable.Add(rawField.GetFieldOffset() + baseOffset, stringPointer);
                     else
                         rawField.SetValue(rawObject, stringPointer);
                 }
+                // pointer
                 else if (rawField.FieldType == typeof(Pointer) && field.FieldType == typeof(Pointer))
                 {
                     Pointer pointer = (Pointer)field.GetValue(source);

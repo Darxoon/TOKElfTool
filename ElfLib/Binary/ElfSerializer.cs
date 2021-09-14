@@ -22,17 +22,18 @@ namespace ElfLib
 
     public class ElfSerializer<T>
     {
-        private ElfSerializer()
+        internal ElfSerializer()
         {
 
         }
 
         public static byte[] SerializeBinary(ElfBinary<T> binary, GameDataType dataType)
         {
-            ElfSerializer<T> serializer = new ElfSerializer<T>
+            ElfSerializer<T> serializer = dataType switch
             {
-                binary = binary,
-                dataType = dataType,
+                GameDataType.DataNpcModel => new NpcModelSerializer<T> {binary = binary, dataType = dataType},
+                
+                _ => new ElfSerializer<T> {binary = binary, dataType = dataType},
             };
             return serializer.Serialize();
         }
@@ -40,8 +41,8 @@ namespace ElfLib
         private ElfBinary<T> binary;
         private GameDataType dataType;
 
-        private byte[] stringSectionData;
-        private SortedDictionary<long, SectionPointer> stringRelocTable;
+        protected byte[] stringSectionData;
+        internal SortedDictionary<long, SectionPointer> dataRelocationMap;
 
         private byte[] Serialize()
         {
@@ -49,7 +50,8 @@ namespace ElfLib
 
             // TODO: Serialize symbols
 
-            byte[] relaData = SerializeRelaData(stringRelocTable, dataType);
+            // TODO: Inline everything
+            byte[] relaData = SerializeRelaData(dataRelocationMap, dataType);
 
             Section[] updatedSections = UpdateSections(serializedData, serializedRodata, relaData, relaRodata);
 
@@ -139,7 +141,7 @@ namespace ElfLib
             return updatedSections.ToArray();
         }
 
-        private static byte[] SerializeRelaData(SortedDictionary<long, SectionPointer> stringRelocTable, GameDataType dataType)
+        internal static byte[] SerializeRelaData(SortedDictionary<long, SectionPointer> stringRelocTable, GameDataType dataType)
         {
             using MemoryStream stream = new MemoryStream();
             using BinaryWriter writer = new BinaryWriter(stream);
@@ -163,7 +165,7 @@ namespace ElfLib
             return stream.ToArray();
         }
 
-        private (byte[] data, byte[] rodata, byte[] relaRodata) SerializeData(Dictionary<ElfType, List<Element<T>>> data, Dictionary<ElfType, List<long>> dataOffsets)
+        protected virtual (byte[] data, byte[] rodata, byte[] relaRodata) SerializeData(Dictionary<ElfType, List<Element<T>>> data, Dictionary<ElfType, List<long>> dataOffsets)
         {
             // Prepare list of all strings
             HashSet<string> allStrings = new HashSet<string>();
@@ -179,63 +181,31 @@ namespace ElfLib
                 out Dictionary<string, SectionPointer> stringDeclarationMap);
 
             List<object> rawObjects = new List<object>();
-            stringRelocTable = new SortedDictionary<long, SectionPointer>();
+            dataRelocationMap = new SortedDictionary<long, SectionPointer>();
 
             // Convert objects to raw objects and serialize them
             long dataSectionPosition = 0;
             // TODO: collect new symbol positions
 
-            ConvertToRawObjects(data[ElfType.Main], dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
+            ConvertToRawObjects(data[ElfType.Main], dataType, stringDeclarationMap, rawObjects, dataRelocationMap, ref dataSectionPosition);
 
             if (dataType == GameDataType.Maplink)
-                ConvertToRawObjects(data[ElfType.MaplinkHeader], dataType, stringDeclarationMap, rawObjects, stringRelocTable, ref dataSectionPosition);
+                ConvertToRawObjects(data[ElfType.MaplinkHeader], dataType, stringDeclarationMap, rawObjects, dataRelocationMap, ref dataSectionPosition);
                 
             
             // Serialize 
-            MemoryStream dataStream = new MemoryStream();
-            BinaryWriter binaryWriter = new BinaryWriter(dataStream);
+            using MemoryStream dataStream = new MemoryStream();
+            using BinaryWriter binaryWriter = new BinaryWriter(dataStream);
+            
             foreach (var item in rawObjects)
             {
                 Util.ToBinaryWriter(binaryWriter, item);
             }
 
-            byte[] output = dataStream.ToArray();
-
-            dataStream.Dispose();
-            binaryWriter.Dispose();
-
-            if (dataType == GameDataType.DataNpcModel)
-            {
-                List<(Element<T> instance, long offset)> rodataObjects = new List<(Element<T>, long)>(data[ElfType.Files].Count + data[ElfType.State].Count);
-                rodataObjects.AddRange(data[ElfType.Files].Zip(dataOffsets[ElfType.Files], (element, l) => (element, l)));
-                rodataObjects.AddRange(data[ElfType.State].Zip(dataOffsets[ElfType.State], (element, l) => (element, l)));
-                rodataObjects.Sort((x, y) => x.offset.CompareTo(y.offset));
-                
-                SortedDictionary<long, SectionPointer> rodataStringRelocTable = new SortedDictionary<long, SectionPointer>();
-
-                using MemoryStream stream = new MemoryStream();
-                using BinaryWriter writer = new BinaryWriter(stream);
-                
-                for (int i = 0; i < rodataObjects.Count; i++)
-                {
-                    object rawInstance = rodataObjects[i].instance.value switch
-                    {
-                        NpcModelFiles files => Util.NormalToRawObject<RawNpcModelFiles, NpcModelFiles>(files,
-                            stringDeclarationMap, rodataStringRelocTable, stream.Position),
-                        NpcModelState state => Util.NormalToRawObject<RawNpcModelState, NpcModelState>(state,
-                            stringDeclarationMap, rodataStringRelocTable, stream.Position),
-                    };
-                    
-                    Util.ToBinaryWriter(writer, rawInstance);
-                }
-
-                return (output, stream.ToArray(), SerializeRelaData(rodataStringRelocTable, dataType));
-            }
-
-            return (output, null, null);
+            return (dataStream.ToArray(), null, null);
         }
 
-        private static void ConvertToRawObjects(List<Element<T>> data, GameDataType dataType, Dictionary<string, SectionPointer> stringDeclarationMap, 
+        internal static void ConvertToRawObjects(List<Element<T>> data, GameDataType dataType, Dictionary<string, SectionPointer> stringDeclarationMap, 
             List<object> rawObjects, SortedDictionary<long, SectionPointer> stringRelocTable, ref long dataSectionPosition)
         {
             if (dataType == GameDataType.Maplink)
@@ -283,21 +253,21 @@ namespace ElfLib
             {
                 rawObjects.Add(dataType switch
                 {
-                    GameDataType.NPC      => Util.NormalToRawObject<RawNpc,Npc>((Npc)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Mobj     => Util.NormalToRawObject<RawMobj,Mobj>((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Aobj     => Util.NormalToRawObject<RawAobj,Aobj>((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.Item     => Util.NormalToRawObject<RawItem,Item>((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.BShape   => Util.NormalToRawObject<RawBShape,BShape>((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.DataNpc  => Util.NormalToRawObject<RawNpcType,NpcType>((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.DataItem => Util.NormalToRawObject<RawItemType,ItemType>((ItemType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
-                    GameDataType.DataNpcModel => Util.NormalToRawObject<RawNpcModel,NpcModel>((NpcModel)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.NPC      => (object)Util.NormalToRawObject<RawNpc,Npc>((Npc)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Mobj     => (object)Util.NormalToRawObject<RawMobj,Mobj>((Mobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Aobj     => (object)Util.NormalToRawObject<RawAobj,Aobj>((Aobj)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.Item     => (object)Util.NormalToRawObject<RawItem,Item>((Item)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.BShape   => (object)Util.NormalToRawObject<RawBShape,BShape>((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataNpc  => (object)Util.NormalToRawObject<RawNpcType,NpcType>((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataItem => (object)Util.NormalToRawObject<RawItemType,ItemType>((ItemType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataNpcModel => (object)Util.NormalToRawObject<RawNpcModel,NpcModel>((NpcModel)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     _ => throw new ElfSerializeException("Data Type not supported yet"),
                 });
                 dataSectionPosition += size;
             }
         }
 
-        private static void AddAllStrings<T>(List<Element<T>> data, GameDataType dataType, HashSet<string> allStrings)
+        protected static void AddAllStrings(IEnumerable<Element<T>> data, GameDataType dataType, HashSet<string> allStrings)
         {
             switch (dataType)
             {
@@ -406,20 +376,22 @@ namespace ElfLib
                 case GameDataType.DataNpcModel:
                     foreach (Element<T> element in data)
                     {
-                        switch (element.value)
+                        List<object> list = (List<object>)(object)element.value;
+                        
+                        for (int i = 0; i < list.Count; i++)
                         {
-                            case NpcModel model:
-                                allStrings.Add(model.model_id);
-                                break;
-                            case NpcModelFiles files:
-                                allStrings.Add(files.model_folder);
-                                allStrings.Add(files.model_name);
-                                allStrings.Add(files.field_0x10);
-                                allStrings.Add(files.field_0x18);
-                                break;
-                            case NpcModelState state:
-                                allStrings.Add(state.description);
-                                break;
+                            switch (list[i])
+                            {
+                                case NpcModelFiles files:
+                                    allStrings.Add(files.model_folder);
+                                    allStrings.Add(files.model_name);
+                                    allStrings.Add(files.field_0x10);
+                                    allStrings.Add(files.field_0x18);
+                                    break;
+                                case NpcModelState state:
+                                    allStrings.Add(state.description);
+                                    break;
+                            }
                         }
                     }
                     break;
