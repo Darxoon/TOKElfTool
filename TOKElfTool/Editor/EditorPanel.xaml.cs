@@ -63,6 +63,12 @@ namespace TOKElfTool
         {
             modifiedObjects = new List<bool>(new bool[Objects.Count]);
             InitializeObjectsPanel();
+            
+            if (DefaultType == null)
+                foreach (UIElement child in toolBar.Children)
+                {
+                    child.IsEnabled = false;
+                }
         }
 
         public void FocusObject(int index)
@@ -90,6 +96,7 @@ namespace TOKElfTool
                         Data = Data,
                         DataOffsets = DataOffsets,
                         Index = i,
+                        ButtonPanelVisible = !(DefaultType is null),
                     };
 
                     objectTabPanel.Children.Add(control);
@@ -101,7 +108,10 @@ namespace TOKElfTool
                         : ChildHeaders[i];
 
                     ObjectEditControl control =
-                        new ObjectEditControl(currentElement.value, title, i, SymbolTable, Data, DataOffsets);
+                        new ObjectEditControl(currentElement.value, title, i, SymbolTable, Data, DataOffsets)
+                        {
+                            ButtonPanelVisible = !(DefaultType is null),
+                        };
 
                     control.RemoveButtonClick += RemoveButton_OnClick;
                     control.DuplicateButtonClick += DuplicateButton_OnClick;

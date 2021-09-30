@@ -43,6 +43,7 @@ namespace TOKElfTool.Editor
         
         public bool IsExpanded { get => Expander.IsExpanded; set => Expander.IsExpanded = value; }
 
+        public bool ButtonPanelVisible { get; set; }
 
         private bool loaded;
         
@@ -165,7 +166,11 @@ namespace TOKElfTool.Editor
 
                 for (int i = 0; i < Objects.Count; i++)
                 {
-                    ObjectEditControl control = new ObjectEditControl(Objects[i], $"{(ChildHeader)} {i}", i, null, Data, DataOffsets);
+                    ObjectEditControl control = new ObjectEditControl(Objects[i], $"{(ChildHeader)} {i}", i, null, Data, DataOffsets)
+                    {
+                        ButtonPanelVisible = ButtonPanelVisible,
+                    };
+                    
                     stackPanel.Children.Add(control);
                 }
             }

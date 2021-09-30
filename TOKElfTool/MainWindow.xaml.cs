@@ -221,7 +221,7 @@ namespace TOKElfTool
                 }
                 else
                 {
-                    InnerEditor innerEditor = CreateInnerEditor(e.index);
+                    InnerEditor innerEditor = CreateInnerEditor(e.index, $"Inner Objects from NPC Model {e.index}");
 
                     innerEditors[e.index] = innerEditor;
 
@@ -237,7 +237,7 @@ namespace TOKElfTool
             editors.Add(panel);
         }
 
-        private InnerEditor CreateInnerEditor(int index)
+        private InnerEditor CreateInnerEditor(int index, string title)
         {
             if (!subEditorContents.ContainsKey(index))
                 subEditorContents.Add(index, new List<Element<object>>
@@ -250,6 +250,7 @@ namespace TOKElfTool
 
             InnerEditor innerEditor = new InnerEditor
             {
+                Title = title,
                 Type = GameDataType.DataNpcModel,
                 DisplayObjects = objects,
 

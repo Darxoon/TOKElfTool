@@ -29,6 +29,16 @@ namespace TOKElfTool.Editor
         public event EventHandler<(ElfType type, int index)> HyperlinkClick;
         
         public event EventHandler ValueChanged;
+
+        public bool ButtonPanelVisible
+        {
+            get => buttonPanelVisible;
+            set
+            {
+                buttonPanelVisible = value;
+                buttonPanel.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
         
         public bool ViewButtonVisible
         {
@@ -64,6 +74,7 @@ namespace TOKElfTool.Editor
         private readonly Dictionary<ElfType, List<long>> dataOffsets;
         private bool loaded;
         private bool viewButtonVisible;
+        private bool buttonPanelVisible = true;
         private bool modifyButtonsEnabled;
 
         private static readonly FontFamily ConsolasFontFamily = new FontFamily("Consolas");
@@ -620,6 +631,7 @@ namespace TOKElfTool.Editor
                 RemoveButtonClick = RemoveButtonClick,
                 DuplicateButtonClick = DuplicateButtonClick,
                 ValueChanged = ValueChanged,
+                ButtonPanelVisible = ButtonPanelVisible,
             };
             for (int i = 0; i < Grid.Children.Count; i++)
             {
