@@ -113,9 +113,16 @@
     <Compile Include="CrashReportWindow.xaml.cs">
       <DependentUpon>CrashReportWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EditorPanel.xaml.cs">
+    <Compile Include="Editor\EditorPanel.xaml.cs">
       <DependentUpon>EditorPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editor\InnerEditor.xaml.cs">
+      <DependentUpon>InnerEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\ListEditControl.xaml.cs">
+      <DependentUpon>ListEditControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\ObjectEditControl.xaml.cs" />
     <Compile Include="ObjectCollector.cs" />
     <Compile Include="ProgressReports\ZstdFolderProgressPopupWindow.xaml.cs">
       <DependentUpon>ZstdFolderProgressPopupWindow.xaml</DependentUpon>
@@ -134,9 +141,21 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EditorPanel.xaml">
+    <Page Include="Editor\EditorPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Editor\InnerEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Editor\ListEditControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Editor\ObjectEditControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -151,10 +170,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MyMessageBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="ObjectEditControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -181,7 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MyMessageBox.xaml.cs" />
-    <Compile Include="ObjectEditControl.xaml.cs" />
     <Compile Include="ObjectTypeSelector.xaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

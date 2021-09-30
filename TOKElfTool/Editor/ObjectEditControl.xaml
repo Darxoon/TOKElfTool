@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="TOKElfTool.ObjectEditControl"
+﻿<UserControl x:Class="TOKElfTool.Editor.ObjectEditControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -11,23 +11,37 @@
     <UserControl.Resources>
         <SolidColorBrush x:Key="LinkColor">#FF3762D3</SolidColorBrush>
         <TextDecorationCollection x:Key="Underline">Underline</TextDecorationCollection>
+        
+        <!-- Background colors -->
+        <SolidColorBrush x:Key="files">#FFF67F</SolidColorBrush>
+        <SolidColorBrush x:Key="state">#F2BFE6</SolidColorBrush>
+        <SolidColorBrush x:Key="subState">#FFD17C</SolidColorBrush>
+        <SolidColorBrush x:Key="face">#ABE58B</SolidColorBrush>
+        <SolidColorBrush x:Key="anime">#96FFD8</SolidColorBrush>
+        
+        <!-- Secondary Background colors -->
+        <SolidColorBrush x:Key="secondary">#E6E6E6</SolidColorBrush>
+        <SolidColorBrush x:Key="filesSecondary">#F9E97C</SolidColorBrush>
+        <SolidColorBrush x:Key="stateSecondary">#D8A4CC</SolidColorBrush>
+        <SolidColorBrush x:Key="subStateSecondary">#FFBC5E</SolidColorBrush>
+        <SolidColorBrush x:Key="faceSecondary">#90CC78</SolidColorBrush>
+        <SolidColorBrush x:Key="animeSecondary">#79E5BF</SolidColorBrush>
     </UserControl.Resources>
 
-    <Expander x:Name="Expander" Expanded="Expander_OnExpanded">
-        <DockPanel>
+    <Expander x:Name="Expander" Expanded="Expander_OnExpanded" Margin="0,0,4,0">
+        <DockPanel x:Name="dockPanel">
             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="10,5,0,5">
                 <Button x:Name="removeButton" Height="21" Width="72" Margin="0,0,10,0" Click="RemoveButton_OnClick" Style="{StaticResource WinButton}">Remove</Button>
                 <Button x:Name="duplicateButton" Height="21" Width="76" Margin="0,0,10,0" Click="DuplicateButton_OnClick" Style="{StaticResource WinButton}">Duplicate</Button>
                 <Button x:Name="viewButton" Height="21" Width="144" Margin="0,0,10,0" Click="ViewButton_OnClick" Style="{StaticResource WinButton}" Visibility="Collapsed">View in Normal View</Button>
             </StackPanel>
             
-            <Grid x:Name="Grid" Height="Auto">
+            <Grid x:Name="Grid" Height="Auto" Margin="6,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
             </Grid>
-
         </DockPanel>
         
         

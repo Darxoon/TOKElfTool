@@ -8,7 +8,9 @@ namespace ElfLib.Types.Registry
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public struct NpcModelState {
         public string description;
+        [Pointer(ElfType.SubStates)] 
         public Pointer substate_arr;
+        [PointerArrayLength] 
         public int substate_count;
         public int field_0x14;
     }

@@ -1,27 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ElfLib;
-using ElfLib.Binary;
 using ElfLib.Types.Disposition;
+using ElfLib.Types.Registry;
+using Pointer = ElfLib.Pointer;
 
-namespace TOKElfTool
+namespace TOKElfTool.Editor
 {
     /// <summary>
     /// Interaction logic for ObjectEditControl.xaml
@@ -57,10 +51,18 @@ namespace TOKElfTool
             }
         }
 
+        public int Index { get; set; }
+
+
+        private ListEditControl innerControl;
+        
+        private readonly Brush secondaryBackground;
+
         private object currentObject;
         private List<Symbol> symbolTable;
+        private readonly Dictionary<ElfType, List<Element<object>>> data;
         private readonly Dictionary<ElfType, List<long>> dataOffsets;
-        private bool loaded = false;
+        private bool loaded;
         private bool viewButtonVisible;
         private bool modifyButtonsEnabled;
 
@@ -81,49 +83,285 @@ namespace TOKElfTool
             set => Expander.IsExpanded = value;
         }
 
+        public FontFamily HeaderFont
+        {
+            get => ((TextBlock)Expander.Header).FontFamily;
+            set => ((TextBlock)Expander.Header).FontFamily = value;
+        } 
+        
         public ObjectEditControl()
         {
             InitializeComponent();
         }
         
-        public ObjectEditControl(bool loaded)
-        {
-            InitializeComponent();
-
-            this.loaded = loaded;
-        }
-
-        public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable, Dictionary<ElfType, List<long>> dataOffsets)
+        public ObjectEditControl(object currentObject, string header, int index, List<Symbol> symbolTable, Dictionary<ElfType, List<Element<object>>> data, Dictionary<ElfType, List<long>> dataOffsets)
         {
             InitializeComponent();
 
             this.Index = index;
-            Expander.Header = header;
+            Expander.Header = new TextBlock { Text = header };
 
             this.currentObject = currentObject;
             this.symbolTable = symbolTable;
+            this.data = data;
             this.dataOffsets = dataOffsets;
-        }
 
-        public ObjectEditControl Clone()
-        {
-            ObjectEditControl clone = new ObjectEditControl(true)
+            string backgroundName = currentObject switch
             {
-                RemoveButtonClick = RemoveButtonClick,
-                DuplicateButtonClick = DuplicateButtonClick,
-                ValueChanged = ValueChanged,
+                NpcModelFiles _ => ("files"),
+                NpcModelState _ => ("state"),
+                NpcModelSubState _ => ("subState"),
+                NpcModelFace _ => ("face"),
+                NpcModelAnime _ => ("anime"),
+                _ => null,
             };
-            for (int i = 0; i < Grid.Children.Count; i++)
+            
+            Background = backgroundName != null ? (Brush)FindResource(backgroundName) : null;
+
+            if (Background != null)
             {
-                UIElement element = Grid.Children[i].XamlClone();
-                clone.Grid.Children.Add(element);
-                clone.Grid.RowDefinitions.Add(new RowDefinition());
-                Grid.SetRow(element, i / 2);
+                Expander.Padding = new Thickness(4);
+
+                secondaryBackground = (Brush)FindResource(backgroundName + "Secondary");
             }
-            return clone;
+            else
+            {
+                secondaryBackground = (Brush)FindResource("secondary");
+            }
+            
+            
         }
 
 
+        #region Input field callbacks
+
+        private bool enterHandled;
+        private static void Vector3_KeyDown(object sender, KeyEventArgs e)
+        {
+            TextBox textBox = (TextBox)e.OriginalSource;
+            if (e.Key == Key.Enter)
+            {
+                Vector3? parsed = Vector3.FromString(textBox.Text);
+                if (parsed != null)
+                {
+                    textBox.Text = parsed.ToString();
+                }
+                else
+                    MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+            }
+        }
+        private void Int_KeyDown(object sender, KeyEventArgs e)
+        {
+            TextBox textBox = (TextBox)e.OriginalSource;
+            switch (e.Key)
+            {
+                case Key.Enter when enterHandled == false:
+                    {
+                        e.Handled = true;
+                        if (IntRegex.IsMatch(((TextBox)e.Source).Text))
+                        {
+                            long.TryParse(textBox.Text, NumberStyles.Integer | NumberStyles.AllowExponent, new CultureInfo("en-US"), out long parsed);
+                            textBox.Text = parsed.ToString();
+                        }
+                        else
+                        {
+                            enterHandled = true;
+                            MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        }
+
+                        break;
+                    }
+                case Key.Enter:
+                    enterHandled = false;
+                    break;
+                case Key.OemPeriod:
+                    MessageBox.Show("Field is an integer and doesn't support floating point numbers", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
+                    break;
+            }
+        }
+        private void Float_KeyDown(object sender, KeyEventArgs e)
+        {
+            TextBox textBox = (TextBox)e.OriginalSource;
+            if (e.Key == Key.Enter)
+            {
+                if (enterHandled == false)
+                {
+                    e.Handled = true;
+                    if (StrictFloatRegex.IsMatch(((TextBox)e.Source).Text))
+                    {
+                        double.TryParse(textBox.Text, NumberStyles.Float, new CultureInfo("en-US"), out double parsed);
+                        MessageBox.Show(parsed.ToString(Nfi));
+                        textBox.Text = parsed.ToString("0.0#################", Nfi) + 'f';
+                    }
+                    else
+                    {
+                        enterHandled = true;
+                        MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    }
+                }
+                else
+                    enterHandled = false;
+            }
+        }
+
+        private static readonly Regex IntRegex = new Regex("^[0-9]+$");
+        private static readonly Regex FloatRegex = new Regex(@"^[0-9]*\.*[0-9]*$");
+        private static readonly Regex StrictFloatRegex = new Regex(@"^[0-9]*\.*[0-9]*f?$");
+
+        private static void Int_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IntRegex.IsMatch(e.Text);
+        }
+        private static void Float_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            TextBox textBox = (TextBox)e.OriginalSource;
+            string text = textBox.Text;
+            e.Handled = !FloatRegex.IsMatch(e.Text);
+            if ((!text.EndsWith("f")) && text[text.Length - 2] != 'f')
+            {
+                ((TextBox)e.OriginalSource).AppendText("f");
+            }
+        }
+        private static void Double_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !FloatRegex.IsMatch(e.Text);
+        }
+
+        #endregion
+
+
+        public void Generate()
+        {
+            if (!loaded)
+            {
+                Pointer? arrayPointer = null;
+                ElfType arrayLocation = 0;
+                string expanderTitle = null;
+                int arrayLength;
+                
+                // fields
+                Type objectType = currentObject.GetType();
+                FieldInfo[] fields = objectType.GetFields();
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    PointerAttribute pointerAttribute = fields[i].GetCustomAttribute<PointerAttribute>();
+                    PointerArrayLengthAttribute arrayLengthAttribute = fields[i].GetCustomAttribute<PointerArrayLengthAttribute>();
+
+                    if ((pointerAttribute == null || (Pointer)fields[i].GetValue(currentObject) == Pointer.NULL) && arrayLengthAttribute == null)
+                    {
+                        Grid.RowDefinitions.Add(new RowDefinition());
+                        AddFieldControls(currentObject, fields[i], Grid, i, symbolTable);
+                    }
+                    else if (pointerAttribute != null)
+                    {
+                        arrayPointer = (Pointer)fields[i].GetValue(currentObject);
+                        expanderTitle = fields[i].Name;
+                        arrayLocation = pointerAttribute.Location;
+                    }
+                    else if (arrayLengthAttribute != null)
+                    {
+                        arrayLength = (int)fields[i].GetValue(currentObject);
+                    }
+                }
+
+                if (arrayPointer != null)
+                {
+                    List<object> objects = (List<object>)data[arrayLocation][dataOffsets[arrayLocation].IndexOf(((Pointer)arrayPointer).AsLong)].value;
+                    
+                    innerControl = new ListEditControl
+                    {
+                        Header = expanderTitle,
+                        Objects = objects,
+                        ChildHeader = objects.Count > 0 ? objects[0].GetType().Name : "",
+                        Data = data,
+                        DataOffsets = dataOffsets,
+                        HeaderFont = ConsolasFontFamily,
+                        Margin = new Thickness(6, 0, 0, 0),
+                        Index = 0,
+                    };
+
+                    DockPanel.SetDock(innerControl, Dock.Bottom);
+                    
+                    dockPanel.Children.Insert(1, innerControl);
+                }
+                
+                if (currentObject is MaplinkHeader)
+                {
+                    duplicateButton.IsEnabled = false;
+                    removeButton.IsEnabled = false;
+                }
+
+                loaded = true;
+            }
+        }
+
+        public void ApplyChangesToObject()
+        {
+            for (int i = 0; i < Grid.Children.Count; i += 2)
+            {
+                TextBlock textBlock = (TextBlock)Grid.Children[i];
+                UIElement valueControl = Grid.Children[i + 1];
+                
+                string fieldName = textBlock.Text;
+                FieldInfo currentField = currentObject.GetType().GetField(fieldName);
+                Type fieldType = currentField.FieldType;
+                
+                object propertyValue = ReadFromControl(valueControl, fieldType);
+                
+                currentField.SetValue(currentObject, propertyValue);
+            }
+
+            innerControl?.ApplyChangesToObject();
+        }
+        
+        [SuppressMessage("ReSharper", "HeapView.BoxingAllocation")]
+        private static object ReadFromControl(UIElement child, Type propertyType)
+        {
+            // checkbox
+            if (propertyType == typeof(bool))
+            {
+                CheckBox checkBox = (CheckBox)child;
+                //Trace.WriteLine($"{propertyName}: {propertyType.Name} = {propertyValue} (from checkbox)");
+
+                return checkBox.IsChecked;
+            }
+
+            // dropdown
+            if (propertyType.BaseType == typeof(Enum))
+            {
+                ComboBox comboBox = (ComboBox)child;
+                FieldInfo[] enumFields = propertyType.GetFields()
+                    .Where(value => value.IsStatic)
+                    .ToArray();
+
+                FieldInfo selectedField = enumFields[comboBox.SelectedIndex];
+                int selectedFieldValue = (int)selectedField.GetValue(null);
+
+                //Trace.WriteLine($"~~~~~~~~~~ {propertyValue}");
+                return selectedFieldValue;
+            }
+
+            // TextBox
+            TextBox textBox = (TextBox)child;
+            string text = textBox.Text;
+            
+            return propertyType.Name switch
+            {
+                nameof(String) => text.StartsWith("\"") && text.EndsWith("\"")
+                    ? text.Substring(1, text.Length - 2)
+                    : null,
+                nameof(Vector3) => Vector3.FromString(text),
+                nameof(Byte) => byte.Parse(text),
+                nameof(Int32) => int.Parse(text),
+                nameof(Int64) => long.Parse(text),
+                nameof(Single) => float.Parse(text.EndsWith("f") ? text.Substring(0, text.Length - 1) : text),
+                nameof(Double) => double.Parse(text),
+                
+                _ => throw new Exception("Couldn't read the property value"),
+            };
+
+        }
+        
         private void AddFieldControls(object currentObject, FieldInfo field, Grid grid, int fieldIndex, List<Symbol> symbolTable)
         {
             string name = field.Name;
@@ -139,7 +377,7 @@ namespace TOKElfTool
             Grid.SetRow(label, fieldIndex);
             grid.Children.Add(label);
             if (fieldIndex % 2 == 1)
-                label.Background = new SolidColorBrush(Color.FromRgb(230, 230, 230));
+                label.Background = secondaryBackground;
 
             Type fieldType = field.FieldType;
 
@@ -251,7 +489,7 @@ namespace TOKElfTool
                 textBox.TextDecorations = (TextDecorationCollection)FindResource("Underline");
                 textBox.Foreground = (SolidColorBrush)FindResource("LinkColor");
 
-                int targetIndex = dataOffsets[ElfType.Files].IndexOf((long)field.GetValue(currentObject));
+                int targetIndex = dataOffsets[ElfType.Files].IndexOf(((Pointer)field.GetValue(currentObject)).AsLong);
                 textBox.Text = $"Files Object {targetIndex} in Files Data";
 
                 textBox.ToolTip = "Click to Go to Target";
@@ -277,7 +515,7 @@ namespace TOKElfTool
                 textBox.TextDecorations = (TextDecorationCollection)FindResource("Underline");
                 textBox.Foreground = (SolidColorBrush)FindResource("LinkColor");
 
-                int targetIndex = dataOffsets[ElfType.State].IndexOf((long)field.GetValue(currentObject));
+                int targetIndex = dataOffsets[ElfType.State].IndexOf(((Pointer)field.GetValue(currentObject)).AsLong);
                 textBox.Text = $"State Object {targetIndex} in State Data";
 
                 textBox.ToolTip = "Click to Go to Target";
@@ -341,6 +579,13 @@ namespace TOKElfTool
                     label.ToolTip = "64-bit integer";
                     textBox.ToolTip = "64-bit integer";
                     break;
+                case "Pointer":
+                    textBox.Text = ((Pointer)field.GetValue(currentObject)).ToString();
+                    textBox.PreviewTextInput += Int_PreviewTextInput;
+                    textBox.KeyDown += Int_KeyDown;
+                    label.ToolTip = "64-bit integer";
+                    textBox.ToolTip = "64-bit integer";
+                    break;
                 case "Single":
                     string floatText = ((float)field.GetValue(currentObject)).ToString("0.0#################", Nfi) + 'f';
                     textBox.Text = floatText;
@@ -366,105 +611,32 @@ namespace TOKElfTool
 
         }
 
-
-        #region Input field callbacks
-
-        private bool enterHandled;
-        private static void Vector3_KeyDown(object sender, KeyEventArgs e)
+        
+        public ObjectEditControl Clone()
         {
-            TextBox textBox = (TextBox)e.OriginalSource;
-            if (e.Key == Key.Enter)
+            ObjectEditControl clone = new ObjectEditControl()
             {
-                Vector3? parsed = Vector3.FromString(textBox.Text);
-                if (parsed != null)
-                {
-                    textBox.Text = parsed.ToString();
-                }
-                else
-                    MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-            }
-        }
-        private void Int_KeyDown(object sender, KeyEventArgs e)
-        {
-            TextBox textBox = (TextBox)e.OriginalSource;
-            switch (e.Key)
+                loaded = true,
+                RemoveButtonClick = RemoveButtonClick,
+                DuplicateButtonClick = DuplicateButtonClick,
+                ValueChanged = ValueChanged,
+            };
+            for (int i = 0; i < Grid.Children.Count; i++)
             {
-                case Key.Enter when enterHandled == false:
-                    {
-                        e.Handled = true;
-                        if (IntRegex.IsMatch(((TextBox)e.Source).Text))
-                        {
-                            long.TryParse(textBox.Text, NumberStyles.Integer | NumberStyles.AllowExponent, new CultureInfo("en-US"), out long parsed);
-                            textBox.Text = parsed.ToString();
-                        }
-                        else
-                        {
-                            enterHandled = true;
-                            MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-                        }
-
-                        break;
-                    }
-                case Key.Enter:
-                    enterHandled = false;
-                    break;
-                case Key.OemPeriod:
-                    MessageBox.Show("Field is an integer and doesn't support floating point numbers", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
-                    break;
+                UIElement element = Grid.Children[i].XamlClone();
+                clone.Grid.Children.Add(element);
+                clone.Grid.RowDefinitions.Add(new RowDefinition());
+                Grid.SetRow(element, i / 2);
             }
+            return clone;
         }
-        private void Float_KeyDown(object sender, KeyEventArgs e)
+
+        private void Expander_OnExpanded(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = (TextBox)e.OriginalSource;
-            if (e.Key == Key.Enter)
-            {
-                if (enterHandled == false)
-                {
-                    e.Handled = true;
-                    if (StrictFloatRegex.IsMatch(((TextBox)e.Source).Text))
-                    {
-                        double.TryParse(textBox.Text, NumberStyles.Float, new CultureInfo("en-US"), out double parsed);
-                        MessageBox.Show(parsed.ToString(Nfi));
-                        textBox.Text = parsed.ToString("0.0#################", Nfi) + 'f';
-                    }
-                    else
-                    {
-                        enterHandled = true;
-                        MessageBox.Show("Invalid input", "TOK ELF Editor", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-                    }
-                }
-                else
-                    enterHandled = false;
-            }
+            Generate();
+            e.Handled = true;
         }
-
-        private static readonly Regex IntRegex = new Regex("^[0-9]+$");
-        private static readonly Regex FloatRegex = new Regex(@"^[0-9]*\.*[0-9]*$");
-        private static readonly Regex StrictFloatRegex = new Regex(@"^[0-9]*\.*[0-9]*f?$");
-
-        public int Index { get; set; }
-
-        private static void Int_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !IntRegex.IsMatch(e.Text);
-        }
-        private static void Float_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            TextBox textBox = (TextBox)e.OriginalSource;
-            string text = textBox.Text;
-            e.Handled = !FloatRegex.IsMatch(e.Text);
-            if ((!text.EndsWith("f")) && text[text.Length - 2] != 'f')
-            {
-                ((TextBox)e.OriginalSource).AppendText("f");
-            }
-        }
-        private static void Double_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !FloatRegex.IsMatch(e.Text);
-        }
-
-        #endregion
-
+        
         private void RemoveButton_OnClick(object sender, RoutedEventArgs e)
         {
             RemoveButtonClick?.Invoke(this, e);
@@ -474,37 +646,7 @@ namespace TOKElfTool
         {
             DuplicateButtonClick?.Invoke(this, e);
         }
-
-        private void Expander_OnExpanded(object sender, RoutedEventArgs e)
-        {
-            Generate();
-        }
-
-        public void Generate()
-        {
-            if (!loaded)
-            {
-                // fields
-                Type objectType = currentObject.GetType();
-                FieldInfo[] fields = objectType.GetFields();
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    Grid.RowDefinitions.Add(new RowDefinition());
-                    AddFieldControls(currentObject, fields[i], Grid, i, symbolTable);
-                }
-
-                if (currentObject is MaplinkHeader)
-                {
-                    duplicateButton.IsEnabled = false;
-                    removeButton.IsEnabled = false;
-                }
-
-                loaded = true;
-                currentObject = null;
-                symbolTable = null;
-            }
-        }
-
+        
         private void ViewButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (ViewButtonVisible)

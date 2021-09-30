@@ -7,28 +7,28 @@ using System.Windows;
 using System.Windows.Controls;
 using ElfLib;
 using ElfLib.Binary;
+using TOKElfTool.Editor;
 
 namespace TOKElfTool
 {
     public class ObjectCollector<T>
     {
-        private readonly ElfBinary<T> binary;
+        private readonly List<Element<T>> items;
         private readonly List<bool> changedObjects;
 
-        public ObjectCollector(ElfBinary<T> binary, List<bool> changedObjects)
+        public ObjectCollector(List<Element<T>> items, List<bool> changedObjects)
         {
-            this.binary = binary;
+            this.items = items;
             this.changedObjects = changedObjects;
         }
         
         public void CollectObjects(UIElementCollection collection)
         {
-            List<Element<T>> items = binary.Data[ElfType.Main];
             List<ObjectEditControl> controls = collection.OfType<ObjectEditControl>().ToList();
             
             for (int i = 0; i < items.Count; i++)
             {
-                if (changedObjects[i] == true)
+                if (changedObjects == null || changedObjects[i] == true)
                     items[i].value = (T)CollectObject(controls[i], items[i].value.GetType());
             }
         }

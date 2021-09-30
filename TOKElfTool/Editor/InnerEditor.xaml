@@ -1,0 +1,11 @@
+﻿<Window x:Class="TOKElfTool.Editor.InnerEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TOKElfTool"
+        mc:Ignorable="d"
+        Title="Window1" Height="630" Width="520"
+        Loaded="InnerEditor_OnLoaded" Closed="InnerEditor_OnClosed">
+    <StackPanel x:Name="stackPanel" />
+</Window>

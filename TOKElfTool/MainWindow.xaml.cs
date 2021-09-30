@@ -16,6 +16,7 @@ using ElfLib.Binary;
 using ElfLib.Types.Disposition;
 using ElfLib.Types.Registry;
 using Ookii.Dialogs.Wpf;
+using TOKElfTool.Editor;
 using TOKElfTool.ProgressReports;
 using ZstdNet;
 
@@ -180,12 +181,6 @@ namespace TOKElfTool
             editors.Clear();
             GenerateEditorPanel();
 
-            if (loadedDataType == GameDataType.DataNpcModel)
-            {
-                GenerateEditorPanel(ElfType.Files, 1);
-                GenerateEditorPanel(ElfType.State, 2);
-            }
-
             foreach (EditorPanel editor in editors)
                 editor.searchBar.HasIndexed = false;
 
@@ -202,6 +197,10 @@ namespace TOKElfTool
             Cursor = Cursors.Arrow;
         }
 
+        private Dictionary<int, List<Element<object>>> subEditorContents = new Dictionary<int, List<Element<object>>>();
+
+        private Dictionary<int, InnerEditor> innerEditors = new Dictionary<int, InnerEditor>();
+        
         private void GenerateEditorPanel(ElfType type = ElfType.Main, int tabIndex = 0)
         {
             EditorPanel panel = new EditorPanel
@@ -209,14 +208,25 @@ namespace TOKElfTool
                 Type = loadedDataType,
                 DefaultType = loadedStructType,
                 Objects = new List<Element<object>>(loadedBinary.Data[type]),
+                Data = loadedBinary.Data,
                 DataOffsets = loadedBinary.DataOffsets,
                 SymbolTable = loadedBinary.SymbolTable,
             };
 
             panel.HyperlinkClick += (sender, e) =>
             {
-                tabControl.SelectedIndex = (int)e.type - 1;
-                editors[(int)e.type - 1].FocusObject(e.index);
+                if (innerEditors.ContainsKey(e.index) && innerEditors[e.index].IsLoaded)
+                {
+                    innerEditors[e.index].Focus();
+                }
+                else
+                {
+                    InnerEditor innerEditor = CreateInnerEditor(e.index);
+
+                    innerEditors[e.index] = innerEditor;
+
+                    innerEditor.Show();
+                }
             };
             
             if (loadedDataType == GameDataType.Maplink)
@@ -225,6 +235,28 @@ namespace TOKElfTool
             panel.OnUnsavedChanges += (sender, e) => hasUnsavedChanges = true;
             ((TabItem)tabControl.Items[tabIndex]).Content = panel;
             editors.Add(panel);
+        }
+
+        private InnerEditor CreateInnerEditor(int index)
+        {
+            if (!subEditorContents.ContainsKey(index))
+                subEditorContents.Add(index, new List<Element<object>>
+                {
+                    loadedBinary.Data[ElfType.Files][index],
+                    loadedBinary.Data[ElfType.State][index],
+                });
+
+            List<Element<object>> objects = subEditorContents[index];
+
+            InnerEditor innerEditor = new InnerEditor
+            {
+                Type = GameDataType.DataNpcModel,
+                DisplayObjects = objects,
+
+                Data = loadedBinary.Data,
+                DataOffsets = loadedBinary.DataOffsets,
+            };
+            return innerEditor;
         }
 
         private void AllowUIToUpdate()

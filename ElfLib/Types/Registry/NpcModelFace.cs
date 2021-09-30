@@ -10,7 +10,9 @@ namespace ElfLib.Types.Registry
     {
         public int field_0x0;
         public int field_0x4;
+        [Pointer(ElfType.Anime)]
         public Pointer anime_arr;
+        [PointerArrayLength]
         public int anime_count;
         public int field_0x14;
     }

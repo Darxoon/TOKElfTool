@@ -10,6 +10,7 @@ using ElfLib.Types.Registry;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
+using TOKElfTool.Editor;
 using TOKElfTool.Search;
 
 namespace TOKElfTool
@@ -19,7 +20,7 @@ namespace TOKElfTool
     /// </summary>
     public partial class EditorPanel : UserControl
     {
-        private static string GetTypeName(Element<object> instance) => instance.value switch
+        private static string GetTypeName(object instance) => instance switch
         {
             MaplinkNode _ => "Maplink Node",
             NpcType _ => "NPC Type",
@@ -28,16 +29,20 @@ namespace TOKElfTool
             NpcModelFiles _ => "Files Object",
             NpcModelState _ => "State Object",
             
-            _ => instance.value.GetType().Name,
+            _ => instance.GetType().Name,
         };
         
         public event EventHandler<(ElfType type, int index)> HyperlinkClick;
+
+        public string[]? ChildHeaders { get; set; } = null;
         
         public GameDataType Type { get; set; }
         
         public Type DefaultType { get; set; }
         
         public List<Element<object>> Objects { get; set; }
+        
+        public Dictionary<ElfType, List<Element<object>>> Data { get; set; }
         
         public Dictionary<ElfType, List<long>> DataOffsets { get; set; }
         
@@ -74,36 +79,63 @@ namespace TOKElfTool
             {
                 Element<object> currentElement = Objects[i];
 
-                string title = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(currentElement)} {i}";
-                ObjectEditControl control = new ObjectEditControl(currentElement.value, title, i, SymbolTable, DataOffsets);
 
-                control.RemoveButtonClick += RemoveButton_OnClick;
-                control.DuplicateButtonClick += DuplicateButton_OnClick;
-                control.ViewButtonClick += ViewButton_OnClick;
-
-                control.HyperlinkClick += (sender, e) =>
+                if (currentElement.value is List<object> list)
                 {
-                    HyperlinkClick?.Invoke(sender, e);
-                };
+                    ListEditControl control = new ListEditControl
+                    {
+                        Objects = list,
+                        Header = ChildHeaders == null ? $"ListEditControl {i}" : ChildHeaders[i],
+                        ChildHeader = list.Count > 0 ? GetTypeName(list[0]) : "",
+                        Data = Data,
+                        DataOffsets = DataOffsets,
+                        Index = i,
+                    };
 
-                control.ValueChanged += (sender, args) =>
+                    objectTabPanel.Children.Add(control);
+                }
+                else
                 {
-                    if (!HasUnsavedChanges)
-                        OnUnsavedChanges?.Invoke(this, EventArgs.Empty);
-                    HasUnsavedChanges = true;
-                    
-                    searchBar.HasIndexed = false;
-                    modifiedObjects[control.Index] = true;
-                };
+                    string title = ChildHeaders == null ?
+                        (Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(currentElement.value)} {i}")
+                        : ChildHeaders[i];
 
-                objectTabPanel.Children.Add(control);
+                    ObjectEditControl control =
+                        new ObjectEditControl(currentElement.value, title, i, SymbolTable, Data, DataOffsets);
+
+                    control.RemoveButtonClick += RemoveButton_OnClick;
+                    control.DuplicateButtonClick += DuplicateButton_OnClick;
+                    control.ViewButtonClick += ViewButton_OnClick;
+
+                    control.HyperlinkClick += (sender, e) => { HyperlinkClick?.Invoke(sender, e); };
+
+                    control.ValueChanged += (sender, args) =>
+                    {
+                        if (!HasUnsavedChanges)
+                            OnUnsavedChanges?.Invoke(this, EventArgs.Empty);
+                        HasUnsavedChanges = true;
+
+                        searchBar.HasIndexed = false;
+                        modifiedObjects[control.Index] = true;
+                    };
+
+                    objectTabPanel.Children.Add(control);
+                }
             }
 
         }
 
+        public void ApplyChangesToObject()
+        {
+            foreach (dynamic child in objectTabPanel.Children)
+            {
+                child.ApplyChangesToObject();
+            }
+        }
+
         public void CollectObjects(ElfBinary<object> binary)
         {
-            ObjectCollector<object> collector = new ObjectCollector<object>(binary, modifiedObjects);
+            ObjectCollector<object> collector = new ObjectCollector<object>(binary.Data[ElfType.Main], modifiedObjects);
             collector.CollectObjects(objectTabPanel.Children);
         }
 
@@ -113,7 +145,7 @@ namespace TOKElfTool
             {
                 ObjectEditControl expander = (ObjectEditControl)objectTabPanel.Children[i];
                 expander.Index = i;
-                expander.Header = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(Objects[i])} {i}";
+                expander.Header = Objects[i].value is MaplinkHeader ? "Maplink Header (Advanced)" : $"{GetTypeName(Objects[i].value)} {i}";
             }
         }
         
@@ -149,7 +181,7 @@ namespace TOKElfTool
         {
             ObjectEditControl control = (ObjectEditControl)sender;
 
-            bool? result = MyMessageBox.Show(Window.GetWindow(this), $"Are you sure you want to delete this {GetTypeName(Objects[control.Index])}?", "TOK ELF Editor", MessageBoxResult.Yes);
+            bool? result = MyMessageBox.Show(Window.GetWindow(this), $"Are you sure you want to delete this {GetTypeName(Objects[control.Index].value)}?", "TOK ELF Editor", MessageBoxResult.Yes);
             if (result == true)
             {
                 objectTabPanel.Children.RemoveAt(control.Index);
@@ -195,7 +227,7 @@ namespace TOKElfTool
             UIElementCollection children = objectTabPanel.Children;
 
             object instance = Activator.CreateInstance(DefaultType);
-            ObjectEditControl clone = new ObjectEditControl(instance, "", objectTabPanel.Children.Count, SymbolTable, DataOffsets)
+            ObjectEditControl clone = new ObjectEditControl(instance, "", objectTabPanel.Children.Count, SymbolTable, Data, DataOffsets)
             {
                 IsExpanded = true, 
                 Index = children.Count,
