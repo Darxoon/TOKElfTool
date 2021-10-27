@@ -404,7 +404,7 @@ namespace ElfLib
                         allStrings.Add(npc.id);
                         allStrings.Add(npc.description);
                         allStrings.Add(npc.model_id);
-                        allStrings.Add(npc.field_0x50);
+                        allStrings.Add(npc.script_file_name);
                     }
                     break;
                 case GameDataType.None:

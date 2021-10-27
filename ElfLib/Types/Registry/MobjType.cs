@@ -25,7 +25,7 @@ namespace ElfLib.Types.Registry
         public int field_0x44;
         public int field_0x48;
         public int field_0x4c;
-        public string field_0x50;
+        public string script_file_name;
         public int field_0x58;
         public int field_0x5c;
         public int field_0x60;
@@ -64,7 +64,7 @@ namespace ElfLib.Types.Registry
         public int field_0x44;
         public int field_0x48;
         public int field_0x4c;
-        public Pointer field_0x50;
+        public Pointer script_file_name;
         public int field_0x58;
         public int field_0x5c;
         public int field_0x60;
