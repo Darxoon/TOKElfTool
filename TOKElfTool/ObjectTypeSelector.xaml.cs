@@ -56,6 +56,7 @@ namespace TOKElfTool
                 "data_npc" => Show(parent, GameDataType.DataNpc),
                 "data_item" => Show(parent, GameDataType.DataItem),
                 "data_npc_model" => Show(parent, GameDataType.DataNpcModel),
+                var str when str.StartsWith("data_mobj_") => Show(parent, GameDataType.DataMobj),
                 _ => Show(parent),
             };
         }

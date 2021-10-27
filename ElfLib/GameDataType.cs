@@ -14,6 +14,7 @@ namespace ElfLib
 
         DataNpc,
         DataItem,
+        DataMobj,
         
         DataNpcModel,
 

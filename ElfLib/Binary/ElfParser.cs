@@ -189,6 +189,8 @@ namespace ElfLib
                 
                 GameDataType.DataItem => Parse<ItemType, RawItemType>(sections, relas, out dataOffsets),
                 
+                GameDataType.DataMobj => Parse<MobjType, RawMobjType>(sections, relas, out dataOffsets),
+                
                 GameDataType.DataNpcModel => new NpcModelParser(stringSection, dataSection, rodataSection, out dataOffsets,
                     relas, ParseRelocations(GetSection(sections, ".rela.rodata"))),
             };

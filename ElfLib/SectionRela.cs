@@ -42,7 +42,7 @@ namespace ElfLib
 
         public override string ToString()
         {
-            return $"SectionRelA{{0x{Offset:X2}{(Info != DEFAULT_INFO ? ":0x" + Info.ToString("X2") : ":")}:{(Addend == int.MaxValue ? "null" : "0x" + Addend.ToString("X2"))}}}";
+            return $"SectionRelA{{0x{Offset:X2}{":0x" + Info.ToString("X2")}:{(Addend == int.MaxValue ? "null" : "0x" + Addend.ToString("X2"))}}}";
         }
 
         internal static SectionRela FromBinary(BinaryReader reader)

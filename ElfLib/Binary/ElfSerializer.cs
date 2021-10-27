@@ -244,6 +244,7 @@ namespace ElfLib
                 GameDataType.Item => typeof(RawItem),
                 GameDataType.DataNpc => typeof(RawNpcType),
                 GameDataType.DataItem => typeof(RawItemType),
+                GameDataType.DataMobj => typeof(RawMobjType),
                 GameDataType.DataNpcModel => typeof(RawNpcModel),
                 _ => throw new ElfSerializeException("Data Type not supported yet"),
             });
@@ -260,6 +261,7 @@ namespace ElfLib
                     GameDataType.BShape   => (object)Util.NormalToRawObject<RawBShape,BShape>((BShape)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.DataNpc  => (object)Util.NormalToRawObject<RawNpcType,NpcType>((NpcType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.DataItem => (object)Util.NormalToRawObject<RawItemType,ItemType>((ItemType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
+                    GameDataType.DataMobj => (object)Util.NormalToRawObject<RawMobjType,MobjType>((MobjType)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     GameDataType.DataNpcModel => (object)Util.NormalToRawObject<RawNpcModel,NpcModel>((NpcModel)(object)element.value, stringDeclarationMap, stringRelocTable, dataSectionPosition),
                     _ => throw new ElfSerializeException("Data Type not supported yet"),
                 });
@@ -393,6 +395,16 @@ namespace ElfLib
                                     break;
                             }
                         }
+                    }
+                    break;
+                case GameDataType.DataMobj:
+                    foreach (Element<T> element in data)
+                    {
+                        MobjType npc = (MobjType)(object)element.value;
+                        allStrings.Add(npc.id);
+                        allStrings.Add(npc.description);
+                        allStrings.Add(npc.model_id);
+                        allStrings.Add(npc.field_0x50);
                     }
                     break;
                 case GameDataType.None:

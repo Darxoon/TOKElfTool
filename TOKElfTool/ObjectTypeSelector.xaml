@@ -20,6 +20,7 @@
 
             <ComboBoxItem>NPC Registry (data_npc.elf)</ComboBoxItem>
             <ComboBoxItem>Item Registry (data_item.elf)</ComboBoxItem>
+            <ComboBoxItem>Mobj Registry (mobj/data_mobj_*.elf)</ComboBoxItem>
             
             <ComboBoxItem>NPC Model (data_npc_model.elf)</ComboBoxItem>
         </ComboBox>

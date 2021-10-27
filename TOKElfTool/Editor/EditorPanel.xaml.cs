@@ -25,6 +25,7 @@ namespace TOKElfTool
             MaplinkNode _ => "Maplink Node",
             NpcType _ => "NPC Type",
             ItemType _ => "Item Type",
+            MobjType _ => "Mobj Type",
             NpcModel _ => "NPC Model",
             NpcModelFiles _ => "Files Object",
             NpcModelState _ => "State Object",
