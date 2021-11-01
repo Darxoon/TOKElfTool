@@ -23,7 +23,7 @@ namespace ElfLib.Types.Disposition
         public Pointer enemy_encounter_str;
         public int field_0x38;
         public int field_0x3c;
-        public int collision_flag;
+        public int field_0x40;
         public int field_0x44;
         public float field_0x48;
         public float field_0x4c;
