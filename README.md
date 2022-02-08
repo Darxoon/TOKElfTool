@@ -5,10 +5,12 @@ A tool that allows modding Paper Mario The Origami King easily by editing .elf f
 This is a modified room in Paper Mario TOK entirely done using this tool.
 
 # Download
-https://github.com/Darxoon/TOKElfTool/releases/
+~~https://github.com/Darxoon/TOKElfTool/releases/~~
 
-You can download the latest release from there. I always make sure that it's up to date. Note that it's still 
-in development. Features are missing, stuff can break and field names are incomplete.
+~~You can download the latest release from there. I always make sure that it's up to date. Note that it's still 
+in development. Features are missing, stuff can break and field names are incomplete.~~
+
+### The Releases page has long been outdated, instead, download it from below:
 
 Development builds:  
 https://ci.appveyor.com/project/Darxoon/tokelftool/build/artifacts
