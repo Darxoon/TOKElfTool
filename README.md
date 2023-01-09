@@ -5,7 +5,7 @@ A tool that allows modding Paper Mario The Origami King easily by editing .elf f
 This is a modified room in Paper Mario TOK entirely done using this tool.
 
 # NOTE
-TOKElfTool is pretty obsolete by now. It does not know many file types and does not have a good user experience. **I highly suggest using [Origami Wand](https://darxoon.neocities.org/OrigamiWand) instead.**
+TOKElfTool is pretty obsolete by now. It does not know many file types and does not have a good user experience. **I highly suggest using [Origami Wand](https://github.com/Darxoon/OrigamiWand) instead.**
 
 If you STILL want to use TOKElfTool:
 
